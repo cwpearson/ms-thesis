@@ -9,6 +9,10 @@
 * [Latest `master`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_master.pdf)
 * [Latest `develop`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_develop.pdf)
 
+## References
+
+[dropbox](https://www.dropbox.com/home/research/references/2017_hwcomm-workshop)
+
 ## Useful Links
 
 * [Guide to ECE Theses and Dissertations](https://wiki.illinois.edu/wiki/display/ECEThesisReview/Guide+to+ECE+Theses+and+Dissertations)

@@ -19,6 +19,34 @@
 %\usepackage{url}  % Hyphenation of URLs.
 \usepackage{lscape}  % Useful for wide tables or figures.
 \usepackage[justification=raggedright]{caption}	% makes captions ragged right - thanks to Bryce Lobdell
+\usepackage{color}
+
+\newif\ifsubmit
+%\submittrue
+\submitfalse
+\ifsubmit
+
+    \newcommand{\todo}[1]{}
+    \newcommand{\tocite}[1]{}
+    \newcommand{\outline}[1]{}
+    \newcommand{\addtext}[1]{#1}
+    \newcommand{\rmtext}[1]{}
+
+\else
+
+    \definecolor{commentColor}{rgb}{0.1, 0.6, 1.0}
+    \definecolor{outlineColor}{rgb}{0.0, 0.50, 0.0}
+    \definecolor{toCiteColor}{rgb}{0.5, 0.0, 0.5}
+    \definecolor{addedColor}{rgb}{0.3, 0.5, 1.0}
+    \definecolor{removedColor}{rgb}{0.8, 0.8, 0.8}
+
+    \newcommand{\todo}[1]{[{\color{red}TODO: #1}]}
+    \newcommand{\tocite}[1]{[{\color{toCiteColor}CITE: #1}]}
+    \newcommand{\outline}[1]{[{\color{outlineColor}OUTLINE: #1}]}
+    \newcommand{\addtext}[1]{{\color{addedColor}#1}}
+    \newcommand{\rmtext}[1]{{\color{removedColor}\sout{#1}}}
+
+\fi
 
 % Uncomment the appropriate one of the following four lines:
 \msthesis
@@ -134,7 +162,10 @@ To my family, for their love and support.
 %\include{exper}
 %\include{concl}
 \include{sections/1-intro}
-\include{sections/2-conclusion}
+\include{sections/2-background}
+\include{sections/3-sys-char}
+\include{sections/4-app-char}
+\include{sections/5-conclusion}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % APPENDIX
