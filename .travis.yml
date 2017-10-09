@@ -18,3 +18,5 @@ deploy:
   bucket: cwpearson-ms-thesis
   skip_cleanup: true
   local_dir: latest
+  on:
+    all_branches: true
