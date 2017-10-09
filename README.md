@@ -1,5 +1,9 @@
 # MS Thesis
 
+| master | develop|
+| -- | -- |
+| [![Build Status](https://travis-ci.com/cwpearson/ms-thesis.svg?token=oXpZxp44qzps6HC63xis&branch=master)](https://travis-ci.com/cwpearson/ms-thesis) | [![Build Status](https://travis-ci.com/cwpearson/ms-thesis.svg?token=oXpZxp44qzps6HC63xis&branch=develop)](https://travis-ci.com/cwpearson/ms-thesis) |
+
 ## Versions
 
 * [Latest `master`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_master.pdf)
