@@ -8,7 +8,7 @@ install:
 script:
   - make
   - mkdir -p latest
-  - mv ecethesis.pdf latest
+  - mv ecethesis.pdf latest/ecethesis_$TRAVIS_BRANCH.pdf
 
 deploy:
   provider: gcs
