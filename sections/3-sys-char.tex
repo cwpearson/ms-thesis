@@ -1,8 +1,72 @@
 \chapter{System Characterization}
+\label{ch:sys-char}
+
+High-performance data movement in heterogeneous systems requires information about the properties of the communication links between system storage and compute components.
+Although specifications of system components are often available\todo{cite some examples}, the real-world properties of these links depends on how applications use the links, and whether or not the links are shared between system components.
+\todo{For example, Figure~\ref{fig:actual-perf} shows modeled and achieved cuda memcpy bandwidth.}
+With full knowledge of link properties it is possible to derive an accurate model of link performance, that approach has two key barriers
+\begin{itemize}
+    \item Detailed link hardware properties are not available, e.g., when the link provides a competitive advantage for an OEM.
+    \item Detailed link software properies are not available, e.g., when the drivers are proprietary.
+    \item Even if a link is pysically present on the system, it may not be available to the application {e.g., due to bugs in the system configuration}
+\end{itemize}
+Instead of deriving a model of link performance from the ``first principles'' of link properties, this work attempts to generate an empirical model of performance of data movement in the system.
+Section~\ref{sec:system-model} describes an overview of the system model.
+Section~\ref{sec:topology-exploration} describes a method for discovering data sources, sinks, and communication paths in a system.
+Section~\ref{sec:link-char} describes the approach to characterize communication links.
+
+\begin{figure}[h]
+    \centering
+    \caption[\todo{short}]{\todo{long}}
+    \centering
+      \includegraphics[width=0.5\textwidth,draft]{../figures/placeholder.png}
+    \label{fig:actual-perf}
+\end{figure}
+
+\section{System Model}
+\label{sec:system-model}
+
+The harware system is represented by a graph $G = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing data sources/sinks.
+Associated with each edge is a performance model function $M: C,U \rightarrow P$ that maps a communication pattern $C$ and a link utilization $U$ to an achievable performance $P$.
+
+The communication pattern $P$ has the following parameters:
+\begin{itemize}
+    \item The communication API or method used (e.g., \texttt{fread()}, CUDA unified memory page transfer).
+    \item The number, size, and priority of pending transfers on the link.
+\end{itemize}
+
+The link utilization $U$ a set of extant communication patterns already sharing the link, separate from the communication of interest $C$.
+
+This work considers PCIe~\todo{cite PCIe}, NVLink\cite{nvidia2017nvlink}, SATA~\todo{cite SATA}, and SMP bus links between CPU sockets.
+
+Each vertex in $V$ represents a data source/sink. These represent data storage and computation components of the system.
+
+This work considers CPU sockets, GPUs, and Linux block storage devices.
+
+\section{Topology Exploration}
+\label{sec:topology-exploration}
 
 Using hwloc~\cite{broquedis2010hwloc} and NVML~\cite{nvidia2017nvml}.
 
-\section{Topology Exploration}
+\begin{figure}[h]
+    \centering
+    \caption[\todo{short}]{\todo{long}}
+    \centering
+      \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-minsky.pdf}
+    \label{fig:actual-perf}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \caption[\todo{short}]{\todo{long}}
+    \centering
+      \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-dgx1.pdf}
+    \label{fig:actual-perf}
+\end{figure}
+
 
 \section{Link Characterization}
+\label{sec:link-char}
+
+In general, communication link performance 
 
