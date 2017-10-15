@@ -17,16 +17,16 @@ Section~\ref{sec:link-char} describes the approach to characterize communication
 
 \begin{figure}[h]
     \centering
+    \includegraphics[width=0.5\textwidth,draft]{../figures/actual-cuda-memcpy.png}
     \caption[\todo{short}]{\todo{long}}
-    \centering
-      \includegraphics[width=0.5\textwidth,draft]{../figures/placeholder.png}
-    \label{fig:actual-perf}
+    \label{fig:actual-cuda-memcpy}
 \end{figure}
 
 \section{System Model}
 \label{sec:system-model}
 
-The harware system is represented by a graph $G = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing data sources/sinks.
+The harware system is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing data sources/sinks.
+Sections~\ref{sec:system-vertices} and \ref{sec:system-edges} describe the specific system components explored.
 Associated with each edge is a performance model function $M: C,U \rightarrow P$ that maps a communication pattern $C$ and a link utilization $U$ to an achievable performance $P$.
 
 The communication pattern $P$ has the following parameters:
@@ -37,36 +37,144 @@ The communication pattern $P$ has the following parameters:
 
 The link utilization $U$ a set of extant communication patterns already sharing the link, separate from the communication of interest $C$.
 
-This work considers PCIe~\todo{cite PCIe}, NVLink\cite{nvidia2017nvlink}, SATA~\todo{cite SATA}, and SMP bus links between CPU sockets.
 
-Each vertex in $V$ represents a data source/sink. These represent data storage and computation components of the system.
 
-This work considers CPU sockets, GPUs, and Linux block storage devices.
+Each vertex in $V$ represents a data source/sink.
 
+
+
+%
+% SECTION
+%
 \section{Topology Exploration}
 \label{sec:topology-exploration}
 
 Using hwloc~\cite{broquedis2010hwloc} and NVML~\cite{nvidia2017nvml}.
 
+The topology exploration is done in several phases, show in Listing~\ref{lst:topology-exploration}.
+First, the Portable Hardware Locality~\cite{broquedis2010hwloc} (hwloc) library is used to enumerate the present CPU sockets.
+
+
+\begin{minipage}[h]{\textwidth}
+\begin{lstlisting}[caption={My Caption},captionpos=b,label=lst:topology-exploration]
+    Search for CPU sockets
+    Link CPU sockets
+    Search PCIe device tree
+    Search for NVIDIA GPUs
+    Search for NVLinks
+    Search for Linux block devices
+\end{lstlisting}
+\end{minipage}
+
+
+\subsection{Vertex Types}
+\label{sec:system-vertices}
+
+Table~\ref{tab:topology-vertices} summarizes the types of data sources and sinks investigated by this work.
+
+This work considers CPU sockets, GPUs, and Linux block storage devices.
+
+\begin{table}[]
+    \centering
+    \caption[Discoverable vertex types]{\todo{long caption}}
+    \label{tab:topology-vertices}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Vertex Type}    & \textbf{Short Name} & \textbf{Description} \\ \hline
+    CPU Socket              &                     &                      \\ \hline
+    CUDA GPU                &                     &                      \\ \hline
+    Linux Block Device      &                     &                      \\ \hline
+    Linux Network Interface &                     &                      \\ \hline
+    PCIe Hostbridge         &                     &                      \\ \hline
+    PCIe Bridge             &                     &                      \\ \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Edge Types}
+\label{sec:system-edges}
+
+This work considers PCIe~\todo{cite PCIe}, NVLink\cite{nvidia2017nvlink}, SATA~\todo{cite SATA}, and SMP bus links between CPU sockets.
+
+\begin{table}[]
+    \centering
+    \caption[Discoverable edge types]{\todo{long caption}}
+    \label{tab:topology-edges}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Edge Type} & \textbf{Short Name} & \textbf{Description} \\ \hline
+    SMP Bus            &                     &                      \\ \hline
+    PCIe Bus           &                     &                      \\ \hline
+    NVLink             &                     &                      \\ \hline
+    SATA Bus           &                     &                      \\ \hline
+    \end{tabular}
+\end{table}
+
+
+\section{Topology Case Studies}
+
+\subsection{IBM S822LC ``Minsky''}
+\label{sec:topology-minsky}
 \begin{figure}[h]
     \centering
+    \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-minsky.pdf}
     \caption[\todo{short}]{\todo{long}}
-    \centering
-      \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-minsky.pdf}
     \label{fig:actual-perf}
 \end{figure}
 
+\subsection{NVIDIA DGX-1}
+\label{sec:topology-dgx1}
+
 \begin{figure}[h]
     \centering
+    \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-dgx1.pdf}
     \caption[\todo{short}]{\todo{long}}
-    \centering
-      \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-dgx1.pdf}
     \label{fig:actual-perf}
 \end{figure}
 
 
+%
+% SECTION
+%
 \section{Link Characterization}
 \label{sec:link-char}
 
-In general, communication link performance 
+After the system graph $G_s$ has been generated, the next task is to characterize the communication capabilities of the system.
+For each pair of vertices, the \todo{software} determines whether direct communication between those vertices is supported.
+Some links, like CPU socket-socket links (e.g., edge ``SMP'' in Figure~\ref{fig:simple-topology}) implicity communicate without direct control from a vendor library or OS component.
+Other links, like CPU-GPU PCIe links (e.g., edge ``PCIe'' in Figure~\ref{fig:simple-topology}), must be directly controlled through a vendor API such as CUDA or OpenCL.
+Some endpoints may also communicate over multiple links (Socket 0 with GPU0 in Figure~\ref{fig:simple-topology}).
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+        cpunode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
+        gpunode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
+        blocknode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
+        ]
+        %Nodes
+        \node[cpunode]   (s0)                  {Socket0};
+        \node[blocknode] (b0)    [below=of s0] {Disk0};
+        \node[cpunode]   (s1)    [right=of s0] {Socket1};
+        \node[gpunode]   (g0)    [below=of s1] {GPU0};
+
+        %Lines
+        \path[-] (s0.east)  edge node [above] {SMP}    (s1.west);
+        \path[-] (s0.south) edge node [left]  {PCIe0}  (b0.north);
+        \path[-] (s1.south) edge node [right] {PCIe1}  (g0.north);
+    \end{tikzpicture}
+    \caption[A simple example topology]{\todo{clean this up}\todo{long caption}}
+    \label{fig:simple-topology}
+\end{figure}
+
+\subsection{Supported Vertex Pairings}
+
+\subsection{CUDA Host-Device with Pinned Memory}
+
+\subsection{CUDA Host-Device with Unified Memory}
+
+\subsection{CUDA Host-Device with Atomics}
+
+\subsection{OpenCL }
+
+\subsection{CPU Socket-Socket}
 
