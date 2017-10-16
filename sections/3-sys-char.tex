@@ -67,46 +67,47 @@ Next, the NVIDIA Management Library~\cite{nvidia2017nvml} (NVML) is used to enum
 Those GPUs are matched by PCI address with previously-discovered PCI devices and information about those GPUs is added to $G_s$.
 NVML is then used to discover whether NVLink is supported on each GPU, and which device the NVLink terminates at.
 Finally, linux block devices are enumerated through \todo{more detail} and added to $G_s$.
+Where applicable, enough information about the device is stored within the vertex to be able to access the device later.
 
 \subsection{Vertex Types}
 \label{sec:system-vertices}
 
-Table~\ref{tab:topology-vertices} summarizes the types of data sources and sinks investigated by this work.
+Table~\ref{tab:topology-vertices} summarizes the discoverable types of data sources and sinks investigated by this work.
 
-This work considers CPU sockets, GPUs, and Linux block storage devices.
 
 \begin{table}[]
     \centering
     \caption[Discoverable vertex types]{\todo{long caption}}
     \label{tab:topology-vertices}
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|c|c|}
     \hline
-    \textbf{Vertex Type}    & \textbf{Short Name} & \textbf{Description} \\ \hline
-    CPU Socket              &                     &                      \\ \hline
-    CUDA GPU                &                     &                      \\ \hline
-    Linux Block Device      &                     &                      \\ \hline
-    Linux Network Interface &                     &                      \\ \hline
-    PCIe Hostbridge         &                     &                      \\ \hline
-    PCIe Bridge             &                     &                      \\ \hline
+    \textbf{Vertex Type}    & \textbf{Description} \\ \hline
+    CPU Socket              &                      \\ \hline
+    PCI Device              &                      \\ \hline
+    PCIe Hostbridge         &                      \\ \hline
+    PCIe Bridge             &                      \\ \hline
+    CUDA GPU                &                      \\ \hline
+    Linux Block Device      &                      \\ \hline
+    Linux Network Interface &                      \\ \hline
     \end{tabular}
 \end{table}
 
 \subsection{Edge Types}
 \label{sec:system-edges}
 
-This work considers PCIe~\todo{cite PCIe}, NVLink\cite{nvidia2017nvlink}, SATA~\todo{cite SATA}, and SMP bus links between CPU sockets.
+In $G_s$, the vertices are connected by the discoverable edge types shown in Table~\ref{tab:topology-edges}.
 
 \begin{table}[]
     \centering
     \caption[Discoverable edge types]{\todo{long caption}}
     \label{tab:topology-edges}
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|c|c|}
     \hline
-    \textbf{Edge Type} & \textbf{Short Name} & \textbf{Description} \\ \hline
-    SMP Bus            &                     &                      \\ \hline
-    PCIe Bus           &                     &                      \\ \hline
-    NVLink             &                     &                      \\ \hline
-    SATA Bus           &                     &                      \\ \hline
+    \textbf{Edge Type} & \textbf{Description} \\ \hline
+    SMP Bus            &                      \\ \hline
+    PCIe Bus           &                      \\ \hline
+    NVLink             &                      \\ \hline
+    SATA Bus           &                      \\ \hline
     \end{tabular}
 \end{table}
 
@@ -119,9 +120,29 @@ This work considers PCIe~\todo{cite PCIe}, NVLink\cite{nvidia2017nvlink}, SATA~\
 \label{sec:link-char}
 
 After the system graph $G_s$ has been generated, the next task is to characterize the communication capabilities of the system.
-For each pair of vertices, the \todo{software} determines whether direct communication between those vertices is supported.
-Some links, like CPU socket-socket links (e.g., edge ``SMP'' in Figure~\ref{fig:simple-topology}) implicity communicate without direct control from a vendor library or OS component.
-Other links, like CPU-GPU PCIe links (e.g., edge ``PCIe'' in Figure~\ref{fig:simple-topology}), must be directly controlled through a vendor API such as CUDA or OpenCL.
+The goal of this characterization is to determine the rate at which data of a particular size can be moved between devices.
+An overview of the characterization algorithm is shown below
+
+\begin{algorithm}[ht]
+    \SetAlgoLined
+    \KwResult{Characterization of all links between all vertices in $G_s$ }
+     Build $G_s$ as described in Section~\ref{sec:topology-exploration}\;
+     \For{$v_1$ in $V$}{
+         \For{$v_2$ in $V$}{
+             \If{$v_1 \ne v_2$}{
+                paths $\gets$ BFS($G_s$, $v_1$, $v_2$)\;
+                \For {$p$ in paths}{
+                    Characterize($p$)\;
+                }
+             }
+         }
+     }
+     \caption{How to write algorithms}
+\end{algorithm}
+
+For each pair of vertices, \todo{hwcomm} executes a breadth-first searh determines whether direct communication between those vertices is supported by the operating system or vendor libraries.
+Some links, like CPU socket-socket links (e.g., edge ``SMP'' in Figure~\ref{fig:simple-topology}) communicate without explicit control from a vendor library or OS component.
+Other links, like CPU-GPU PCIe links (e.g., edge ``PCIe'' in Figure~\ref{fig:simple-topology}), are used by invoking a vendor API such as CUDA or OpenCL.
 Some endpoints may also communicate over multiple links (Socket 0 with GPU0 in Figure~\ref{fig:simple-topology}).
 
 \begin{figure}
@@ -146,17 +167,15 @@ Some endpoints may also communicate over multiple links (Socket 0 with GPU0 in F
     \label{fig:simple-topology}
 \end{figure}
 
-\subsection{Supported Vertex Pairings}
 
-\subsection{CUDA Host-Device with Pinned Memory}
 
-\subsection{CUDA Host-Device with Unified Memory}
+\subsubsection{CUDA \texttt{cudaMemcpy} with Pinned Memory}
+\subsubsection{CUDA \texttt{memcpyPeer}}
+\subsubsection{CUDA Unified Memory}
+\subsubsection{OpenMP Socket to Socket Bandwidth}
 
-\subsection{CUDA Host-Device with Atomics}
+OpenMP \cite{openmp2013}
 
-\subsection{OpenCL }
-
-\subsection{CPU Socket-Socket}
 
 %
 % SECTION
