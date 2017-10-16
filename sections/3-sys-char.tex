@@ -15,7 +15,7 @@ Section~\ref{sec:system-model} describes an overview of the system model.
 Section~\ref{sec:topology-exploration} describes a method for discovering data sources, sinks, and communication paths in a system.
 Section~\ref{sec:link-char} describes the approach to characterize communication links.
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\textwidth,draft]{../figures/actual-cuda-memcpy.png}
     \caption[\todo{short}]{\todo{long}}
@@ -51,7 +51,7 @@ Each vertex in $V$ represents a data source/sink.
 
 The topology exploration is done in several phases:
 
-\begin{minipage}[h]{\textwidth}
+\begin{minipage}[ht]{\textwidth}
 \begin{enumerate}
     \item Enumerate and link CPU sockets
     \item Enumerate PCI devices
@@ -173,22 +173,111 @@ An overview of the characterization algorithm is shown in Algorithm~\ref{alg:lin
 
 For each pair of vertices, \todo{hwcomm} determines whether direct communication between those vertices is supported by the operating system or vendor libraries.
 For vertices with a path of more than one link between them (e.g. Disk0 to Socket1 in Figure~\ref{fig:simple-topology}) those individual links will be characterized separately.
-For vertices with multiple paths between them, the characterized path will be implicity chosen by the applied characterization method.
-
-
-
-
-
-Other links, like CPU-GPU PCIe links (e.g., edge ``PCIe'' in Figure~\ref{fig:simple-topology}), are used by invoking a vendor API such as CUDA or OpenCL.
+For vertices with multiple paths between them, the characterized path will be implicitly chosen by the applied characterization method.
 
 \subsubsection{CUDA \texttt{cudaMemcpy} with Pinned Memory}
+
+This characterization method outlined in Algorithm~\ref{alg:cuda-h2d} is available for paths terminated by a CPU socket and a CUDA GPU.
+It uses pinned memory allocations on the host to have the best chance of fully utilizing the link.
+
+\begin{algorithm}[ht]
+    \SetAlgoLined
+    \KwResult{bandwidth vs. transfer size between socket $s$ and CUDA GPU $g$}
+    bind CPU thread to $s$\;
+    bind memory allocation to $s$\;
+    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
+    socketPool $\gets$ \texttt{cudaMallocHost(poolSize)}\;
+    gpuPool $\gets$ \texttt{cudaMalloc(poolSize)}\;
+    \For{transferSize := $1$ to poolSize}{
+        start $\gets$ wall\_time()\;
+        \eIf{direction == deviceToHost} {
+            \texttt{cudaMemcpy(socketPool, gpuPool, transferSize, cudaMemcpyHostToDevice)}\;
+        }{
+            \texttt{cudaMemcpy(gpuPool, socketPool, transferSize, cudaMemcpyHostToDevice)}\;
+        }
+        stop $\gets$ wall\_time()\;
+        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
+    }
+    \caption{CUDA cudaMemcpy with pinned memory.}
+    \label{alg:cuda-h2d}
+\end{algorithm}
+
+\subsubsection{CUDA \texttt{cudaMemcpy} between CUDA GPUs}
+
+This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for paths terminated by a CUDA GPU on both ends.
+
+\begin{algorithm}[ht]
+    \SetAlgoLined
+    \KwResult{bandwidth vs. transfer size between CUDA GPUs $g_0$ and $g_1$}
+    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
+    gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
+    gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
+    \For{transferSize := $1$ to poolSize}{
+        start $\gets$ wall\_time()\;
+        \texttt{cudaMemcpy(gpu1Pool, gpu0Pool, transferSize, cudaMemcpyDeviceToDevice)}\;
+        stop $\gets$ wall\_time()\;
+        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
+    }
+    \caption{CUDA cudaMemcpy between CUDA GPUs}
+    \label{alg:cuda-d2d}
+\end{algorithm}
+
 \subsubsection{CUDA \texttt{memcpyPeer}}
+
+This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for paths terminated by a CUDA GPU on both ends.
+
+\begin{algorithm}[ht]
+    \SetAlgoLined
+    \KwResult{bandwidth vs. transfer size between CUDA GPUs $g_0$ and $g_1$}
+    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
+    gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
+    gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
+    \For{transferSize := $1$ to poolSize}{
+        start $\gets$ wall\_time()\;
+        \texttt{cudaMemcpyPeer(gpu1Pool, gpu0Pool, transferSize)}\;
+        stop $\gets$ wall\_time()\;
+        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
+    }
+    \caption{CUDA cudaMemcpy between CUDA GPUs}
+    \label{alg:cuda-p2p}
+\end{algorithm}
+
+\todo{The difference between this and cudaMemcpy(cudaMemcpyDeviceToDevice)}
+
 \subsubsection{CUDA Unified Memory}
+
+CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a method for 
+
 \subsubsection{OpenMP Socket to Socket Bandwidth}
 
 The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generating using OpenMP~\cite{openmp2013}.
+This workload creates multiple threads reading remote data in an attempt to saturate the socket memory controllers and SMP bus.
+Algorithm~\ref{alg:h2h} describes the approach.
 
+\begin{algorithm}[ht]
+    \SetAlgoLined
+    \KwResult{bandwidth vs. transfer size between CPU sockets $src$ and $dst$}
+    numThreads $\gets$ 10\;
+    \todo{Choice of elemSize}\;
+    \For{poolSize $\gets$ 128 to sweepFinish} {
+        bind process to $src$\;
+        bind memory allocation to $src$\;
+        \For{tid $\gets$ 0 := numThreads}{
+            regions[tid] $\gets$ alloc(poolSize)\;
+        }
+        bind process to $dst$\;
+        start OpenMP parallel region\;
+        start $\gets$ wall\_time()\;
+        \texttt{sum\_array(region[omp\_get\_thread\_num()]), elemSize}\;
+        stop $\gets$ wall\_time()\;
+        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
+    }
+    \caption{Synthetic workload for testing SMP bus.}
+    \label{alg:h2h}
+\end{algorithm}
 
+\texttt{sum\_array()} is a function used to ensure that every data element is accessed, and the compiler does not optimize out the otherwise unused remote data read.
+\texttt{sum\_array()} adds the elements in the region using loads and accumulates of a desired size.
 
 %
 % SECTION
@@ -197,7 +286,7 @@ The symmetric multi-processing links between CPU sockets are characterized by a 
 
 \subsection{IBM S822LC ``Minsky''}
 \label{sec:topology-minsky}
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-minsky.pdf}
     \caption[\todo{short}]{\todo{long}}
@@ -213,7 +302,7 @@ The first CPU socket hosts the majority of the PCI devices on the system, includ
 \subsection{NVIDIA DGX-1}
 \label{sec:topology-dgx1}
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-dgx1.pdf}
     \caption[\todo{short}]{\todo{long}}
