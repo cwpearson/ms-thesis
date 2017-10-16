@@ -121,29 +121,9 @@ In $G_s$, the vertices are connected by the discoverable edge types shown in Tab
 
 After the system graph $G_s$ has been generated, the next task is to characterize the communication capabilities of the system.
 The goal of this characterization is to determine the rate at which data of a particular size can be moved between devices.
-An overview of the characterization algorithm is shown below
-
-\begin{algorithm}[ht]
-    \SetAlgoLined
-    \KwResult{Characterization of all links between all vertices in $G_s$ }
-     Build $G_s$ as described in Section~\ref{sec:topology-exploration}\;
-     \For{$v_1$ in $V$}{
-         \For{$v_2$ in $V$}{
-             \If{$v_1 \ne v_2$}{
-                paths $\gets$ BFS($G_s$, $v_1$, $v_2$)\;
-                \For {$p$ in paths}{
-                    Characterize($p$)\;
-                }
-             }
-         }
-     }
-     \caption{How to write algorithms}
-\end{algorithm}
-
-For each pair of vertices, \todo{hwcomm} executes a breadth-first searh determines whether direct communication between those vertices is supported by the operating system or vendor libraries.
-Some links, like CPU socket-socket links (e.g., edge ``SMP'' in Figure~\ref{fig:simple-topology}) communicate without explicit control from a vendor library or OS component.
-Other links, like CPU-GPU PCIe links (e.g., edge ``PCIe'' in Figure~\ref{fig:simple-topology}), are used by invoking a vendor API such as CUDA or OpenCL.
-Some endpoints may also communicate over multiple links (Socket 0 with GPU0 in Figure~\ref{fig:simple-topology}).
+Ideally, this characterization would occur on a per-link basis along each available path between two communicating devices.
+In practice, the communication between many devices is mediated by APIs exposed by the operating system or vendor library.
+These APIs abstract away some complexity from the data movement.
 
 \begin{figure}
     \centering
@@ -167,14 +147,47 @@ Some endpoints may also communicate over multiple links (Socket 0 with GPU0 in F
     \label{fig:simple-topology}
 \end{figure}
 
+For example, consider the simple example system topology in Figure~\ref{fig:simple-topology}.
+If a CPU thread running on CPU1 calls \texttt{fread()} to move a block of data from Disk0 to the memory associated with CPU1, the OS will transparently move that data along the PCIe0 and SMP0 links.
+Since this capability is exposed to applications, it is useful to characterize it as well, not just the intermediate PCIe0 and SMP links.
 
+An overview of the characterization algorithm is shown in Algorithm~\ref{alg:link-char}.
+
+\begin{algorithm}[ht]
+    \SetAlgoLined
+    \KwResult{Characterization of all links between all vertices in $G_s$ }
+     Build $G_s$ as described in Section~\ref{sec:topology-exploration}\;
+     \For{$v_1$ in $V$}{
+         \For{$v_2$ in $V$}{
+             \If{$v_1 \ne v_2$}{
+                Chars $\gets$ SupportedCharacterizers($v_1$,$v_2$)\;
+                \For{c in Chars} {
+                    c($v_1$, $v_2$)\;
+                }
+             }
+         }
+     }
+     \caption{Link characterization.}
+     \label{alg:link-char}
+\end{algorithm}
+
+For each pair of vertices, \todo{hwcomm} determines whether direct communication between those vertices is supported by the operating system or vendor libraries.
+For vertices with a path of more than one link between them (e.g. Disk0 to Socket1 in Figure~\ref{fig:simple-topology}) those individual links will be characterized separately.
+For vertices with multiple paths between them, the characterized path will be implicity chosen by the applied characterization method.
+
+
+
+
+
+Other links, like CPU-GPU PCIe links (e.g., edge ``PCIe'' in Figure~\ref{fig:simple-topology}), are used by invoking a vendor API such as CUDA or OpenCL.
 
 \subsubsection{CUDA \texttt{cudaMemcpy} with Pinned Memory}
 \subsubsection{CUDA \texttt{memcpyPeer}}
 \subsubsection{CUDA Unified Memory}
 \subsubsection{OpenMP Socket to Socket Bandwidth}
 
-OpenMP \cite{openmp2013}
+The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generating using OpenMP~\cite{openmp2013}.
+
 
 
 %
@@ -190,6 +203,12 @@ OpenMP \cite{openmp2013}
     \caption[\todo{short}]{\todo{long}}
     \label{fig:actual-perf}
 \end{figure}
+
+The IMB ``Minsky'' machine consists of two isomorphic sections, connected by an IBM X bus between two 10-core Power8+ CPUs with 8-way simultaneous multithreading (SMT).
+Each CPU is connected to 256GB of \todo{DDR4} RAM.
+Each CPU is also connected to two NVIDIA Tesla P100 GPUs by two NVLink blocks.
+Those P100s within the isomorphic section are also connected to each other by two NVLink blocks.
+The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
 
 \subsection{NVIDIA DGX-1}
 \label{sec:topology-dgx1}
