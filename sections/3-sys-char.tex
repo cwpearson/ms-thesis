@@ -49,23 +49,24 @@ Each vertex in $V$ represents a data source/sink.
 \section{Topology Exploration}
 \label{sec:topology-exploration}
 
-Using hwloc~\cite{broquedis2010hwloc} and NVML~\cite{nvidia2017nvml}.
-
-The topology exploration is done in several phases, show in Listing~\ref{lst:topology-exploration}.
-First, the Portable Hardware Locality~\cite{broquedis2010hwloc} (hwloc) library is used to enumerate the present CPU sockets.
-
+The topology exploration is done in several phases:
 
 \begin{minipage}[h]{\textwidth}
-\begin{lstlisting}[caption={My Caption},captionpos=b,label=lst:topology-exploration]
-    Search for CPU sockets
-    Link CPU sockets
-    Search PCIe device tree
-    Search for NVIDIA GPUs
-    Search for NVLinks
-    Search for Linux block devices
-\end{lstlisting}
+\begin{enumerate}
+    \item Enumerate and link CPU sockets
+    \item Enumerate PCI devices
+    \item Update GPUs to NVIDIA GPUs as appropriate
+    \item Enumerate Linux block devices
+\end{enumerate}
 \end{minipage}
 
+First, the Portable Hardware Locality~\cite{broquedis2010hwloc} (hwloc) library is used to enumerate the present CPU sockets.
+As the test systems only have two sockets, all discovered sockets are considered to be directly connected by an SMP bus.
+Next, hwloc is used to descend through the PCI device tree and connect all PCI devices with PCI links of the appropriate type.
+Next, the NVIDIA Management Library~\cite{nvidia2017nvml} (NVML) is used to enumerate all NVIDIA GPUs.
+Those GPUs are matched by PCI address with previously-discovered PCI devices and information about those GPUs is added to $G_s$.
+NVML is then used to discover whether NVLink is supported on each GPU, and which device the NVLink terminates at.
+Finally, linux block devices are enumerated through \todo{more detail} and added to $G_s$.
 
 \subsection{Vertex Types}
 \label{sec:system-vertices}
@@ -109,27 +110,6 @@ This work considers PCIe~\todo{cite PCIe}, NVLink\cite{nvidia2017nvlink}, SATA~\
     \end{tabular}
 \end{table}
 
-
-\section{Topology Case Studies}
-
-\subsection{IBM S822LC ``Minsky''}
-\label{sec:topology-minsky}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-minsky.pdf}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:actual-perf}
-\end{figure}
-
-\subsection{NVIDIA DGX-1}
-\label{sec:topology-dgx1}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-dgx1.pdf}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:actual-perf}
-\end{figure}
 
 
 %
@@ -178,3 +158,26 @@ Some endpoints may also communicate over multiple links (Socket 0 with GPU0 in F
 
 \subsection{CPU Socket-Socket}
 
+%
+% SECTION
+%
+\section{System Characterization Case Studies}
+
+\subsection{IBM S822LC ``Minsky''}
+\label{sec:topology-minsky}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-minsky.pdf}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:actual-perf}
+\end{figure}
+
+\subsection{NVIDIA DGX-1}
+\label{sec:topology-dgx1}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-dgx1.pdf}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:actual-perf}
+\end{figure}
