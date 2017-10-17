@@ -66,21 +66,28 @@ The interface with the CPU through a specialized vendor API, require separate to
             shorten >=2pt,}
         ]
 
+
+        \pgfmathsetmacro{\rt}{1} % thickness
+        \pgfmathsetmacro{\rs}{0.2} % spacing
+
+        \pgfmathsetmacro\ra{\rs}
+        \pgfmathsetmacro\rb{\ra+\rt+\rs}
+        \pgfmathsetmacro\rc{\rb+\rt+\rs}
+
+
         \draw[thick,<->] (0,0) node[anchor=north east] {Integrated} -- (10,0) node[anchor=north west] {Discrete};
 
-        \draw[fill=gray] (0,0.2) rectangle (1,1.2);
-        \node [above] at (0.5, 1.2) {IEEE \newline 754};
+        \draw[fill=gray] (0,\ra) rectangle (1,\ra+\rt);
+        \node [above] at (1, \ra+0.25\rt) {IEEE 754};
 
-        \shade[left color=white, right color=gray] (0,0.2) rectangle (1,1.2);
-        \shade[left color=gray, right color=white] (1,0.2) rectangle (2,1.2);
-        \node [above] at (1, 1.2) {SIMD extensions};
+        \shade[left color=black, right color=white] (0,\rb) rectangle (2,\rb+\rt);
+        \node [above] at (3, \rb+0.25\rt) {SIMD extensions};
 
-        \draw[fill=gray] (2,0.2) rectangle (4,1.2);
-        \node [above] at (3, 1.2) {DSPs};
+        \draw[fill=gray] (3,\ra) rectangle (10,\ra+\rt) node[pos=0.5] {DPSs};
 
-        \draw[fill=gray] (5,0.2) rectangle (10,1.2);
-        \node [above] at (7.5, 1.2) {GPUs};
+        \draw[fill=gray] (5,\rb) rectangle (10,\rb+\rt) node[pos=0.5] {GPUs};
 
+        \draw[fill=gray] (7,\rc) rectangle (10,\rc+\rt) node[pos=0.5] {FPGAs};
 
     \end{tikzpicture}
     \caption{NVIDIA DGX-1 simple topology.}
