@@ -246,7 +246,9 @@ This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is availab
 
 \subsubsection{CUDA Unified Memory}
 
-CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a method for 
+CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
+CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
+This simplifies the programming model.
 
 \subsubsection{OpenMP Socket to Socket Bandwidth}
 
@@ -268,7 +270,7 @@ Algorithm~\ref{alg:h2h} describes the approach.
         bind process to $dst$\;
         start OpenMP parallel region\;
         start $\gets$ wall\_time()\;
-        \texttt{sum\_array(region[omp\_get\_thread\_num()]), elemSize}\;
+        \texttt{sum\_array(region[omp\_get\_thread\_num(), elemSize])}\;
         stop $\gets$ wall\_time()\;
         bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
     }
@@ -284,27 +286,53 @@ Algorithm~\ref{alg:h2h} describes the approach.
 %
 \section{System Characterization Case Studies}
 
-\subsection{IBM S822LC ``Minsky''}
-\label{sec:topology-minsky}
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-minsky.pdf}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:actual-perf}
-\end{figure}
-
-The IMB ``Minsky'' machine consists of two isomorphic sections, connected by an IBM X bus between two 10-core Power8+ CPUs with 8-way simultaneous multithreading (SMT).
+The IMB ``Minsky'' machine consists of two symmetric sections, connected by an IBM X bus between two 10-core Power8+ CPUs with 8-way simultaneous multithreading (SMT).
 Each CPU is connected to 256GB of \todo{DDR4} RAM.
 Each CPU is also connected to two NVIDIA Tesla P100 GPUs by two NVLink blocks.
 Those P100s within the isomorphic section are also connected to each other by two NVLink blocks.
 The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
+Figures~\ref{fig:topology-minsky-actual} and \ref{fig:topology-minsky-simple} shows the topology discovered by \todo{hwcomm}.
+
+\subsection{IBM S822LC ``Minsky''}
+\label{sec:topology-minsky}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{figures/topo-minsky-actual.png}
+    \caption{IBM ``Minsky'' discovered topology.}
+    \label{fig:topology-minsky-actual}
+\end{figure}
+
+\subsection{IBM S822LC ``Minsky''}
+\label{sec:topology-minsky}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth,draft]{figures/topo-minsky-simple.png}
+    \caption{IBM ``Minsky'' simplified topology.}
+    \label{fig:topology-minsky-simplified}
+\end{figure}
+
 
 \subsection{NVIDIA DGX-1}
 \label{sec:topology-dgx1}
 
+The NVIDIA DGX-1~\cite{nvidia2016dgx1} machine consists of two symmetric sections.
+Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
+Each CPU is connected to 256GB of DDR4 RAM.
+Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
+The sections are connected by an Intel QPI bus between the CPUs, as well as NVLinks between corresponding GPUs.
+The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
+Figures~\ref{fig:topo-dgx-actual} and \ref{fig:topo-dgx-simple} show the topology discovered by \todo{hwcomm}.
+
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\textwidth,draft]{../figures/explore-topo-dgx1.pdf}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:actual-perf}
+    \includegraphics[width=\textwidth]{figures/topo-dgx1-actual.png}
+    \caption{NVIDIA DGX-1 discovered toplogy.}
+    \label{fig:topo-dgx-actual}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth,draft]{figures/topo-dgx1-simple.png}
+    \caption{NVIDIA DGX-1 simple topology.}
+    \label{fig:topo-dgx-simple}
 \end{figure}
