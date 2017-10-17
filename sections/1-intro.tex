@@ -1,28 +1,47 @@
 
 \chapter{Introduction}
-Add a citation~\cite{IEEEexample:urlsty} to make the build not fail.
-
-The first chapter should introduce the problem studied and describe the main results obtained in the thesis.
-In order to provide guidance to the reader, the first chapter should briefly describe the organization of the rest of the thesis.
-The first chapter can also give the background of previous work on the subject and the method used in attacking the problem.
 
 \outline{
-
+    The first chapter should introduce the problem studied and describe the main results obtained in the thesis.
+    In order to provide guidance to the reader, the first chapter should briefly describe the organization of the rest of the thesis.
+    The first chapter can also give the background of previous work on the subject and the method used in attacking the problem.
 }
 
+With the end of Dennard scaling, computer architects have sough to satisfy demand for increasing performance by providing specialized hardware accelerators tuned to computation with particular characteristics.
+Perhaps the most successful examples of this trend is the uniform adoption and IEEE 754 specification of floating-point hardware, and widespread adoption of graphics processing units (GPUs) for more general data-parallel compute tasks.
+With the success of GPUs as a template, architects are moving forward with a wide variety of specialized processors, such as
+SIMD extensions~\todo{cite NEON, SSE, AVX},
+AI accelerators~\todo{google tpu, huawei neural processing unit, ibm neuromorphic},
+motion coprocessors~\todo{cite apple},
+field-programmable gate arrays (FPGAs)~\todo{cite Intel, Xilinx}
+network processors~\todo{cite intel ixp, netronome},
+digital signal processors~\todo{cite google pixel2},
+vision processing units~\todo{cite movidius, microsoft, mobilieye, MIT},
+and many others.
 
-\outline{
-    Determining 
+The degree to which these accelerators are integrated with the system varies.
+Floating-point accelerators are fully integrated: they are part of the core instruction-set architecture, have first-class access to system memory, and are supported without specialized toolchains or programming systems.
+GPUs vary from partially-integrated to discrete: when a GPU is integrated on the same die as the CPU, it may share the same physical memory, but the computation model remains for compute tasks to be ``offloaded'' to the GPU, with the CPU managing the execution.
+Many GPUs, and the rest of the accelerators, are entirely discrete.
+The interface with the CPU through a specialized vendor API, require separate toolchains and programming systems for compilation, and require explicit programmer effort to use their capabilities.
 
-    \begin{enumerate}
-        \item{item1}
-    \end{enumerate}
-}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth,draft]{figures/integration-spectrum.png}
+    \caption{Spectrum of system integration of accelerators. FLoating-point on the left, simd middle-left, some DSPs center, GPUs center to right, everything else on the right.}
+    \label{fig:integration-spectrum}
+\end{figure}
 
-The rest of this document has the following structure.
-Chapter 2 describes background and related work.
-Chapter 3 describes the hardware system characterization approach.
-Chapter 4 describes the application characterization approach.
-Chapter 5 describes the methodology for combining the system and application characterization to understand application performance.
-Chapter 6 discusses related work.
-Finally, chapter 7 concludes.
+\outline{effort of management}
+
+\outline{big data as a motivation, importance of communication}
+
+\outline{work addresses both}
+
+The rest of this document is organized as follows:
+chapter 2 describes background and related work;
+chapter 3 describes the hardware system characterization approach;
+chapter 4 describes the application characterization approach;
+chapter 5 describes the methodology for combining the system and application characterization to understand application performance;
+chapter 6 discusses related work;
+and finally, chapter 7 concludes.
