@@ -32,6 +32,29 @@ The interface with the CPU through a specialized vendor API, require separate to
     \label{fig:integration-spectrum}
 \end{figure}
 
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+        nodestyle/.style={},
+        linestyle/.style={
+            <->, draw=red!60,
+            very thick,
+            shorten <=2pt,
+            shorten >=2pt,}
+        ]
+        %Nodes
+        \node[nodestyle] (n0) {Integrated};
+        \node[nodestyle] (n1) [right=of n0] {Discrete}
+         edge[linestyle] (n0.east);
+
+        %Lines
+        % \path (n0.east) edge [linestyle] node [above] {}    (n1.west);
+
+    \end{tikzpicture}
+    \caption{NVIDIA DGX-1 simple topology.}
+    \label{fig:topo-dgx-simple}
+\end{figure}
+
 \outline{effort of management}
 
 \outline{big data as a motivation, importance of communication}
