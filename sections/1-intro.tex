@@ -37,7 +37,7 @@ The interface with the CPU through a specialized vendor API, require separate to
     \begin{tikzpicture}[
         nodestyle/.style={},
         linestyle/.style={
-            <->, draw=red!60,
+            <->,
             very thick,
             shorten <=2pt,
             shorten >=2pt,}
@@ -49,6 +49,38 @@ The interface with the CPU through a specialized vendor API, require separate to
 
         %Lines
         % \path (n0.east) edge [linestyle] node [above] {}    (n1.west);
+
+    \end{tikzpicture}
+    \caption{NVIDIA DGX-1 simple topology.}
+    \label{fig:topo-dgx-simple}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+        nodestyle/.style={},
+        linestyle/.style={
+            <->,
+            very thick,
+            shorten <=2pt,
+            shorten >=2pt,}
+        ]
+
+        \draw[thick,<->] (0,0) node[anchor=north east] {Integrated} -- (10,0) node[anchor=north west] {Discrete};
+
+        \draw[fill=gray] (0,0.2) rectangle (1,1.2);
+        \node [above] at (0.5, 1.2) {IEEE \newline 754};
+
+        \shade[left color=white, right color=gray] (0,0.2) rectangle (1,1.2);
+        \shade[left color=gray, right color=white] (1,0.2) rectangle (2,1.2);
+        \node [above] at (1, 1.2) {SIMD extensions};
+
+        \draw[fill=gray] (2,0.2) rectangle (4,1.2);
+        \node [above] at (3, 1.2) {DSPs};
+
+        \draw[fill=gray] (5,0.2) rectangle (10,1.2);
+        \node [above] at (7.5, 1.2) {GPUs};
+
 
     \end{tikzpicture}
     \caption{NVIDIA DGX-1 simple topology.}
