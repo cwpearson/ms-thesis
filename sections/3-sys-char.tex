@@ -11,6 +11,8 @@ With full knowledge of link properties it is possible to derive an accurate mode
     \item Even if a link is pysically present on the system, it may not be available to the application {e.g., due to bugs in the system configuration}
 \end{itemize}
 Instead of deriving a model of link performance from the ``first principles'' of link properties, this work attempts to generate an empirical model of performance of data movement in the system.
+
+Though data movement between many different system components is possible, this work focuses on CPU-CPU and CPU-GPU data transfers.
 Section~\ref{sec:system-model} describes an overview of the system model.
 Section~\ref{sec:topology-exploration} describes a method for discovering data sources, sinks, and communication paths in a system.
 Section~\ref{sec:link-char} describes the approach to characterize communication links.
@@ -178,7 +180,8 @@ For vertices with multiple paths between them, the characterized path will be im
 \subsubsection{CUDA \texttt{cudaMemcpy} with Pinned Memory}
 
 This characterization method outlined in Algorithm~\ref{alg:cuda-h2d} is available for paths terminated by a CPU socket and a CUDA GPU.
-It uses pinned memory allocations on the host to have the best chance of fully utilizing the link.
+A pinned memory allocation on the host and corresponding GPU memory allocation on the GPU are established.
+Bandwidth betwene host and devices achieved at various transfer sizes is established by copying various amounts of data between the memory allocations.
 
 \begin{algorithm}[ht]
     \SetAlgoLined
@@ -205,6 +208,8 @@ It uses pinned memory allocations on the host to have the best chance of fully u
 \subsubsection{CUDA \texttt{cudaMemcpy} between CUDA GPUs}
 
 This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for paths terminated by a CUDA GPU on both ends.
+A GPU memory allocation is established on each GPU.
+Bandwidth between GPUs achieved at various transfer sizes is established by copying various amounts of data between the memory allocations.
 
 \begin{algorithm}[ht]
     \SetAlgoLined
@@ -225,6 +230,8 @@ This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is availab
 \subsubsection{CUDA \texttt{memcpyPeer}}
 
 This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for paths terminated by a CUDA GPU on both ends.
+A GPU memory allocation is established on each GPU.
+Bandwidth between GPUs achieved at various transfer sizes is established by copying various amounts of data between the memory allocations.
 
 \begin{algorithm}[ht]
     \SetAlgoLined
@@ -246,13 +253,22 @@ This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is availab
 
 \subsubsection{CUDA Unified Memory}
 
-CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
-CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
-This simplifies the programming model.
+This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for path terminated by CUDA-supported devices on both ends.
+A single unified memory allocation is established, and the entire allocation is touched by the source device to ensure the data is resident on that device.
+Bandwidth between devices under various access patterns is established by executing a kernel with the corresponding pattern on the destination device.
+
+\textbf{Linear Pattern}
+
+\todo{description}
+
+\textbf{Random Pattern}
+
+\todo{description}
+
 
 \subsubsection{OpenMP Socket to Socket Bandwidth}
 
-The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generating using OpenMP~\cite{openmp2013}.
+The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generated using OpenMP~\cite{openmp2013}.
 This workload creates multiple threads reading remote data in an attempt to saturate the socket memory controllers and SMP bus.
 Algorithm~\ref{alg:h2h} describes the approach.
 
@@ -286,49 +302,39 @@ Algorithm~\ref{alg:h2h} describes the approach.
 %
 \section{System Characterization Case Studies}
 
+The system characterization was executed on two high-performance heterogeneous systems: an IBM S822LC ``Minsky''~\cite{ibm2015minsky}, and an NVIDIA DGX-1~\cite{nvidia2016dgx1}.
+The two systems both feature 512 GB of system memory, two multi-core GPUs, and multiple NVIDIA Tesla P100 GPUs.
+Their key differences are in CPU architecture (ppc64le for ``Minsky'', x86-64 for DGX-1), number of GPUs (4 vs 8), and GPU connection topology (bonded NVLink vs hybrid PCIe/NVLink).
+
+\subsection{IBM S822LC ``Minsky''}
+\label{sec:topology-minsky}
+
 The IMB ``Minsky'' machine consists of two symmetric sections, connected by an IBM X bus between two 10-core Power8+ CPUs with 8-way simultaneous multithreading (SMT).
-Each CPU is connected to 256GB of \todo{DDR4} RAM.
-Each CPU is also connected to two NVIDIA Tesla P100 GPUs by two NVLink blocks.
-Those P100s within the isomorphic section are also connected to each other by two NVLink blocks.
-The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
-Figures~\ref{fig:topology-minsky-actual} and \ref{fig:topology-minsky-simple} shows the topology discovered by \todo{hwcomm}.
+Each CPU is connected to 256GB of DDR3 RAM.
+Each CPU is also connected to two NVIDIA Tesla P100 GPUs by two bonded NVLink blocks.
+Those P100s within the symmetric section are also connected to each other by two bonded NVLinks.
+The second CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
+Figures~\ref{fig:topo-minsky-actual} and \ref{fig:topo-minsky-simple} shows the topology discovered by \todo{hwcomm}.
 
-\subsection{IBM S822LC ``Minsky''}
-\label{sec:topology-minsky}
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{figures/topo-minsky-actual.png}
-    \caption{IBM ``Minsky'' discovered topology.}
-    \label{fig:topology-minsky-actual}
-\end{figure}
 
-\subsection{IBM S822LC ``Minsky''}
-\label{sec:topology-minsky}
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth,draft]{figures/topo-minsky-simple.png}
     \caption{IBM ``Minsky'' simplified topology.}
-    \label{fig:topology-minsky-simplified}
+    \label{fig:topo-minsky-simple}
 \end{figure}
 
 
 \subsection{NVIDIA DGX-1}
 \label{sec:topology-dgx1}
 
-The NVIDIA DGX-1~\cite{nvidia2016dgx1} machine consists of two symmetric sections.
+The NVIDIA DGX-1 machine consists of two symmetric sections.
 Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
 Each CPU is connected to 256GB of DDR4 RAM.
 Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
 The sections are connected by an Intel QPI bus between the CPUs, as well as NVLinks between corresponding GPUs.
 The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
 Figures~\ref{fig:topo-dgx-actual} and \ref{fig:topo-dgx-simple} show the topology discovered by \todo{hwcomm}.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{figures/topo-dgx1-actual.png}
-    \caption{NVIDIA DGX-1 discovered toplogy.}
-    \label{fig:topo-dgx-actual}
-\end{figure}
 
 \begin{figure}[ht]
     \centering

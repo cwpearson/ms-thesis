@@ -11,6 +11,7 @@
 \makeatletter
 
 \usepackage{algorithm2e}
+\usepackage[page]{appendix}
 \usepackage{setspace}
 \usepackage{epsfig}  % for figures
 %\usepackage{graphicx}  % another package that works for figures
@@ -178,7 +179,9 @@ To my family, for their love and support.
 % APPENDIX
 %
 \appendix
-%\include{apx}
+\begin{appendices}
+\include{sections/a-full-topos}
+\end{appendices}
 
 \backmatter
 
