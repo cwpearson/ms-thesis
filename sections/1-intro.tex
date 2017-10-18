@@ -72,11 +72,11 @@ GPUs vary from partially-integrated to discrete: when a GPU is integrated on the
 Thanks to \todo{fundamental physical challenges}, accelerators require memories close to their high-performance specialized compute elements.
 Without these memories to ``feed the beast'', the performance of the accelerator would be severely limited by its link to the host memory.
 For discrete-type accelerators, moving data into accelerator memory to support high-performance execution is a first-order developer challenge.
-This challenge is exacerbated by a trend in data-driven applications.
 This work lays the foundation for mitigating the data-placement challenge and reducing developer effort.
 
-\outline{big data as a motivation, importance of communication}
-
+The data-placement and data-movement challenge is exacerbated by the growing demand for data-driven applications.
+Analytics and neural-network applications ingest huge amounts of data, and even if the amount of compute per data element is small, the aggregate required computation can be commensurately large.
+That motivates developers to use accelerators for these applications.
 
 \outline{work addresses both}
 

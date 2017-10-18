@@ -7,9 +7,15 @@ addons:
       - pgf
       - texlive-full
 
+sudo: required
+
+services:
+  - docker
+
 install:
 
 script:
+  - docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data cwpearson/latex:full pdflatex ecethesis.tex
   - make
   - mkdir -p latest
   - cp ecethesis.pdf latest/ecethesis_$TRAVIS_BRANCH.pdf
