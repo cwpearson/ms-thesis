@@ -74,11 +74,16 @@ Without these memories to ``feed the beast'', the performance of the accelerator
 For discrete-type accelerators, moving data into accelerator memory to support high-performance execution is a first-order developer challenge.
 This work lays the foundation for mitigating the data-placement challenge and reducing developer effort.
 
+\todo{cognitive computing apps as a motivating example}
+
 The data-placement and data-movement challenge is exacerbated by the growing demand for data-driven applications.
 Analytics and neural-network applications ingest huge amounts of data, and even if the amount of compute per data element is small, the aggregate required computation can be commensurately large.
 That motivates developers to use accelerators for these applications.
+To achieve high performance on accelerators, developers must marshal and coordinate their data movement and computation.
 
-\outline{work addresses both}
+Any automated solution to this problem will require a detailed characterization of the underlying heterogeneous system and its data movement capabilities.
+This work demonstrates a systematic heterogeneous system communication characterization.
+Furthermore, it presents a systematic method for analyzing applications to determine how their performance is influenced by heterogeneous systems.
 
 The rest of this document is organized as follows:
 chapter 2 describes background and related work;
