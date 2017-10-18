@@ -323,26 +323,27 @@ Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref
         cpunode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
         gpunode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
         blocknode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        nvlink/.style={double distance=3pt},
+        nvlink/.style={>={latex[length=10pt]}, <->, very thick, double distance=2pt, shorten <=2pt, shorten >=2pt},
+        smp/.style={>={latex[length=10pt]}, <->, very thick, double distance=2pt, shorten <=2pt, shorten >=2pt},
         ]
         %Nodes
         \node[cpunode]   (s0)                  {Socket0};
-        \node[cpunode]   (s1)    [right=of s0] {Socket1};
-        \node[gpunode]   (g0)    [below=of s0] {GPU0};
-        \node[gpunode]   (g1)    [left=of g0]  {GPU1};
-        \node[gpunode]   (g2)    [below=of s1] {GPU2};
-        \node[gpunode]   (g3)    [right=of g2] {GPU3};
+        \node[cpunode]   (s1)    [right=4cm of s0] {Socket1};
+        \node[gpunode]   (g0)    [below=2cm of s0] {GPU0};
+        \node[gpunode]   (g1)    [left=2cm of g0]  {GPU1};
+        \node[gpunode]   (g2)    [below=2cm of s1] {GPU2};
+        \node[gpunode]   (g3)    [right=2cm of g2] {GPU3};
 
         %Lines
-        \path[-] (s0.east)  edge node [above] {SMP}    (s1.west);
+        \path[] (s0.east)  edge [smp] node [above] {SMP}    (s1.west);
 
-        \path[<->] (s0.south) edge [nvlink] node [left]  {NVLink}  (g0.north);
-        \path[<->] (s0.west)  edge [nvlink] node [left]  {NVLink}  (g1.north);
-        \path[<->] (g0.west)  edge [nvlink] node [below] {NVLink}  (g1.east);
+        \path[] (s0.south) edge [nvlink] node [left]  {NVLink}  (g0.north);
+        \path[] (s0.west)  edge [nvlink] node [left]  {NVLink}  (g1.north);
+        \path[] (g0.west)  edge [nvlink] node [below] {NVLink}  (g1.east);
 
-        \path[<->] (s1.south) edge [nvlink] node [left]  {NVLink}  (g2.north);
-        \path[<->] (s1.east)  edge [nvlink] node [right] {NVLink}  (g3.north);
-        \path[<->] (g2.east)  edge [nvlink] node [below] {NVLink}  (g3.west);
+        \path[] (s1.south) edge [nvlink] node [left]  {NVLink}  (g2.north);
+        \path[] (s1.east)  edge [nvlink] node [right] {NVLink}  (g3.north);
+        \path[] (g2.east)  edge [nvlink] node [below] {NVLink}  (g3.west);
     \end{tikzpicture}
     \caption{IBM ``Minsky'' simplified topology.}
     \label{fig:topo-minsky-simple}
