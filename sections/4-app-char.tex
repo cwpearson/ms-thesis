@@ -1,9 +1,16 @@
 \chapter{Application Characterization}
 
-Without a characterization application components and their communication patterns, the system characterization has limited utility.
+
+Directly analogous to the hardware model, this work models applications as a collection of communicating data sources and sinks (endpoints).
+This facilitates the performance modeling, described in Chapter~\ref{ch:performance}.
+Through it may be possible to generate such application models by hand, in general, this approach is not feasible for complicated applications.
+Furthermore, applications are frequently updated, which could require a new model.
+This work proposes an approach for automatically generating these application models.
 
 
 \section{Application Model}
+
+This work views applications as a collection of communicating data sources and data sinks.
 
 The application is represented by a graph $G_a = \{E_a,V_a\}$ where $E_a$ is a set of edges representing data transfer, and $V_a$ is a set of vertices representing separate compute processes.
 $v_a \in V_a$ is considered to be a GPU CUDA stream or CPU operating system process.
@@ -17,15 +24,38 @@ $e_a \in E_a$ is an edge with a set of transfers defined by
 
 \section{Application Monitoring}
 
+
+
 A custom application trace is generated during an application execution to build the application graph.
 \todo{apptracer} is built on top of CUDA Profiling Tools Interface~\cite{nvidia2017cupti}(CUPTI) and the Linux \texttt{LD\_PRELOAD}~\cite{kerrisk2017ld} mechanism.
 CUPTI allows \todo{apptracer} to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \todo{apptracer} to collect any performance metrics the GPU exposes.
 The callback function records relevant information, including the wall time when the CUDA runtime function is invoked, its arguments, and the device and stream associated with the call.
 In this way, detailed information about data transfers from runtime functions can be collected.
 
+\begin{table}[h]
+    \centering
+    \caption{\todo{caption}}
+    \label{tab:graph-comparison}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Graph Component} & \multicolumn{2}{|c|}{\textbf{Meaning in Graph}}   \\ \hline
+                             & $\bm{G_a}$    & $\bm{G_s}$                        \\ \hline \hline
+    \textbf{Vertex}          & Data source or sink & compute or storage hardware \\ \hline
+    \textbf{Edge}            & Data transfer & communication link                \\ \hline
+    \end{tabular}
+\end{table}
+
 Additionally, conservative data consumption and generation from CUDA kernels can be inferred.
 Any arguments that point to previously-recorded allocations are assumed to modify that allocation.
 \todo{through monitoring the device metrics, it is possible to understand how much data is read and written through those pointers in aggregate.}
+
+
+
+\subsection{Communication Link Traffic}
+
+\outline{PCI traffic}
+
+\outline{NVLink traffic}
 
 \section{Application Modeling Case Studies}
 \subsection{Chai}

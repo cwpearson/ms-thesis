@@ -1,5 +1,23 @@
 \chapter{Performance Modeling}
+\label{ch:performance}
 
 \section{Methodology}
+
+The system graph $G_s$ and the application graph $G_a$ have analogous structure, summarized in Table~\ref{tab:graph-comparison}.
+
+\begin{table}[h]
+    \centering
+    \caption{Analogous graph component roles in $G_a$ and $G_s$.}
+    \label{tab:graph-comparison}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Graph Component} & \multicolumn{2}{|c|}{\textbf{Meaning in Graph}}   \\ \hline
+                             & $\bm{G_a}$    & $\bm{G_s}$                        \\ \hline \hline
+    \textbf{Vertex}          & Data source or sink & compute or storage hardware \\ \hline
+    \textbf{Edge}            & Data transfer & communication link                \\ \hline
+    \end{tabular}
+\end{table}
+
+
 
 \section{\{Minsky, DGX\} $\times$ \{Applications\}}
