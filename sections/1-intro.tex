@@ -10,13 +10,13 @@
 With the end of Dennard scaling, computer architects have sough to satisfy demand for increasing performance by providing specialized hardware accelerators tuned to computation with particular characteristics.
 Perhaps the most successful examples of this trend is the uniform adoption and IEEE 754 specification of floating-point hardware, and widespread adoption of graphics processing units (GPUs) for more general data-parallel compute tasks.
 With the success of GPUs as a template, architects are moving forward with a wide variety of specialized processors, such as
-SIMD extensions~\todo{cite NEON, SSE, AVX},
-AI accelerators~\todo{google tpu, huawei neural processing unit, ibm neuromorphic, intel nervana},
+SIMD extensions~\cite{intel2017avx, matz2013sse, arm2017neon},
+AI accelerators (Google tensor processing unit~\cite{jouppi2017datacenter}, Huawei Neural Processing Unit~\cite{huawei2017kirin} IBM neuromorphic chips~\cite{merolla2014million}, Intel Nervana~\cite{intel2017nervana}),
 motion coprocessors~\todo{cite apple},
 field-programmable gate arrays (FPGAs)~\todo{cite Intel, Xilinx}
 network processors~\todo{cite intel ixp, netronome},
 digital signal processors~\todo{cite google pixel2},
-vision processing units~\todo{cite movidius, microsoft, mobilieye, MIT},
+vision processing units (Eyeriss~\cite{chen2017eyeriss} ~\todo{cite movidius, microsoft, mobilieye}),
 and many others.
 
 The degree to which these accelerators are integrated with the host system varies.
