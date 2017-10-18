@@ -1,12 +1,31 @@
 \chapter{Application Characterization}
 
+Without a characterization application components and their communication patterns, the system characterization has limited utility.
+
+
 \section{Application Model}
 
-Graph $G_a$...
+The application is represented by a graph $G_a = \{E_a,V_a\}$ where $E_a$ is a set of edges representing data transfer, and $V_a$ is a set of vertices representing separate compute processes.
+$v_a \in V_a$ is considered to be a GPU CUDA stream or CPU operating system process.
+$e_a \in E_a$ is an edge with a set of transfers defined by
+\begin{enumerate}
+    \item start time
+    \item stop time
+    \item transfer size
+\end{enumerate}
+\todo{What to do better here.}
 
 \section{Application Monitoring}
 
-Using CUPTI~\cite{nvidia2017cupti} and \texttt{LD\_PRELOAD}~\cite{kerrisk2017ld}.
+A custom application trace is generated during an application execution to build the application graph.
+\todo{apptracer} is built on top of CUDA Profiling Tools Interface~\cite{nvidia2017cupti}(CUPTI) and the Linux \texttt{LD\_PRELOAD}~\cite{kerrisk2017ld} mechanism.
+CUPTI allows \todo{apptracer} to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \todo{apptracer} to collect any performance metrics the GPU exposes.
+The callback function records relevant information, including the wall time when the CUDA runtime function is invoked, its arguments, and the device and stream associated with the call.
+In this way, detailed information about data transfers from runtime functions can be collected.
+
+Additionally, conservative data consumption and generation from CUDA kernels can be inferred.
+Any arguments that point to previously-recorded allocations are assumed to modify that allocation.
+\todo{through monitoring the device metrics, it is possible to understand how much data is read and written through those pointers in aggregate.}
 
 \section{Application Modeling Case Studies}
 \subsection{Chai}
