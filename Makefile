@@ -3,8 +3,9 @@ BIBTEX = bibtex
 
 USR := $(shell id -u)
 GRP := $(shell id -g)
+PWD := $(shell pwd)
 
-DOCKER = docker run --rm -i --user="${USR}:${GRP}" --net=none -v "$PWD":/data cwpearson/latex:full
+DOCKER = docker run --rm -i --user="${USR}:${GRP}" --net=none -v "${PWD}":/data cwpearson/latex:full
 all:
 	echo ===== LATEX 1 =====
 	${LATEX} ecethesis
