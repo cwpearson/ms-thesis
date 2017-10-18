@@ -16,9 +16,10 @@ install:
 
 script:
   - make docker
+  - export DATE=`date +%Y%m%d`
   - mkdir -p latest
-  - cp ecethesis.pdf latest/ecethesis_$TRAVIS_BRANCH.pdf
-  - cp ecethesis.pdf latest/ecethesis_$TRAVIS_COMMIT.pdf
+  - cp ecethesis.pdf latest/ecethesis_$DATE_$TRAVIS_BRANCH.pdf
+  - cp ecethesis.pdf latest/ecethesis_$DATE_$TRAVIS_COMMIT.pdf
 
 deploy:
   provider: gcs
