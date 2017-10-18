@@ -15,8 +15,7 @@ services:
 install:
 
 script:
-  - docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data cwpearson/latex:full pdflatex ecethesis.tex
-  - make
+  - make docker
   - mkdir -p latest
   - cp ecethesis.pdf latest/ecethesis_$TRAVIS_BRANCH.pdf
   - cp ecethesis.pdf latest/ecethesis_$TRAVIS_COMMIT.pdf

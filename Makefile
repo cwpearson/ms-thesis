@@ -1,6 +1,10 @@
-LATEX = pdflatex --shell-escape
+LATEX = pdflatex
 BIBTEX = bibtex
 
+USR := $(shell id -u)
+GRP := $(shell id -g)
+
+DOCKER = docker run --rm -i --user="${USR}:${GRP}" --net=none -v "$PWD":/data cwpearson/latex:full
 all:
 	echo ===== LATEX 1 =====
 	${LATEX} ecethesis
@@ -10,6 +14,16 @@ all:
 	${LATEX} ecethesis
 	echo ===== LATEX 3 =====
 	${LATEX} ecethesis
+
+docker:
+	echo ===== LATEX 1 =====
+	${DOCKER} ${LATEX} ecethesis
+	echo ===== BIBTEX =====
+	${DOCKER} ${BIBTEX} ecethesis
+	echo ===== LATEX 2 =====
+	${DOCKER} ${LATEX} ecethesis
+	echo ===== LATEX 3 =====
+	${DOCKER} ${LATEX} ecethesis
 
 clean:
 	rm -f *.toc *.log *.lof *.lot *.aux *.bbl *.blg ecethesis.pdf sections/*.aux
