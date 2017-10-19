@@ -34,21 +34,39 @@ The application can therefore be represented by a graph $G_a = \{E_a,V_a\}$ wher
 
 \section{Application Monitoring}
 
-
 A custom application trace is generated during an application execution to build the application graph.
-\todo{apptracer} is built on top of CUDA Profiling Tools Interface~\cite{nvidia2017cupti}(CUPTI) and the Linux \texttt{LD\_PRELOAD}~\cite{kerrisk2017ld} mechanism.
-CUPTI(Section~\ref{sec:cupti}) allows \todo{apptracer} to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \todo{apptracer} to collect any performance metrics the GPU exposes.
+\todo{apptracer} is built on top of CUDA Profiling Tools Interface(Section~\ref{sec:cupti} (CUPTI) and the Linux \texttt{LD\_PRELOAD}(Section~\ref{sec:ldpreload}) mechanism.
+
+One of the strong goals for \todo{hwcomm-apptracer} is that it should work without modifying or recompiling existing applications.
+This ensures that the tool is as accessible to users as possible, and that it can work on closed-source applications.
+This limits \todo{hwcomm-apptracer} to profiling techniques that observe how the application interacts with the operating system and runtime libraries.
+
+\todo{hwcomm-tracer} uses CUPTI to capture most CUDA-related information, and LD\_PRELOAD for everything else.
+CUPTI allows \todo{apptracer} to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \todo{apptracer} to collect any performance metrics the GPU exposes.
 The callback function records relevant information, including the wall time when the CUDA runtime function is invoked, its arguments, and the device and stream associated with the call.
 In this way, detailed information about data transfers from runtime functions can be collected.
+
+
+
+\todo{hwcomm-tracer} uses LD\_PRELOAD mechanism to intercept known API calls made by the application to shared libraries.
+Specifically, LD\_PRELOAD is used to watch for \todo{filesystem access}, CUDA's cuDNN library, CUDA's cuBLAS library, \todo{network access}, and \todo{system memory allocations}.
+The various kernel launches and allocations used by cuDNN and cuBLAS are already visible through CUPTI, but the known semantics of the higher-level cuBLAS and cuDNN calls allow for a more detailed application model.
 
 
 Additionally, conservative data consumption and generation from CUDA kernels can be inferred.
 Any arguments that point to previously-recorded allocations are assumed to modify that allocation.
 \todo{through monitoring the device metrics, it is possible to understand how much data is read and written through those pointers in aggregate.}
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth,draft]{figures/example-app-char.png}
+    \caption{\todo{caption}}
+    \label{fig:example-app-char}
+\end{figure}
 
 
 \subsection{Communication Link Traffic}
+\todo{nothing yet}
 
 \outline{PCI traffic}
 
@@ -59,3 +77,4 @@ Any arguments that point to previously-recorded allocations are assumed to modif
 \subsection{Caffe}
 \subsection{Graph Challenge}
 \subsection{Lulesh}
+\subsection{MLFMM}
