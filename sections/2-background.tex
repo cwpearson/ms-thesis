@@ -1,14 +1,43 @@
 \chapter{Background}
 
-\section{PCI}
 
-\section{NVLink}
+%
+%
+%
+\section{Communication Links}
 
-\section{CUDA}
+\subsection{PCI}
+\subsection{NVLink}
+\subsection{QPI}
+\subsection{X bus}
+\subsection{CAPI}
 
-\section{CUPTI}
+%
+%
+%
+\section{Programming Systems}
+\subsection{CUDA}
+\label{sec:cuda}
+\subsection{HSA}
+\label{sec:hsa}
+
+
+%
+%
+%
+\section{Profiling Tooling}
+
+\subsection{CUPTI}
 \label{sec:cupti}
+
+\cite{nvidia2017cupti}
 
 CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
 CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
 This simplifies the programming model.
+
+\subsection{\texttt{LD\_PRELOAD}}
+\label{sec:ldpreload}
+
+\cite{kerrisk2017ld}
+
