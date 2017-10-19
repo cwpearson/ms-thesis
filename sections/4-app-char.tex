@@ -2,15 +2,27 @@
 
 
 Directly analogous to the hardware model, this work models applications as a collection of communicating data sources and sinks (endpoints).
-This facilitates the performance modeling, described in Chapter~\ref{ch:performance}.
-Through it may be possible to generate such application models by hand, in general, this approach is not feasible for complicated applications.
+This facilitates the performance modeling described in Chapter~\ref{ch:performance}.
+Through it is possible to generate such application models by hand, in general, this approach is not feasible for complicated applications.
 Furthermore, applications are frequently updated, which could require a new model.
 This work proposes an approach for automatically generating these application models.
 
 
 \section{Application Model}
 
-This work views applications as a collection of communicating data sources and data sinks.
+Application data sources and sinks can take any of the following forms
+\begin{table}[h]
+    \centering
+    \caption{\todo{caption}}
+    \label{tab:graph-comparison}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{Application Activity} & \textbf{Model element} \\ \hline
+    File system read  & data source \\ \hline
+    File system write  & data sink \\ \hline
+    Generic function call & data source, data sink \\ \hline
+    \end{tabular}
+\end{table}
 
 The application is represented by a graph $G_a = \{E_a,V_a\}$ where $E_a$ is a set of edges representing data transfer, and $V_a$ is a set of vertices representing separate compute processes.
 $v_a \in V_a$ is considered to be a GPU CUDA stream or CPU operating system process.
@@ -21,6 +33,8 @@ $e_a \in E_a$ is an edge with a set of transfers defined by
     \item transfer size
 \end{enumerate}
 \todo{What to do better here.}
+
+
 
 \section{Application Monitoring}
 
