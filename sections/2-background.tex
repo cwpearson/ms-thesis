@@ -6,6 +6,9 @@
 
 \section{CUDA}
 
+\section{CUPTI}
+\label{sec:cupti}
+
 CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
 CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
 This simplifies the programming model.

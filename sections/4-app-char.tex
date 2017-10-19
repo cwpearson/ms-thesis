@@ -7,57 +7,40 @@ Through it is possible to generate such application models by hand, in general, 
 Furthermore, applications are frequently updated, which could require a new model.
 This work proposes an approach for automatically generating these application models.
 
-
 \section{Application Model}
 
-Application data sources and sinks can take any of the following forms
+The goal of the application record is to track how an application produces, moves, and consumes data.
+To that end, the application is broken down into data sources and sinks.
+Memory allocations, file creation/access, network activity, and computation kernels all represent possible producers or consumers of data.
+
+Whenever data is moved, it moves from a source to a sink.
+Table~\ref{tab:source-sink-example} gives some examples of data movement and the corresponding sources and sinks.
+
 \begin{table}[h]
     \centering
     \caption{\todo{caption}}
-    \label{tab:graph-comparison}
-    \begin{tabular}{|c|c|}
+    \label{tab:source-sink-example}
+    \begin{tabular}{|c|c|c|}
     \hline
-    \textbf{Application Activity} & \textbf{Model element} \\ \hline
-    File system read  & data source \\ \hline
-    File system write  & data sink \\ \hline
-    Generic function call & data source, data sink \\ \hline
+    \textbf{Application Activity} & \textbf{Data Source} & \textbf{Data Sink} \\ \hline
+    File system read  & file & calling function \\ \hline
+    File system write  & file & calling function \\ \hline
+    \textbf{cudaMemcpy()} & allocation & allocation \\ \hline
+    function call & pointer arguments & pointer arguments \\ \hline
     \end{tabular}
 \end{table}
 
-The application is represented by a graph $G_a = \{E_a,V_a\}$ where $E_a$ is a set of edges representing data transfer, and $V_a$ is a set of vertices representing separate compute processes.
-$v_a \in V_a$ is considered to be a GPU CUDA stream or CPU operating system process.
-$e_a \in E_a$ is an edge with a set of transfers defined by
-\begin{enumerate}
-    \item start time
-    \item stop time
-    \item transfer size
-\end{enumerate}
-\todo{What to do better here.}
-
-
+The application can therefore be represented by a graph $G_a = \{E_a,V_a\}$ where $E_a$ is a set of edges representing data transfer, and $V_a$ is a set of vertices representing data endpoints.
 
 \section{Application Monitoring}
 
 
-
 A custom application trace is generated during an application execution to build the application graph.
 \todo{apptracer} is built on top of CUDA Profiling Tools Interface~\cite{nvidia2017cupti}(CUPTI) and the Linux \texttt{LD\_PRELOAD}~\cite{kerrisk2017ld} mechanism.
-CUPTI allows \todo{apptracer} to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \todo{apptracer} to collect any performance metrics the GPU exposes.
+CUPTI(Section~\ref{sec:cupti}) allows \todo{apptracer} to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \todo{apptracer} to collect any performance metrics the GPU exposes.
 The callback function records relevant information, including the wall time when the CUDA runtime function is invoked, its arguments, and the device and stream associated with the call.
 In this way, detailed information about data transfers from runtime functions can be collected.
 
-\begin{table}[h]
-    \centering
-    \caption{\todo{caption}}
-    \label{tab:graph-comparison}
-    \begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Graph Component} & \multicolumn{2}{|c|}{\textbf{Meaning in Graph}}   \\ \hline
-                             & $\bm{G_a}$    & $\bm{G_s}$                        \\ \hline \hline
-    \textbf{Vertex}          & Data source or sink & compute or storage hardware \\ \hline
-    \textbf{Edge}            & Data transfer & communication link                \\ \hline
-    \end{tabular}
-\end{table}
 
 Additionally, conservative data consumption and generation from CUDA kernels can be inferred.
 Any arguments that point to previously-recorded allocations are assumed to modify that allocation.
