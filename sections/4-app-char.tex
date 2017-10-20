@@ -37,15 +37,18 @@ The application can therefore be represented by a graph $G_a = \{E_a,V_a\}$ wher
 A custom application trace is generated during an application execution to build the application graph.
 \todo{apptracer} is built on top of CUDA Profiling Tools Interface(Section~\ref{sec:cupti} (CUPTI) and the Linux \texttt{LD\_PRELOAD}(Section~\ref{sec:ldpreload}) mechanism.
 
-One of the strong goals for \todo{hwcomm-apptracer} is that it should work without modifying or recompiling existing applications.
+A design goal for \todo{hwcomm-apptracer} is that it should work without modifying or recompiling existing applications.
 This ensures that the tool is as accessible to users as possible, and that it can work on closed-source applications.
 This limits \todo{hwcomm-apptracer} to profiling techniques that observe how the application interacts with the operating system and runtime libraries.
 
 \todo{hwcomm-tracer} uses CUPTI to capture most CUDA-related information, and LD\_PRELOAD for everything else.
 CUPTI allows \todo{apptracer} to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \todo{apptracer} to collect any performance metrics the GPU exposes.
 The callback function records relevant information, including the wall time when the CUDA runtime function is invoked, its arguments, and the device and stream associated with the call.
-In this way, detailed information about data transfers from runtime functions can be collected.
+In this way, detailed information about data transfers from runtime functions can be reconstructed.
+For example, allocations from \texttt{cudaMalloc} can be associated with pointers passed to \texttt{cudaMemcpy} to discover data transfers from host to device.
 
+One challenge is to determine the amount of data consumed or produced by arbitrary kernel functions.
+Although \todo{hwcomm-apptracer} can record pointer kernel arguments, that does not provide information about the size of the data transfer, only the source and destination of that data.
 
 
 \todo{hwcomm-tracer} uses LD\_PRELOAD mechanism to intercept known API calls made by the application to shared libraries.
