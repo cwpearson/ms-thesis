@@ -18,6 +18,14 @@
 \section{Programming Systems}
 \subsection{CUDA}
 \label{sec:cuda}
+
+
+CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
+CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
+This simplifies the programming model.
+
+\todo{unified memory peer access}
+
 \subsection{HSA}
 \label{sec:hsa}
 
@@ -27,17 +35,22 @@
 %
 \section{Profiling Tooling}
 
-\subsection{CUPTI}
+\subsection{CUDA Profiling Tools Interface}
 \label{sec:cupti}
 
-\cite{nvidia2017cupti}
-
-CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
-CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
-This simplifies the programming model.
+The CUDA Profiling Tools Interface~\cite{nvidia2017cupti} (CUPTI) ``provides...detailed information about how applications are using the GPU in a system.''
+Users may inject code into the entry and exit point of every CUDA C Runtime and CUDA Driver API function call.
+Additionally, users may configure and query hardware and software event counters to get insight into the operation of the GPU and CUDA stack.
+The event counters include instruction count, instruction throughput, memory loads/stores, memory throughput, cache hits/misses, branches and custom profile triggers.
+Chapter~\ref{ch:app-char} describes how \todo{hwcomm-apptracer} uses CUPTI to record memory allocations, kernel arguments, and timestamps to build a model of the application execution.
 
 \subsection{\texttt{LD\_PRELOAD}}
 \label{sec:ldpreload}
+
+LD\_PRELOAD~\cite{kerrisk2017ld} is a mechanism by which the ld linker will load additional user-specific shared objects before any others.
+If a function definition is present in a pre-loaded shared object, it will override the implementation present in later objects.
+When combined with dlsym()~\cite{kerrisk2017dlysm}, it can be used to inject code into the entry of library calls in dynamically-linked binaries.
+Chapter~\ref{ch:app-char} describes how \todo{hwcomm-apptracer} uses LD\_PRELOAD to record special information about cuBLAS and cuDNN calls.
 
 \cite{kerrisk2017ld}
 
