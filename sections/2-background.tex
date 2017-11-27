@@ -19,12 +19,110 @@
 \subsection{CUDA}
 \label{sec:cuda}
 
+NVIDIA's CUDA (Compute Unified Device Architecture) is a programming system for enabling general-purpose computation on NVIDIA GPUs (graphics processing units).
+CUDA is a set of C extensions and libraries for interfacing with GPUs.
+NVIDIA provides a compiler, \texttt{nvcc} for generating CUDA-enabled binaries.
+
+\subsection{CUDA Memory}
+
+CUDA provides a set of runtime and driver APIs for the developer to manage the allocation and movement of data between the host and device DRAM.
+From its inception, CUDA provided comprehensive APIs for developers to mitigate application performance shortfalls stemming from the relatively limited performance of host-device communication links.
+As the capabilities of GPUs and host systems have improved, CUDA has provided simpler, higher-level APIs that require less programmer effort.
+At the simplest level, the CUDA memory space is composed of multiple address spaces: one for the host, and one for each device.
+Data must be explicitly allocated and moved between those address spaces.
+
+\begin{table}[h]
+    \centering
+    \caption[BCUDA Basic Memory-management APIs]{\todo{long caption}}
+    \label{tab:cuda-basic-apis}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{API}    & \textbf{Description}                             \\ \hline
+    \texttt{cudaMalloc()} & Allocate memory on the device              \\ \hline
+    \texttt{cudaFree()}   & Free memory on the device                  \\ \hline
+    \texttt{cudaMemcpy()} & Copy data between to,from,and between GPUs \\ \hline
+    \end{tabular}
+\end{table}
+
+Since each device has a separate address space, the programmer must explicitly instructs \texttt{cudaMemcpy} how to move data with \texttt{cudaMemcpyHostToDevice}, \texttt{cudaMemcpyDeviceToHost}, or \texttt{cudaMemcpyDeviceToDevice}.
+
+The foundational APIs for managing CUDA memory are listed in Table~\ref{tab:cuda-basic-apis}.
+The programmer may use standard C/C++ memory allocation techniques (\texttt{malloc}, \texttt{new}) for managing memory on the host.
+\texttt{cudaMalloc} is used to allocate memory that may be used in CUDA kernels.
+\texttt{cudaMemcpy} is used to move data between the host and device, or between devices.
+A typical CUDA program will
+\begin{enumerate}
+    \item allocate memory on the host
+    \item initialize memory on the host
+    \item allocate memory on the device with \texttt{cudaMalloc}
+    \item copy initialized data from the host to the device with \texttt{cudaMemcpy}
+    \item launch CUDA kernels
+    \item copy results back to the host with \texttt{cudaMemcpy}
+\end{enumerate}
+
+\todo{streams to overlap computation with communication}
+
+\subsubsection{Page-Locked Memory}
+
+The GPU uses direct memory access (DMA) to copy data to and from the host.
+When \texttt{cudaMemcpy} is invoked, the CPU instructs the GPU to copy a chunk of memory from the host DRAM to the device DRAM, without the CPU being involved.
+This means that the host system must guarantee that the memory will not be paged-out during the copy.
+This is accomplished with page-locked (or pinned) memory.
+First, \texttt{cudaMemcpy} copies the data from the application address space to a piece of page-locked memory in the system DRAM managed by the CUDA driver, and then the GPU copies that data into the GPu DRAM.
+This first host-DRAM to host-DRAM copy may be avoided through CUDA's page-locked memory APIs, summarized in Table~\ref{tab:cuda-pinned-apis}.
+
+\begin{table}[h]
+    \centering
+    \caption[CUDA Pinned Memory-Management APIs]{\todo{long caption}}
+    \label{tab:cuda-pinned-apis}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{API}                & \textbf{Description} \\ \hline
+    \texttt{cudaMallocHost()}   & allocate page-locked memory on the host\\ \hline
+    \texttt{cudaHostAlloc()}    & cudaMallocHost with additional options \\ \hline
+    \texttt{cudaFreeHost()}     & free page-locked memory on the host\\ \hline
+    \texttt{cudaHostRegister()} & Page-lock a range of host memory \\ \hline
+    \end{tabular}
+\end{table}
+
+\texttt{cudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable}, \texttt{cudaHostAllocMapped}, and \texttt{cudaHostAllocWriteCombined} flags.
+
+\todo{3.2.4.2}
+\texttt{cudaHostAllocWriteCombined} causes a pinned allocation to be write-combined.
+Writes may be delayed and combined in a buffer to reduce the number of memory accesses.
+Furthermore, coherency is not enforced, so data is not snooped on the PCIe bus, which further increases bandwidth.
+This type of allocation only makes sense for data that is written by the CPU and read by the GPU.
+
+
+\todo{3.2.4.3}
+\texttt{cudaHostAllocMapped} introduces the ability to map the host allocation (in the host address space) into the device's address space.
+By using \texttt{cudaHostGetDevicePointer}, the pointer in the device address space may be obtained and directly used by CUDA kernels.
+In this case, the programmer does not need to explicitly allocate memory or copy data to the device, nor does the programmer need to use streams to overlap computation with communication.
+
+\subsubsection{Unified Virtual Addressing}
+
+By the time CUDA gained widespread use, all devices with compute capability 2.0 and the host shared a single address space on 64-bit systems.
+The host DRAM and the DRAM of each GPU are mapped into disjoint subsections of the unified address space.
+
+With this enhancement, the \textt{cudaMemcpyDefault} flag instructs the CUDA system to automatically determine how to move data when \texttt{cudaMemcpy} is invoked.
+By examining the address of the memory in question, CUDA can determine where the memory resides and move it accordingly.
+This simplifies the programmer's use of \texttt{cudaMemcpy}, as \texttt{cudaMemcpyDefault} may be used everywhere.
+Additionally, all mapped allocations are autmatically portable between GPUs, not restricted to the GPU that was active at the time of the allocation.
+
+\subsubsection{Unified Memory with SM 3.0+}
 
 CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
 CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
 This simplifies the programming model.
 
+\subsubsection{Unified Memory with SM 6.0+}
+
+
+
 \todo{unified memory peer access}
+
+\subsubsection{Texture memory and CUDNN}
+\todo{3.2.11}
 
 \subsection{HSA}
 \label{sec:hsa}
