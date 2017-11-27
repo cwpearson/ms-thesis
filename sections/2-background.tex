@@ -104,7 +104,7 @@ In this case, the programmer does not need to explicitly allocate memory or copy
 By the time CUDA gained widespread use, all devices with compute capability 2.0 and the host shared a single address space on 64-bit systems.
 The host DRAM and the DRAM of each GPU are mapped into disjoint subsections of the unified address space.
 
-With this enhancement, the \textt{cudaMemcpyDefault} flag instructs the CUDA system to automatically determine how to move data when \texttt{cudaMemcpy} is invoked.
+With this enhancement, the \texttt{cudaMemcpyDefault} flag instructs the CUDA system to automatically determine how to move data when \texttt{cudaMemcpy} is invoked.
 By examining the address of the memory in question, CUDA can determine where the memory resides and move it accordingly.
 This simplifies the programmer's use of \texttt{cudaMemcpy}, as \texttt{cudaMemcpyDefault} may be used everywhere.
 Additionally, all mapped allocations are autmatically portable between GPUs, not restricted to the GPU that was active at the time of the allocation.
