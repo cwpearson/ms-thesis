@@ -4,13 +4,20 @@
 %
 %
 %
-\section{Communication Links}
+\section{Communication Links and Protocols}
 
 \subsection{PCI}
-\subsection{NVLink}
+
 \subsection{QPI}
 \subsection{X bus}
+
+\subsection{NVLink}
 \subsection{CAPI}
+
+Coherent Accelerator Processor Interface (CAPI) is a processor expansion bus standard.
+
+
+\subsection{OpenCAPI}
 
 %
 %
@@ -33,7 +40,7 @@ Data must be explicitly allocated and moved between those address spaces.
 
 \begin{table}[h]
     \centering
-    \caption[BCUDA Basic Memory-management APIs]{\todo{long caption}}
+    \caption[CUDA Basic Memory-management APIs]{\todo{long caption}}
     \label{tab:cuda-basic-apis}
     \begin{tabular}{|c|c|}
     \hline
@@ -114,7 +121,7 @@ Additionally, all mapped allocations are autmatically portable between GPUs, not
 CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
 CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
 Like mapped memory, this removes the need for an explicit allocation on the device and an explicit data transfer.
-A summarry of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
+A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 
 \begin{table}[h]
     \centering
@@ -128,7 +135,6 @@ A summarry of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 \end{table}
 
 The underlying data is only present in one location on the system, and in principle, unified memory allocations are automatically migrated towards their most recent use.
-In principle, unified memory allocations are automatically migrated toward their most recent use.
 Data will migrate between the host and GPU as it is accessed by each.
 Data will not migrate on a GPU peer access.
 
