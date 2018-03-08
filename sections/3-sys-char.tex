@@ -27,70 +27,98 @@ Section~\ref{sec:link-char} describes the approach to characterize communication
 \section{System Model}
 \label{sec:system-model}
 
-The harware system is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing data sources/sinks.
+The harware system is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing communication endpoints, or data routing elements.
 Sections~\ref{sec:system-vertices} and \ref{sec:system-edges} describe the specific system components explored.
-Associated with each edge is a performance model function $M: C,U \rightarrow P$ that maps a communication pattern $C$ and a link utilization $U$ to an achievable performance $P$.
+Associated with each edge is a performance model function $M: C \rightarrow P$ that maps communication $C$ to an achievable performance $P$.
 
-The communication pattern $P$ has the following parameters:
+The communication $C$ has the following parameters:
 \begin{itemize}
     \item The communication API or method used (e.g., \texttt{fread()}, CUDA unified memory page transfer).
-    \item The number, size, and priority of pending transfers on the link.
+    \item The size of the communication.
 \end{itemize}
 
-The link utilization $U$ a set of extant communication patterns already sharing the link, separate from the communication of interest $C$.
+% The link utilization $U$ a set of extant communication patterns already sharing the link, separate from the communication of interest $C$.
+
+Each vertex in $V$ is a data routing element.
+These vertices are able to receive and re-transmit data on any of their links.
+A PCIe hub \todo{cite PCIe discussion} is an example of a pure data-routing vertex.
+Optionally, the vertex may serve as a communication endpoint; a source or a sink for data.
+Processing elements and data storage elements serve as communication endpoints.
 
 
-
-Each vertex in $V$ represents a data source/sink.
-
-
+\texttt{hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration and characterization.
+This tool can be executed on a target system to generate $G_s$ for that system.
+Presently, the tool has only been tested on Linux operating systems.
 
 %
 % SECTION
 %
-\section{Topology Exploration}
+\section{\texttt{hwcomm} Topology Enumeration}
 \label{sec:topology-exploration}
 
-The topology exploration is done in several phases:
+The first step in generating $G_s$ is to discovere the topology.
+hwcomm builds an in-memory representation of $G_s$, with sufficient information to later access the device during characterization.
+Enumeration is done in several phases.
 
-\begin{minipage}[ht]{\textwidth}
-\begin{enumerate}
-    \item Enumerate and link CPU sockets
-    \item Enumerate PCI devices
-    \item Update GPUs to NVIDIA GPUs as appropriate
-    \item Enumerate Linux block devices
-\end{enumerate}
-\end{minipage}
+\textbf{Enumerate and Link CPU Sockets:}
 
 First, the Portable Hardware Locality~\cite{broquedis2010hwloc} (hwloc) library is used to enumerate the present CPU sockets.
-As the test systems only have two sockets, all discovered sockets are considered to be directly connected by an SMP bus.
-Next, hwloc is used to descend through the PCI device tree and connect all PCI devices with PCI links of the appropriate type.
+As the test systems only have two sockets, all discovered sockets are considered to be directly connected by an SMP bus for the appropriate system type.
+The sockets and SMP busses are added to $G_s$.
+\todo{more detail? list all information recorded?}
+
+\textbf{Enumerate PCI devices:}
+
+Next, hwloc is used to traverse the PCI device tree.
+All PCI devices are added to $G_s$ and connected with PCI links of the appropriate type.
+Most attached storage, networking, and computing components are assigned an address in the PCI system and are discoverable in this step.
+
+\todo{more detail? list all information recorded?}
+
+\textbf{Update GPUs to NVIDIA GPUs as appropriate:}
+
 Next, the NVIDIA Management Library~\cite{nvidia2017nvml} (NVML) is used to enumerate all NVIDIA GPUs.
-Those GPUs are matched by PCI address with previously-discovered PCI devices and information about those GPUs is added to $G_s$.
-NVML is then used to discover whether NVLink is supported on each GPU, and which device the NVLink terminates at.
-Finally, linux block devices are enumerated through \todo{more detail} and added to $G_s$.
-Where applicable, enough information about the device is stored within the vertex to be able to access the device later.
+Those GPUs are matched by PCI address with existing PCI devices previously added to $G_s$, and NVML is used to discover whether NVLink is supported on each GPU and which other device that NVLink terminates at.
+THis information is not provided by hwloc.
+The edges associated with those NVLinks are added to $G_s$.
+\todo{more detail? list all information recorded?}
+
+
+\textbf{Enumerate Linux block devices:}
+
+Linux block devices are enumerated through \todo{more detail} and added to $G_s$.
+Where applicable, enough information about the device is stored within the vertex to be able to access the device later for characterization.
+\todo{more detail? list all information recorded?}
+
+\textbf{Enumerate Linux network devices:}
+
+Finally, network devices are enumerated through \todo{more detail} and added to $G_s$.
+Where applicable, enough information about the device is stored within the vertex to be able to access the device later for characterization.
+\todo{more detail? list all information recorded?}
 
 \subsection{Vertex Types}
 \label{sec:system-vertices}
 
-Table~\ref{tab:topology-vertices} summarizes the discoverable types of data sources and sinks investigated by this work.
-
+Table~\ref{tab:topology-vertices} summarizes the types of data routers discovered by hwcomm.
+These make up the vertices of $G_s$.
 
 \begin{table}[]
     \centering
-    \caption[Discoverable vertex types]{\todo{long caption}}
+    \caption[Discoverable vertex types]{
+        A summary of the types of data routers that can be discovered by \texttt{hwcomm}.
+        Some components may also serve as data endpoints.
+        }
     \label{tab:topology-vertices}
-    \begin{tabular}{|c|c|}
+    \begin{tabular}{|c|c|c|}
     \hline
-    \textbf{Vertex Type}    & \textbf{Description} \\ \hline
-    CPU Socket              &                      \\ \hline
-    PCI Device              &                      \\ \hline
-    PCIe Hostbridge         &                      \\ \hline
-    PCIe Bridge             &                      \\ \hline
-    CUDA GPU                &                      \\ \hline
-    Linux Block Device      &                      \\ \hline
-    Linux Network Interface &                      \\ \hline
+    \textbf{Hardware}       & \textbf{Data Endpoint} & \textbf{Description} \\ \hline
+    CPU Socket              &  \checkmark            &                \\ \hline
+    PCI Device              &  \checkmark            &                \\ \hline
+    PCIe Hostbridge         &                        &                \\ \hline
+    PCIe Bridge             &                        &                \\ \hline
+    CUDA GPU                & \checkmark             &                \\ \hline
+    Linux Block Device      & \checkmark             &                \\ \hline
+    Linux Network Interface & \checkmark             &                \\ \hline
     \end{tabular}
 \end{table}
 
@@ -101,16 +129,20 @@ In $G_s$, the vertices are connected by the discoverable edge types shown in Tab
 
 \begin{table}[]
     \centering
-    \caption[Discoverable edge types]{\todo{long caption}}
+    \caption[Discoverable edge types]{
+        A summary of the types of communication links that can be discovered by \texttt{hwcomm}.
+        Some components may also serve as data endpoints.
+    }
     \label{tab:topology-edges}
-    \begin{tabular}{|c|c|}
+    \begin{tabularx}{\linewidth}{ |c | >{\centering\arraybackslash}X |}
     \hline
     \textbf{Edge Type} & \textbf{Description} \\ \hline
-    SMP Bus            &                      \\ \hline
-    PCIe Bus           &                      \\ \hline
-    NVLink             &                      \\ \hline
-    SATA Bus           &                      \\ \hline
-    \end{tabular}
+    SMP Bus            & A symmetric multiprocessing bus connecting two CPU sockets. \\ \hline
+    PCIe Bus           & A PCIe link connecting a PCIe Bidge and PCIe device or PCIe Hostbridge and PCIe bridge. \\ \hline
+    NVLink1            & A first-generation NVLink connecting two NVIDIA GPUs or an NVIDIA GPU and CPU \\ \hline
+    NVLink2            & A second-generation NVLink connecting two NVIDIA GPUs or an NVIDIA GPU and CPU \\ \hline
+    SATA bus           & A Serial AT Attachment link conneting a host bus to a mass storage device. \\ \hline
+    \end{tabularx}
 \end{table}
 
 
@@ -151,7 +183,7 @@ These APIs abstract away some complexity from the data movement.
 
 For example, consider the simple example system topology in Figure~\ref{fig:simple-topology}.
 If a CPU thread running on CPU1 calls \texttt{fread()} to move a block of data from Disk0 to the memory associated with CPU1, the OS will transparently move that data along the PCIe0 and SMP0 links.
-Since this capability is exposed to applications, it is useful to characterize it as well, not just the intermediate PCIe0 and SMP links.
+Since this is the capability is exposed to applications, it is useful to characterize it as well, not just the intermediate PCIe0 and SMP links.
 
 An overview of the characterization algorithm is shown in Algorithm~\ref{alg:link-char}.
 
@@ -176,6 +208,28 @@ An overview of the characterization algorithm is shown in Algorithm~\ref{alg:lin
 For each pair of vertices, \todo{hwcomm} determines whether direct communication between those vertices is supported by the operating system or vendor libraries.
 For vertices with a path of more than one link between them (e.g. Disk0 to Socket1 in Figure~\ref{fig:simple-topology}) those individual links will be characterized separately.
 For vertices with multiple paths between them, the characterized path will be implicitly chosen by the applied characterization method.
+There may be multiple different communication modes between two verticies.
+hwcomm implements multiple workloads to characterize those modes.
+
+\begin{table}[]
+    \centering
+    \caption[Discoverable vertex types]{\todo{long caption}}
+    \label{tab:cuda workloads}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    src & dst & method \\ \hline 
+    CPU Pageable & GPU & cudaMemcpy \\ \hline
+    CPU Pinned & GPU &  cudaMemcpy  \\ \hline
+    CPU Write Combining & GPU & cudaMemcpy \\ \hline
+    CPU Mapped & GPU & direct \\ \hline
+    Managed (CPU) & Managed (GPU) & direct \\ \hline
+    GPU & CPU Pageable & cudaMemcpy \\ \hline
+    GPU & CPU Pinned &  cudaMemcpy  \\ \hline
+    GPU & CPU Mapped & direct  \\ \hline
+    GPU & GPU & cudaMemcpyPeer \\ \hline
+
+    \end{tabular}
+\end{table}
 
 \subsubsection{CUDA \texttt{cudaMemcpy} with Pinned Memory}
 
@@ -400,3 +454,12 @@ Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{f
     \caption{NVIDIA DGX-1 simple topology.}
     \label{fig:topo-dgx-simple}
 \end{figure}
+
+\subsection{Single-Socket x86 with NVIDIA P100 ``Blaise''}
+
+\subsection{Single-Socket x86 with NVIDIA GTX 1070 ``deneb''}
+
+\subsection{Single-Socket x86 with NVIDIA GTX 970m ``rigel''}
+
+\subsection{IBM Power9 and NVIDIA Volta V100 ``Hal0000''}
+
