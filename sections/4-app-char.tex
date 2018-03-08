@@ -1,5 +1,5 @@
 \chapter{Application Characterization}
-
+\label{ch:app-char}
 
 Directly analogous to the hardware model, this work models applications as a collection of communicating data sources and sinks (endpoints).
 This facilitates the performance modeling described in Chapter~\ref{ch:performance}.
@@ -48,7 +48,14 @@ In this way, detailed information about data transfers from runtime functions ca
 For example, allocations from \texttt{cudaMalloc} can be associated with pointers passed to \texttt{cudaMemcpy} to discover data transfers from host to device.
 
 One challenge is to determine the amount of data consumed or produced by arbitrary kernel functions.
-Although \todo{hwcomm-apptracer} can record pointer kernel arguments, that does not provide information about the size of the data transfer, only the source and destination of that data.
+Although \todo{hwcomm-apptracer} can record pointer kernel arguments, that alone does not provide information about the size of the data transfer, only the source and destination of that data.
+
+Another challenge is to capture implicit peer access between CUDA devices.
+On supported systems, GPUs can directly access data that is resident on other GPUs without making any CUDA runtime calls.
+
+Another challenge is to capture CUDA unified memory page transfers.
+On supported systems, GPUs can directly access data that is on the host without making any CUDA runtime calls.
+The driver is responsible for transparently moving the data to the GPU.
 
 
 \todo{hwcomm-tracer} uses LD\_PRELOAD mechanism to intercept known API calls made by the application to shared libraries.
@@ -78,6 +85,8 @@ Any arguments that point to previously-recorded allocations are assumed to modif
 \section{Application Modeling Case Studies}
 \subsection{Chai}
 \subsection{Caffe}
+\subsection{mxnet}
 \subsection{Graph Challenge}
 \subsection{Lulesh}
 \subsection{MLFMM}
+\subsection{PlasComCM}
