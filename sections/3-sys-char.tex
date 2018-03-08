@@ -213,23 +213,53 @@ hwcomm implements multiple workloads to characterize those modes.
 
 \begin{table}[]
     \centering
-    \caption[Discoverable vertex types]{\todo{long caption}}
+    \caption[\texttt{hwcomm CUDA} characterization workloads]{
+        \texttt{hwcomm CUDA} characterization workloads.
+        These workloads all move a fixed amount of data from the source device to the destination device.
+        Depending on the source and destination device, different methods of moving data are available through CUDA.
+    }
     \label{tab:cuda workloads}
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|c|c|c|c|}
     \hline
-    src & dst & method \\ \hline 
-    CPU Pageable & GPU & cudaMemcpy \\ \hline
-    CPU Pinned & GPU &  cudaMemcpy  \\ \hline
-    CPU Write Combining & GPU & cudaMemcpy \\ \hline
-    CPU Mapped & GPU & direct \\ \hline
-    Managed (CPU) & Managed (GPU) & direct \\ \hline
-    GPU & CPU Pageable & cudaMemcpy \\ \hline
-    GPU & CPU Pinned &  cudaMemcpy  \\ \hline
-    GPU & CPU Mapped & direct  \\ \hline
-    GPU & GPU & cudaMemcpyPeer \\ \hline
-
+    \textbf{Source Allocation} & \textbf{Destination Allocation} & \textbf{Transfer Method} & \textbf{Further Reading} \\ \hline 
+    GPU                 & GPU          & cudaMemcpy, peer-enabled  & \ref{sec:gpu-gpu-peer} \\ \hline
+    GPU                 & GPU          & cudaMemcpy, peer-disabled & \ref{sec:gpu-gpu-peer} \\ \hline
+    GPU                 & GPU          & direct, from dst          & \ref{sec:gpu-gpu-direct} \\ \hline
+    GPU                 & CPU Pageable & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
+    GPU                 & CPU Pinned   & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
+    CPU Pageable        & GPU          & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
+    CPU Pinned          & GPU          & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
+    CPU Write Combining & GPU          & cudaMemcpy                & \ref{sec:wc-gpu} \\ \hline
+    CPU Mapped          & GPU          & direct                    & \ref{sec:cpu-gpu-direct} \\ \hline
     \end{tabular}
 \end{table}
+
+\subsection{GPU to GPU with cudaMemcpyPeer}
+\label{sec:gpu-gpu-peer}
+
+Both peer enabled and disabled.
+
+\outline{ \\
+    description \\
+    required cuda / system support \\
+    when is preferable \\
+}
+
+\subsection{GPU to GPU with Direct Access}
+\label{sec:gpu-gpu-direct}
+
+\subsection{Between GPU and CPU Pagable Allocation with cudaMemcpy}
+\label{sec:gpu-cpu}
+
+Both directions
+
+Pageable and pinned
+
+\subsection{CPU Write-Combining Allocation to GPU with with cudaMemcpy}
+\label{sec:wc-gpu}
+
+\subsection{CPU Mapped allocation to GPU with with direct access}
+\label{sec:cpu-gpu-direct}
 
 \subsubsection{CUDA \texttt{cudaMemcpy} with Pinned Memory}
 
