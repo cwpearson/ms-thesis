@@ -245,10 +245,42 @@ Both peer enabled and disabled.
     when is preferable \\
 }
 
+This characterization method outlined in Algorithm~\ref{alg:gpu-gpu-peer} is available for paths terminated by a CUDA GPU on both ends.
+A GPU memory allocation is established on each GPU.
+Bandwidth achieved at various transfer sizes between GPUs is established by copying various amounts of data between the memory allocations.
+
+
+\begin{algorithm}[ht]
+    \SetAlgoLined
+    \SetKwInOut{Input}{input}
+    \SetKwInOut{Output}{output}
+    \Input{$b$, whether peer transfers between CUDA GPUs should be enabled}
+    \Output{a set of (bandwidth, transfer size) tuples $t$ for transfers between CUDA GPUs $g_0$ and $g_1$}
+    $t$ $\gets$ \{\}\;
+    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
+    gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
+    gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
+    \If{$b$ = true}{
+        \texttt{cudaSetDevice($g_0$)\;}
+        \texttt{cudaDeviceEnablePeerAccess($g_1$)\;}
+        \texttt{cudaSetDevice($g_1$)\;}
+        \texttt{cudaDeviceEnablePeerAccess($g_0$)\;}
+    }
+    \For{transferSize := $1$ to poolSize}{
+        start $\gets$ wall\_time()\;
+        \texttt{cudaMemcpyPeer(gpu1Pool, gpu0Pool, transferSize)}\;
+        stop $\gets$ wall\_time()\;
+        t $\gets$ t $\cup$ \{ ( transferSize, $\frac{transferSize}{stop - start}$ ) \}\;
+    }
+    \caption{CUDA cudaMemcpy between CUDA GPUs}
+    \label{alg:gpu-gpu-peer}
+\end{algorithm}
+
+
 \subsection{GPU to GPU with Direct Access}
 \label{sec:gpu-gpu-direct}
 
-\subsection{Between GPU and CPU Pagable Allocation with cudaMemcpy}
+\subsection{Between GPU and CPU with cudaMemcpy}
 \label{sec:gpu-cpu}
 
 Both directions
