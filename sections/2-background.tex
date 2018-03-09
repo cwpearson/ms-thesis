@@ -44,41 +44,46 @@ NVIDIA's CUDA (Compute Unified Device Architecture) is a programming system for 
 CUDA is a set of C extensions and libraries for interfacing with GPUs.
 NVIDIA provides a compiler, \texttt{nvcc} for generating CUDA-enabled binaries.
 
-\subsection{CUDA Memory}
-
-CUDA provides a set of runtime and driver APIs for the developer to manage the allocation and movement of data between the host and device DRAM.
+CUDA provides a set of runtime and driver APIs for the developer to manage the allocation and movement of data between the host and device memory.
 From its inception, CUDA provided comprehensive APIs for developers to mitigate application performance shortfalls stemming from the relatively limited performance of host-device communication links.
 As the capabilities of GPUs and host systems have improved, CUDA has provided simpler, higher-level APIs that require less programmer effort.
-At the simplest level, the CUDA memory space is composed of multiple address spaces: one for the host, and one for each device.
-Data must be explicitly allocated and moved between those address spaces.
+This section describes CUDA memory-management capabilities and the historical context of their introduction.
+
+\subsection{CUDA Memory}
+
+Prior to the introduction of Unified Virtual Addressing(\ref{sec:uva}), the CUDA memory space was composed of multiple address spaces: one for the host, and one for each GPU~\cite{schroeder2011peer}.
+Data was explicitly allocated in and moved between those address spaces through the basic CUDA memory management runtime calls described in Table~\ref{tab:cuda-basic-apis}.
+Standard C/C++ memory allocation techniques (\texttt{malloc}, \texttt{new}) are used for managing memory on the host.
 
 \begin{table}[h]
     \centering
-    \caption[CUDA Basic Memory-management APIs]{\todo{long caption}}
+    \caption[Basic CUDA Memory-management APIs]{\todo{long caption}}
     \label{tab:cuda-basic-apis}
     \begin{tabular}{|c|c|}
     \hline
-    \textbf{API}    & \textbf{Description}                             \\ \hline
-    \texttt{cudaMalloc()} & Allocate memory on the device              \\ \hline
-    \texttt{cudaFree()}   & Free memory on the device                  \\ \hline
-    \texttt{cudaMemcpy()} & Copy data between to,from,and between GPUs \\ \hline
+    \textbf{API}    & \textbf{Description}                                    \\ \hline
+    \texttt{cudaSetDevice()} & Associate a device with the host thread. \\ \hline
+    \texttt{cudaMalloc()}    & Allocate memory on the device.                 \\ \hline
+    \texttt{cudaFree()}      & Free memory on the device.                     \\ \hline
+    \texttt{cudaMemcpy()}    & Copy data between to,from,and between GPUs.    \\ \hline
     \end{tabular}
 \end{table}
 
-Since each device has a separate address space, the programmer must explicitly instructs \texttt{cudaMemcpy} how to move data with \texttt{cudaMemcpyHostToDevice}, \texttt{cudaMemcpyDeviceToHost}, or \texttt{cudaMemcpyDeviceToDevice}.
 
-The foundational APIs for managing CUDA memory are listed in Table~\ref{tab:cuda-basic-apis}.
-The programmer may use standard C/C++ memory allocation techniques (\texttt{malloc}, \texttt{new}) for managing memory on the host.
+
 \texttt{cudaMalloc} is used to allocate memory that may be used in CUDA kernels.
 \texttt{cudaMemcpy} is used to move data between the host and device, or between devices.
-A typical CUDA program will
+Since each device has a separate address space, the programmer explicitly instructs \texttt{cudaMemcpy} how to move data with \texttt{cudaMemcpyHostToDevice}, \texttt{cudaMemcpyDeviceToHost}, or \texttt{cudaMemcpyDeviceToDevice}.
+
+This API definition imposed the following basic structure on all CUDA programs, which remains essentially unchanged as of the writing of this document.
 \begin{enumerate}
-    \item allocate memory on the host
+    \item allocate memory on the host with \texttt{new}/\texttt{malloc}.
     \item initialize memory on the host
     \item allocate memory on the device with \texttt{cudaMalloc}
-    \item copy initialized data from the host to the device with \texttt{cudaMemcpy}
+    \item copy initialized data from the host to the device with \texttt{cudaMemcpy(..., cudaMemcpyHostToDevice)}
     \item launch CUDA kernels
-    \item copy results back to the host with \texttt{cudaMemcpy}
+    \item copy results back to the host with \texttt{cudaMemcpy(..., cudaMemcpyDeviceToHost)}
+    \item free CUDA allocations with \texttt{cudaFree}
 \end{enumerate}
 
 \todo{streams to overlap computation with communication}
@@ -158,6 +163,8 @@ On devices with compute capability 6.0+, the unified memory system operates at p
 Pages will migrate between GPUs on peer accesses, and \texttt{cudaMallocManaged} may be used to allocate more memory than is physically present on the GPU.
 
 \todo{unified memory peer access}
+
+\subsection{Peer Access}
 
 \subsubsection{Texture memory and CUDNN}
 \todo{3.2.11}

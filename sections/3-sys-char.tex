@@ -246,6 +246,8 @@ Both peer enabled and disabled.
 }
 
 This characterization method outlined in Algorithm~\ref{alg:gpu-gpu-peer} is available for paths terminated by a CUDA GPU on both ends.
+If the GPUs support peer access
+
 A GPU memory allocation is established on each GPU.
 Bandwidth achieved at various transfer sizes between GPUs is established by copying various amounts of data between the memory allocations.
 
@@ -260,7 +262,7 @@ Bandwidth achieved at various transfer sizes between GPUs is established by copy
     poolSize $\gets$ $\frac{gpuMemory}{2}$\;
     gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
     gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    \If{$b$ = true}{
+    \If{$b$}{
         \texttt{cudaSetDevice($g_0$)\;}
         \texttt{cudaDeviceEnablePeerAccess($g_1$)\;}
         \texttt{cudaSetDevice($g_1$)\;}
@@ -272,10 +274,10 @@ Bandwidth achieved at various transfer sizes between GPUs is established by copy
         stop $\gets$ wall\_time()\;
         t $\gets$ t $\cup$ \{ ( transferSize, $\frac{transferSize}{stop - start}$ ) \}\;
     }
-    \caption{CUDA cudaMemcpy between CUDA GPUs}
+    \caption{Characterizing data transfer performance between CUDA GPUs.}
     \label{alg:gpu-gpu-peer}
 \end{algorithm}
-
+\todo{Loop in powers of two}
 
 \subsection{GPU to GPU with Direct Access}
 \label{sec:gpu-gpu-direct}
