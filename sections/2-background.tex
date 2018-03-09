@@ -49,6 +49,8 @@ From its inception, CUDA provided comprehensive APIs for developers to mitigate 
 As the capabilities of GPUs and host systems have improved, CUDA has provided simpler, higher-level APIs that require less programmer effort.
 This section describes CUDA memory-management capabilities and the historical context of their introduction.
 
+\todo{CUDA Contexts and compute capability}
+
 \subsection{CUDA Memory}
 
 Prior to the introduction of Unified Virtual Addressing(\ref{sec:uva}), the CUDA memory space was composed of multiple address spaces: one for the host, and one for each GPU~\cite{schroeder2011peer}.
@@ -68,8 +70,6 @@ Standard C/C++ memory allocation techniques (\texttt{malloc}, \texttt{new}) are 
     \texttt{cudaMemcpy()}    & Copy data between to,from,and between GPUs.    \\ \hline
     \end{tabular}
 \end{table}
-
-
 
 \texttt{cudaMalloc} is used to allocate memory that may be used in CUDA kernels.
 \texttt{cudaMemcpy} is used to move data between the host and device, or between devices.
@@ -91,11 +91,13 @@ This API definition imposed the following basic structure on all CUDA programs, 
 \subsubsection{Page-Locked Memory}
 
 The GPU uses direct memory access (DMA) to copy data to and from the host.
-When \texttt{cudaMemcpy} is invoked, the CPU instructs the GPU to copy a chunk of memory from the host DRAM to the device DRAM, without the CPU being involved.
-This means that the host system must guarantee that the memory will not be paged-out during the copy.
-This is accomplished with page-locked (or pinned) memory.
-First, \texttt{cudaMemcpy} copies the data from the application address space to a piece of page-locked memory in the system DRAM managed by the CUDA driver, and then the GPU copies that data into the GPu DRAM.
-This first host-DRAM to host-DRAM copy may be avoided through CUDA's page-locked memory APIs, summarized in Table~\ref{tab:cuda-pinned-apis}.
+When \texttt{cudaMemcpy} is invoked, the CPU instructs the GPU to copy a chunk of memory from the host memory to the device memory (or vis-versa), without the CPU being involved.
+The host must guarantee that the memory to be accessed by the GPU will not be paged-out during the copy.
+First, \texttt{cudaMemcpy} copies the data from the application address space to a piece of page-locked memory in the system DRAM managed by the CUDA driver, and then the GPU copies that data into the GPU memory.
+CUDA allows the host to directly make page-locked memory regions visible to the application through the page-locked memory APIs summarized in Table~\ref{tab:cuda-pinned-apis}.
+When the application uses these APIs, the first copy from pageable host memory to page-locked host memory can be elided.
+Section{\ref{sec:todo}} demonstrates the performance improvement from skipping this first copy.
+Overuse of page-locked memory on the host will degrade overall application performance or even impact system stability if the host system is not able to page as needed.
 
 \begin{table}[h]
     \centering
@@ -113,24 +115,28 @@ This first host-DRAM to host-DRAM copy may be avoided through CUDA's page-locked
 
 \texttt{cudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable}, \texttt{cudaHostAllocMapped}, and \texttt{cudaHostAllocWriteCombined} flags.
 
-\todo{3.2.4.2}
+%3.2.4.2
 \texttt{cudaHostAllocWriteCombined} causes a pinned allocation to be write-combined.
-Writes may be delayed and combined in a buffer to reduce the number of memory accesses.
-Furthermore, coherency is not enforced, so data is not snooped on the PCIe bus, which further increases bandwidth.
-This type of allocation only makes sense for data that is written by the CPU and read by the GPU.
+Writes to write-combined memory may be delayed and combined in a buffer to reduce the number of memory accesses.
+Additionally, the host may not cache this data in L1 or L2 cache, freeing up those resources for other applications. 
+\todo{why only L1 and L2?}
+Furthermore, coherency is not enforced, so data is not snooped on the PCIe bus, which can increase bandwidth by up to 40\%.
+This type of allocation makes sense for data that is not frequently read by the CPU, for example, data written once by the CPU before being sent to a GPU.
 
-
-\todo{3.2.4.3}
+%3.2.4.3 
 \texttt{cudaHostAllocMapped} introduces the ability to map the host allocation (in the host address space) into the device's address space.
 By using \texttt{cudaHostGetDevicePointer}, the pointer in the device address space may be obtained and directly used by CUDA kernels.
 In this case, the programmer does not need to explicitly allocate memory or copy data to the device, nor does the programmer need to use streams to overlap computation with communication.
 
+\texttt{cudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
+This became the default with the introduction of unified virtual addressing. \todo{why not have this from the start?}
+
 \subsubsection{Unified Virtual Addressing}
 
-By the time CUDA gained widespread use, all devices with compute capability 2.0 and the host shared a single address space on 64-bit systems.
-The host DRAM and the DRAM of each GPU are mapped into disjoint subsections of the unified address space.
+Unified Virtual Addressing was introduced with compute capability 2.0 GPUs \todo{roughly, Fermi+} and CUDA 4.0 on 64-bit systems.
+The host DRAM and the DRAM of each GPU are mapped into disjoint subsections of a single unified address space.
 
-With this enhancement, the \texttt{cudaMemcpyDefault} flag instructs the CUDA system to automatically determine how to move data when \texttt{cudaMemcpy} is invoked.
+With this enhancement, the \texttt{cudaMemcpyDefault} flag for \texttt{cudaMemcpy} instructs the CUDA system to automatically determine how to move data.
 By examining the address of the memory in question, CUDA can determine where the memory resides and move it accordingly.
 This simplifies the programmer's use of \texttt{cudaMemcpy}, as \texttt{cudaMemcpyDefault} may be used everywhere.
 Additionally, all mapped allocations are autmatically portable between GPUs, not restricted to the GPU that was active at the time of the allocation.
@@ -150,6 +156,7 @@ A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
     \hline
     \textbf{API}                & \textbf{Description} \\ \hline
     \texttt{cudaMallocManaged()}   & allocate a unified memory region \\ \hline
+    \texttt{cudaGetDeviceProperties()} \todo{what's the flag} \\ \hline
     \end{tabular}
 \end{table}
 
