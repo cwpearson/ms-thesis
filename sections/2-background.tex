@@ -1,22 +1,27 @@
 \chapter{Background}
 
+This section describes the hardware systems that connect NVIDIA GPUs to host systems, and the communication capabilities exposed by the CUDA API.
 
 %
 %
 %
 \section{Communication Links and Protocols}
 
-\subsection{PCI}
+\subsection{PCI Express}
+
+Peripheral Component Interconnect Express is a widely-adopted computer bus standard.
+It has gone through many revisions, from 1.0a, to PCIe 3.0, presently used today, up to PCIe 5.0, announced in June 2017.
+
 \subsection{NVLink}
 \subsection{NVLink2}
-\subsection{QPI}
-\subsection{X bus}
-\subsection{CAPI}
 
-Coherent Accelerator Processor Interface (CAPI) is a processor expansion bus standard.
+\todo{QPI?}
 
+\todo{X bus?}
 
-\subsection{OpenCAPI}
+\todo{CAPI?}
+%Coherent Accelerator Processor Interface (CAPI) is a processor expansion bus standard.
+%\subsection{OpenCAPI}
 
 %
 %
@@ -24,16 +29,6 @@ Coherent Accelerator Processor Interface (CAPI) is a processor expansion bus sta
 \section{Programming Systems}
 \subsection{CUDA}
 \label{sec:cuda}
-
-\outline{
-	managed memory
-	direct access
-	peer access
-	unified virtual addressing
-}
-
-
-
 
 % \subsection{HSA}
 % \label{sec:hsa}
@@ -46,7 +41,10 @@ From its inception, CUDA provided comprehensive APIs for developers to mitigate 
 As the capabilities of GPUs and host systems have improved, CUDA has provided simpler, higher-level APIs that require less programmer effort.
 This section describes CUDA memory-management capabilities and the historical context of their introduction.
 
-\todo{CUDA Contexts and compute capability}
+The CUDA API has an associated version number that defines which CUDA actions are made available by that API.
+CUDA-capable hardware advertises a specific compute capability (CC) that defines what CUDA actions are supported by that GPU.
+Although the CUDA API may expose particular capability, the GPU may need a sufficiently high CC to take advantage of it.
+This section references both these version systems when discussing CUDA features.
 
 \subsection{CUDA Memory}
 
@@ -143,6 +141,7 @@ Furthermore, all mapped allocations are autmatically portable between GPUs, not 
 
 \texttt{cudaDeviceEnablePeerAccess()} allows peer-to-peer transfers through \texttt{cudaMemcpyPeer()} (\todo{true?}).
 This initiates a DMA copy from one GPU to another, without involving the host.
+Peer access was introduced with CUDA 4.0.
 
 When combined with UVA, \texttt{cudaDeviceEnablePeerAccess()} allows a GPU to directly access allocations on another GPU.
 For example, if GPU1 loads through a pointer to data on GPU0,the data will be directly fetched from GPU0 memory, at the cost of one PCIe transasction and one globably memory load, and be cached in the L2 of GPU0.
