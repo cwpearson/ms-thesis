@@ -26,13 +26,10 @@ Coherent Accelerator Processor Interface (CAPI) is a processor expansion bus sta
 \label{sec:cuda}
 
 \outline{
-    write-combining
-    pageable / pinned
-    managed memory
-    mapped memory (zero-copy)
-    direct access
-    peer access
-    unified virtual addressing
+	managed memory
+	direct access
+	peer access
+	unified virtual addressing
 }
 
 
@@ -58,17 +55,17 @@ Data was explicitly allocated in and moved between those address spaces through 
 Standard C/C++ memory allocation techniques (\texttt{malloc}, \texttt{new}) are used for managing memory on the host.
 
 \begin{table}[h]
-    \centering
-    \caption[Basic CUDA Memory-management APIs]{\todo{long caption}}
-    \label{tab:cuda-basic-apis}
-    \begin{tabular}{|c|c|}
-    \hline
-    \textbf{API}    & \textbf{Description}                                    \\ \hline
-    \texttt{cudaSetDevice()} & Associate a device with the host thread. \\ \hline
-    \texttt{cudaMalloc()}    & Allocate memory on the device.                 \\ \hline
-    \texttt{cudaFree()}      & Free memory on the device.                     \\ \hline
-    \texttt{cudaMemcpy()}    & Copy data between to,from,and between GPUs.    \\ \hline
-    \end{tabular}
+	\centering
+	\caption[Basic CUDA Memory-management APIs]{\todo{long caption}}
+	\label{tab:cuda-basic-apis}
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{API}             & \textbf{Description}                        \\ \hline
+		\texttt{cudaSetDevice()} & Associate a device with the host thread.    \\ \hline
+		\texttt{cudaMalloc()}    & Allocate memory on the device.              \\ \hline
+		\texttt{cudaFree()}      & Free memory on the device.                  \\ \hline
+		\texttt{cudaMemcpy()}    & Copy data between to,from,and between GPUs. \\ \hline
+	\end{tabular}
 \end{table}
 
 \texttt{cudaMalloc} is used to allocate memory that may be used in CUDA kernels.
@@ -77,13 +74,13 @@ Since each device has a separate address space, the programmer explicitly instru
 
 This API definition imposed the following basic structure on all CUDA programs, which remains essentially unchanged as of the writing of this document.
 \begin{enumerate}
-    \item allocate memory on the host with \texttt{new}/\texttt{malloc}.
-    \item initialize memory on the host
-    \item allocate memory on the device with \texttt{cudaMalloc}
-    \item copy initialized data from the host to the device with \texttt{cudaMemcpy(..., cudaMemcpyHostToDevice)}
-    \item launch CUDA kernels
-    \item copy results back to the host with \texttt{cudaMemcpy(..., cudaMemcpyDeviceToHost)}
-    \item free CUDA allocations with \texttt{cudaFree}
+	\item allocate memory on the host with \texttt{new}/\texttt{malloc}.
+	\item initialize memory on the host
+	\item allocate memory on the device with \texttt{cudaMalloc}
+	\item copy initialized data from the host to the device with \texttt{cudaMemcpy(..., cudaMemcpyHostToDevice)}
+	\item launch CUDA kernels
+	\item copy results back to the host with \texttt{cudaMemcpy(..., cudaMemcpyDeviceToHost)}
+	\item free CUDA allocations with \texttt{cudaFree}
 \end{enumerate}
 
 \todo{streams to overlap computation with communication}
@@ -100,17 +97,17 @@ Section{\ref{sec:todo}} demonstrates the performance improvement from skipping t
 Overuse of page-locked memory on the host will degrade overall application performance or even impact system stability if the host system is not able to page as needed.
 
 \begin{table}[h]
-    \centering
-    \caption[CUDA Pinned Memory-Management APIs]{\todo{long caption}}
-    \label{tab:cuda-pinned-apis}
-    \begin{tabular}{|c|c|}
-    \hline
-    \textbf{API}                & \textbf{Description} \\ \hline
-    \texttt{cudaMallocHost()}   & allocate page-locked memory on the host\\ \hline
-    \texttt{cudaHostAlloc()}    & cudaMallocHost with additional options \\ \hline
-    \texttt{cudaFreeHost()}     & free page-locked memory on the host\\ \hline
-    \texttt{cudaHostRegister()} & Page-lock a range of host memory \\ \hline
-    \end{tabular}
+	\centering
+	\caption[CUDA Pinned Memory-Management APIs]{\todo{long caption}}
+	\label{tab:cuda-pinned-apis}
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{API}                & \textbf{Description}                    \\ \hline
+		\texttt{cudaMallocHost()}   & allocate page-locked memory on the host \\ \hline
+		\texttt{cudaHostAlloc()}    & cudaMallocHost with additional options  \\ \hline
+		\texttt{cudaFreeHost()}     & free page-locked memory on the host     \\ \hline
+		\texttt{cudaHostRegister()} & Page-lock a range of host memory        \\ \hline
+	\end{tabular}
 \end{table}
 
 \texttt{cudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable}, \texttt{cudaHostAllocMapped}, and \texttt{cudaHostAllocWriteCombined} flags.
@@ -125,7 +122,7 @@ This type of allocation makes sense for data that is not frequently read by the 
 
 %3.2.4.3 
 \texttt{cudaHostAllocMapped} introduces the ability to map the host allocation (in the host address space) into the device's address space.
-By using \texttt{cudaHostGetDevicePointer}, the pointer in the device address space may be obtained and directly used by CUDA kernels.
+By using \texttt{cudaHostGetDevicePointer}, the corresponding pointer in the device address space may be obtained and directly used by CUDA kernels.
 In this case, the programmer does not need to explicitly allocate memory or copy data to the device, nor does the programmer need to use streams to overlap computation with communication.
 
 \texttt{cudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
@@ -134,12 +131,22 @@ This became the default with the introduction of unified virtual addressing. \to
 \subsubsection{Unified Virtual Addressing}
 
 Unified Virtual Addressing was introduced with compute capability 2.0 GPUs \todo{roughly, Fermi+} and CUDA 4.0 on 64-bit systems.
-The host DRAM and the DRAM of each GPU are mapped into disjoint subsections of a single unified address space.
+The host memory and the memory of each GPU are mapped into disjoint subsections of a single unified address space.
 
 With this enhancement, the \texttt{cudaMemcpyDefault} flag for \texttt{cudaMemcpy} instructs the CUDA system to automatically determine how to move data.
-By examining the address of the memory in question, CUDA can determine where the memory resides and move it accordingly.
+By examining the address of the pointers passed to \texttt{cudaMemcpy}, CUDA determines where which device the memory resides on and moves it accordingly.
 This simplifies the programmer's use of \texttt{cudaMemcpy}, as \texttt{cudaMemcpyDefault} may be used everywhere.
-Additionally, all mapped allocations are autmatically portable between GPUs, not restricted to the GPU that was active at the time of the allocation.
+There is also no need to call \texttt{cudaHostGetDevicePointer}~(\cite{nvidia2018cuda}, 4.9, cudaHostGetDevicePointer) for mapped allocations.
+Furthermore, all mapped allocations are autmatically portable between GPUs, not restricted to the GPU that was active at the time of the allocation~(\cite{nvidia2018cuda}, 4.10).
+
+\subsubsection{Peer Access}
+
+\texttt{cudaDeviceEnablePeerAccess()} allows peer-to-peer transfers through \texttt{cudaMemcpyPeer()} (\todo{true?}).
+This initiates a DMA copy from one GPU to another, without involving the host.
+
+When combined with UVA, \texttt{cudaDeviceEnablePeerAccess()} allows a GPU to directly access allocations on another GPU.
+For example, if GPU1 loads through a pointer to data on GPU0,the data will be directly fetched from GPU0 memory, at the cost of one PCIe transasction and one globably memory load, and be cached in the L2 of GPU0.
+Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit system~\cite{schroeder2011peer}.
 
 \subsubsection{Unified Memory with SM 3.0+}
 
@@ -149,15 +156,15 @@ Like mapped memory, this removes the need for an explicit allocation on the devi
 A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 
 \begin{table}[h]
-    \centering
-    \caption[CUDA Unified Memory-Management APIs]{\todo{long caption}}
-    \label{tab:cuda-um-apis}
-    \begin{tabular}{|c|c|}
-    \hline
-    \textbf{API}                & \textbf{Description} \\ \hline
-    \texttt{cudaMallocManaged()}   & allocate a unified memory region \\ \hline
-    \texttt{cudaGetDeviceProperties()} \todo{what's the flag} \\ \hline
-    \end{tabular}
+	\centering
+	\caption[CUDA Unified Memory-Management APIs]{\todo{long caption}}
+	\label{tab:cuda-um-apis}
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{API}                 & \textbf{Description}             \\ \hline
+		\texttt{cudaMallocManaged()} & allocate a unified memory region \\ \hline
+		\texttt{cudaGetDeviceProperties()} \todo{what's the flag} \\ \hline
+	\end{tabular}
 \end{table}
 
 The underlying data is only present in one location on the system, and in principle, unified memory allocations are automatically migrated towards their most recent use.
@@ -169,12 +176,9 @@ Data will not migrate on a GPU peer access.
 On devices with compute capability 6.0+, the unified memory system operates at page-granularity rather than allocation-granularity.
 Pages will migrate between GPUs on peer accesses, and \texttt{cudaMallocManaged} may be used to allocate more memory than is physically present on the GPU.
 
-\todo{unified memory peer access}
-
-\subsection{Peer Access}
-
-\subsubsection{Texture memory and CUDNN}
-\todo{3.2.11}
+\todo{Texture memory?}
+%\subsubsection{Texture memory and CUDNN}
+%\todo{3.2.11}
 
 \subsection{HSA}
 \label{sec:hsa}
