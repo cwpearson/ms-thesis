@@ -174,6 +174,12 @@ Data will not migrate on a GPU peer access.
 
 \todo{coherence traffic}
 
+\todo{memory thrashing}
+
+\todo{page throttling}
+
+\todo{remote map}
+
 On devices with compute capability 6.0+, the unified memory system operates at page-granularity rather than allocation-granularity.
 Pages will migrate between GPUs on peer accesses, and \texttt{cudaMallocManaged} may be used to allocate more memory than is physically present on the GPU.
 
