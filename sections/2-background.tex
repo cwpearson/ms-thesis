@@ -147,7 +147,13 @@ When combined with UVA, \texttt{cudaDeviceEnablePeerAccess()} allows a GPU to di
 For example, if GPU1 loads through a pointer to data on GPU0,the data will be directly fetched from GPU0 memory, at the cost of one PCIe transasction and one globably memory load, and be cached in the L2 of GPU0.
 Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit system~\cite{schroeder2011peer}.
 
-\subsubsection{Unified Memory with SM 3.0+}
+\subsubsection{Unified Memory with CC 3.0+ (Kepler+)}
+
+\todo{ available since cuda 6.0 }
+
+No page fault support, limited virtual space
+bulk migration of all pages attached to current stream when kernel is launched
+~\cite{sakharnykh2017unified}
 
 CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
 CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
@@ -170,7 +176,39 @@ The underlying data is only present in one location on the system, and in princi
 Data will migrate between the host and GPU as it is accessed by each.
 Data will not migrate on a GPU peer access.
 
-\subsubsection{Unified Memory with SM 6.0+}
+
+Hints: cudaMemAvise(setReadMostly, gpuId): prefetch creates copy instead of moving data. Simultaneous reads okay.
+Writes are expensive but allowed.
+
+\subsubsection{Unified Memory with CC 6.0+ (Pascal+)}
+
+Available since CUDA 8.
+Page fault support.
+Extended virtual address space (48-bit).
+On-demand migration on first touch.
+Oversubscription, system-wide atomics.
+~\cite{sakharnykh2017unified}.
+
+Hints:
+
+\texttt{cudaMemAdvise(setAccessedBy, gpuId)}: GPU establish direct mapping of data in CPU memory, no page faults generated.
+Access counters eventually trigger migration.
+
+\subsubsection {Unified Memory with CC 7.0+ (Volta+) }
+
+Access counters, hot pages moved to GPU.
+CPU can directly access and cache GPU memory, native CPU-GPU atomics.
+~\cite{sakharnykh2017unified}.
+
+Prefetching.
+prefetch whole regions if pages accesses densely.
+
+Thrashing migrations (avoid frequent migration of shared pages).
+
+Eviction (what pages to evict when new ones needed).
+
+\texttt{cudaMemAdvise(setAccessedBy, gpuId)}: GPU establihs direct mapping of data in CPU memory, no page faults generated.
+Access counters eventually trigger migration.
 
 \todo{coherence traffic}
 
