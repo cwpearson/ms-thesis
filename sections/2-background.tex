@@ -149,15 +149,20 @@ Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit 
 
 \subsubsection{Unified Memory with CC 3.0+ (Kepler+)}
 
-\todo{ available since cuda 6.0 }
+
+
+
 
 No page fault support, limited virtual space
 bulk migration of all pages attached to current stream when kernel is launched
 ~\cite{sakharnykh2017unified}
 
+\texttt{cudaDeviceSynchronize} required before host program can use output from GPU~\cite{nvidia2014cuda60}.
+
+The CUDA unified memory system was introduced with CUDA 6.0 and requires a GPU with SM architecture of 3.0 or higher~\cite{nvidia2014cuda60}.
 CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
 CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
-Like mapped memory, this removes the need for an explicit allocation on the device and an explicit data transfer.
+Like mapped memory, this simplifies programming by removing the need for spearate host and device allocations and explicit data transfers.
 A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 
 \begin{table}[h]
@@ -167,20 +172,33 @@ A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 	\begin{tabular}{|c|c|}
 		\hline
 		\textbf{API}                 & \textbf{Description}             \\ \hline
+		\texttt{\_\_managed\_\_} & Defines a global variable in managed memory \\ \hline
 		\texttt{cudaMallocManaged()} & allocate a unified memory region \\ \hline
-		\texttt{cudaGetDeviceProperties()} \todo{what's the flag} \\ \hline
+		\texttt{cudaGetDeviceProperties()} \todo{what's the flag} &  \\ \hline
+		\texttt{cudaStreamAttachMemAsync()} & Attach a managed allocation to a stream, instead of globally.
 	\end{tabular}
 \end{table}
 
 The underlying data is only present in one location on the system, and in principle, unified memory allocations are automatically migrated towards their most recent use.
-Data will migrate between the host and GPU as it is accessed by each.
-Data will not migrate on a GPU peer access.
+When a kernel is launched, all pages attached to that kernel's stream are bulk migrated to the destination GPU.
+When the host program touches a page, that page is migrated back to the system memory.
+In Multi-GPU systems, data does not migrate between GPUs - all other GPUs receive peer mappings to the data, which is accessed over the PCIe bus (\cite{nvidia2014cuda60}, J.1.3).
 
+
+Unified memory maintains coherence (i.e., all GPUs the CPU have the same view of unified memory values) by disallowing concurrent accesses to managed data, including concurrent access to distinct managed allocations (\cite{nvidia2014cuda60}, J.2.2.1).
+The CPU may access managed allocations after GPU execution has completed, where ``GPU execution'' refers to activity in a particular stream for stream-attached memory, or whole-GPU otherwise.
+For stream-attached memory, completion of GPU execution can be guaranteed by any stream-synchronizing call.
+For whole-GPU memory, completion is guaranteed by stream synchronization when only one stream is executing on the GPU\footnote{e.g., \texttt{cudaStreamSynchronize}}, or by any call that is fully synchronous with respect to the host\footnote{e.g. \texttt{cudaDeviceSynchronize()}}.
+The GPU is considered to be active even if it is not accessing managed data.
+Concurrent inter-GPU accesses are allowed, as are concurrently-executing kernels on a single GPU (\cite{nvidia2014cuda60}, J.2.2.2).
+
+
+\todo(cudaMemcpy and managed memory (J2.2.1))
 
 Hints: cudaMemAvise(setReadMostly, gpuId): prefetch creates copy instead of moving data. Simultaneous reads okay.
 Writes are expensive but allowed.
 
-\subsubsection{Unified Memory with CC 6.0+ (Pascal+)}
+\subsubsection{Unified Memory with SM 6.0+ (Pascal+)}
 
 Available since CUDA 8.
 Page fault support.
