@@ -48,9 +48,9 @@ This section references both these version systems when discussing CUDA features
 
 \subsection{CUDA Memory}
 
-Prior to the introduction of Unified Virtual Addressing(\ref{sec:uva}), the CUDA memory space was composed of multiple address spaces: one for the host, and one for each GPU~\cite{schroeder2011peer}.
+Prior to the introduction of Unified Virtual Addressing (see Section~\ref{sec:uva}), the CUDA memory space was composed of multiple address spaces: one for the host, and one for each GPU~\cite{schroeder2011peer}.
 Data was explicitly allocated in and moved between those address spaces through the basic CUDA memory management runtime calls described in Table~\ref{tab:cuda-basic-apis}.
-Standard C/C++ memory allocation techniques (\texttt{malloc}, \texttt{new}) are used for managing memory on the host.
+Standard C/C++ memory allocation techniques (\texttt{malloc}/\texttt{new}, \texttt{free}/\texttt{new}) are used for managing memory on the host.
 
 \begin{table}[h]
 	\centering
@@ -127,6 +127,7 @@ In this case, the programmer does not need to explicitly allocate memory or copy
 This became the default with the introduction of unified virtual addressing. \todo{why not have this from the start?}
 
 \subsubsection{Unified Virtual Addressing}
+\label{sec:uva}
 
 Unified Virtual Addressing was introduced with compute capability 2.0 GPUs \todo{roughly, Fermi+} and CUDA 4.0 on 64-bit systems.
 The host memory and the memory of each GPU are mapped into disjoint subsections of a single unified address space.
@@ -173,7 +174,7 @@ A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 		\hline
 		\textbf{API}                 & \textbf{Description}             \\ \hline
 		\texttt{\_\_managed\_\_} & Defines a global variable in managed memory \\ \hline
-		\texttt{cudaMallocManaged()} & allocate a unified memory region \\ \hline
+		\texttt{cudaMallocManaged()} & allocate a unified memory region. \\ \hline
 		\texttt{cudaGetDeviceProperties()} \todo{what's the flag} &  \\ \hline
 		\texttt{cudaStreamAttachMemAsync()} & Attach a managed allocation to a stream, instead of globally.
 	\end{tabular}
@@ -184,7 +185,6 @@ When a kernel is launched, all pages attached to that kernel's stream are bulk m
 When the host program touches a page, that page is migrated back to the system memory.
 In Multi-GPU systems, data does not migrate between GPUs - all other GPUs receive peer mappings to the data, which is accessed over the PCIe bus (\cite{nvidia2014cuda60}, J.1.3).
 
-
 Unified memory maintains coherence (i.e., all GPUs the CPU have the same view of unified memory values) by disallowing concurrent accesses to managed data, including concurrent access to distinct managed allocations (\cite{nvidia2014cuda60}, J.2.2.1).
 The CPU may access managed allocations after GPU execution has completed, where ``GPU execution'' refers to activity in a particular stream for stream-attached memory, or whole-GPU otherwise.
 For stream-attached memory, completion of GPU execution can be guaranteed by any stream-synchronizing call.
@@ -192,13 +192,20 @@ For whole-GPU memory, completion is guaranteed by stream synchronization when on
 The GPU is considered to be active even if it is not accessing managed data.
 Concurrent inter-GPU accesses are allowed, as are concurrently-executing kernels on a single GPU (\cite{nvidia2014cuda60}, J.2.2.2).
 
+\todo{Hints: cudaMemAvise(setReadMostly, gpuId): prefetch creates copy instead of moving data. Simultaneous reads okay.
+Writes are expensive but allowed.}
 
-\todo(cudaMemcpy and managed memory (J2.2.1))
+\subsubsection{Unified Memory with CC 6.0+ (Pascal+)}
 
-Hints: cudaMemAvise(setReadMostly, gpuId): prefetch creates copy instead of moving data. Simultaneous reads okay.
-Writes are expensive but allowed.
+With CUDA 8 and For GPUs with CC 6.0+, GPU page faulting provides a more fine-grained data transfer mechanism~\cite{nvidia2017cuda80}.
+Instead of moving all managed allocations to the GPU prior to a kernel launch, the GPU will fault if it accesses a page that is not in its memory.
+The page is either migrated to the GPU to serve that access, or the page is mapped into the GPU address space to be accessed over the host-device interconnect.
+Unlike Unified Memory with CC 3.0, pages can migrate between GPUs on peer accesses (\cite{nvidia2017cuda80}, J.1.4).
+The GPU page faulting mechanism lifts all restrictions on simultenous access to data (\cite{nvidia2017cuda80}, J.2.2.1).
 
-\subsubsection{Unified Memory with SM 6.0+ (Pascal+)}
+CC 6.0+ also brings 49-bit virtual addressing to cover the 48-bit virtual addressing of modern CPUs and the GPU memory.
+This allows CUDA to support managed allocations larger than the GPU memory.
+The total amount of managed allocations still cannot be larger than the system memory (\cite{nvidia2017cuda80}, J.1.3).
 
 Available since CUDA 8.
 Page fault support.
@@ -238,6 +245,22 @@ Access counters eventually trigger migration.
 
 On devices with compute capability 6.0+, the unified memory system operates at page-granularity rather than allocation-granularity.
 Pages will migrate between GPUs on peer accesses, and \texttt{cudaMallocManaged} may be used to allocate more memory than is physically present on the GPU.
+
+
+\subsubsection{Atomic Operations prior to CC 6.0}
+
+Beginning with CC 1.1 and continuing through CC 2.0, CUDA introduced an increasingly complete set of atomic operations, culminating in support for common 32-bit and 64-bit operations on integers and floating-point types in global and shared memory (\cite{nvidia2008cuda20} C.1)
+All of these atomic operations were atomic with respect only to the executing GPU.
+
+\subsubsection{Atomic Operations with CC 6.0+}
+
+Compute Capability 6.0 brings two new kind of atomics operations: system atomics (\texttt{atomic\*\_system}) and block atomics (\texttt{atomic\*\_block}) (\cite{nvidia2017cuda80}, B.12).
+System atomics are atomic with respect to all CPUs and GPUs in the system.
+Block atomics are atomic only with respect to other threads in the thread block.
+
+\subsubsection{Parking Lot}
+
+\todo{cudaMemcpy and managed memory (J2.2.1)?}
 
 \todo{Texture memory?}
 %\subsubsection{Texture memory and CUDNN}
