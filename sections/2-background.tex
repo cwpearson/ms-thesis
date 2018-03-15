@@ -150,10 +150,9 @@ Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit 
 
 \subsubsection{Unified Memory with CC 3.0+ (Kepler+)}
 
-
-
-
-
+\begin{itemize}
+	\item cudaMallocManaged (cudaMemAttachHost, cudaMemAttachGlobal)
+\end{itemize}
 
 
 \texttt{cudaDeviceSynchronize} required before host program can use output from GPU~\cite{nvidia2014cuda60}.
@@ -195,6 +194,11 @@ Concurrent inter-GPU accesses are allowed, as are concurrently-executing kernels
 Writes are expensive but allowed.}
 
 \subsubsection{Unified Memory with CC 6.0+ (Pascal+)}
+
+\begin{itemize}
+	\item cudaMemAdvise (setReadMostly, setPreferredLocation, setAccessedBy)
+	\item cudaMemPrefetchAsync
+\end{itemize}
 
 With CUDA 8 and For GPUs with CC 6.0+, GPU page faulting provides a more fine-grained data transfer mechanism~\cite{nvidia2017cuda80}.
 Instead of moving all managed allocations to the GPU prior to a kernel launch, the GPU will fault if it accesses a page that is not in its memory.

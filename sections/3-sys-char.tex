@@ -527,3 +527,85 @@ Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{f
 
 \subsection{IBM Power9 and NVIDIA Volta V100 ``Hal0000''}
 
+\section{Write-Combined Memory}
+
+CPU bandwidth writing to wc memory
+
+GPU bandwidth copying back to wc memory
+
+\section{NVLink vs NVLink 2 vs PCIe}
+
+\begin{itemize}
+    \item pageable memory bandwidth
+    \item pinned memory bandwidth
+    \item write-combined bandwidth (\texttt{cudaHostAllocWriteCombined})
+    \item direct mapped bandwidth  (\texttt{cudaHostAllocMapped})
+    \item wc / direct mapped bandwidth  (\texttt{cudaHostAllocMapped | cudaHostAllocWriteCombined})
+\end{itemize}
+
+\section{Unified Memory}
+
+\begin{itemize}
+    \item CUDA 9.1 / Power8 / NVLink1 / Pascal
+    \item CUDA 9.1 / Power9 / NVLink2 / Volta
+    \item x86 / PCIe / Pascal
+    \item x86 / PCIe / Volta
+    \item x86 / PCIe / Kepler
+\end{itemize}
+
+\subsection{Coherence Bandwidth}
+\begin{itemize}
+    \item CPU->GPU coherence bandwidth (r/w, access patterns)
+    \item GPU->GPU coherence bandwidth (r/w, access patterns)
+\end{itemize}
+    
+\subsection{Prefetch Bandwidth}
+
+\texttt{cudaMemPrefetchAsync}
+
+\begin{itemize}
+    \item CPU->GPU prefetch bandwidth
+    \item GPU->CPU prefetch bandwidth
+    \item GPU->GPU prefetch bandwidth 
+\end{itemize}
+
+
+\subsection{cudaMemAdviseSetReadMostly}
+\begin{itemize}
+    \item
+\end{itemize}
+
+\subsection{cudaMemAdviseSetReadMostly}
+\begin{itemize}
+    \item CPU->GPU coherence bandwidth (r/w, x access patterns)
+    \item GPU->GPU coherence bandwidth (r/w, x access patterns)
+    \item estimate invalidation cost (CPU->GPU, GPU->GPU)
+\end{itemize}
+
+
+\section{System Atomics}
+
+\begin{itemize}
+    \item Latency and throughput for PCIe PASCAL / NVLink1 Pascal 
+    \item Latency and throughput for PCIe Volta / NVLink2 Volta
+\end{itemize}
+
+\section{Volta access counters for triggering migration}
+\begin{itemize}
+    \item local CPU->GPU
+    \item remote CPU->GPU
+    \item local GPU->GPU
+    \item remote GPU->GPU
+\end{itemize}
+
+\begin{itemize}
+    \item effect of cudaMemAdviseSetPreferredLocation
+    \item remote CPU->GPU
+    \item local GPU->GPU
+    \item remote GPU->GPU
+\end{itemize}
+
+\section{Atomics and Unified Memory}
+\begin{itemize}
+    \item effect oof cudaMemAdviseSetAccessedBy on imbalanced GPU/GPU atomics contention
+\end{itemize}
