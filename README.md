@@ -13,7 +13,7 @@
 
 ## References
 
-[dropbox](https://www.dropbox.com/home/research/references/2017_hwcomm-workshop)
+[dropbox](https://www.dropbox.com/home/research/ms-thesis)
 
 ## Useful Links
 
