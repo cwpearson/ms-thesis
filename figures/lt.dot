@@ -1,0 +1,80 @@
+graph G {
+
+    //ratio=fill;
+    ranksep=1.5;
+    nodesep=0.25;
+
+    subgraph cluster_gpu0 { label="GPU 0";
+        alloc0;
+        gpu0;
+        graph[style=dotted];
+    }
+
+    subgraph cluster_gpu1 { label="gpu1";
+        alloc1;
+        gpu1;
+        graph[style=dotted];
+    }
+
+    subgraph cluster_gpu2 { label="gpu2";
+        alloc2;
+        gpu2;
+        graph[style=dotted];
+    }
+
+    subgraph cluster_gpu3 { label="gpu3";
+        alloc3;
+        gpu3;
+        graph[style=dotted];
+    }
+
+    subgraph cluster_host { label="host";
+        pinned;
+        pageable;
+        mapped;
+        cpu0;
+        cpu1;
+        graph[style=dotted];
+    }
+
+    // cuda memcpy
+    alloc0 -- alloc1 [color = blue];
+    alloc0 -- alloc2 [color = blue];
+    alloc0 -- alloc3 [color = blue];
+    alloc1 -- alloc2 [color = blue];
+    alloc1 -- alloc3 [color = blue];
+    alloc2 -- alloc3 [color = blue];
+    alloc0 -- unified [color = blue];
+    alloc1 -- unified [color = blue];
+    alloc2 -- unified [color = blue];
+    alloc3 -- unified [color = blue];
+    pinned -- alloc0 [color = blue];
+    pinned -- alloc1 [color = blue];
+    pinned -- alloc2 [color = blue];
+    pinned -- alloc3 [color = blue];
+    pageable -- alloc0 [color = blue];
+    pageable -- alloc1 [color = blue];
+    pageable -- alloc2 [color = blue];
+    pageable -- alloc3 [color = blue];
+    pageable -- pinned [color = blue];
+
+    // direct-peer
+    alloc0 -- gpu1 [color = green];
+    alloc1 -- gpu0 [color = green];
+    alloc2 -- gpu3 [color = green];
+    alloc3 -- gpu2 [color = green];
+
+    // direct
+    unified -- gpu0 [color = red];
+    unified -- gpu1 [color = red];
+    unified -- gpu2 [color = red];
+    unified -- gpu3 [color = red];
+    unified -- cpu0 [color = red];
+    unified -- cpu1 [color = red];
+    mapped -- gpu0 [color = red];
+    mapped -- gpu1 [color = red];
+    mapped -- gpu2 [color = red];
+    mapped -- gpu3 [color = red];
+    mapped -- cpu0 [color = red];
+    mapped -- cpu1 [color = red];
+}
