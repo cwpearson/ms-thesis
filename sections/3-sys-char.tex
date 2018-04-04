@@ -27,7 +27,7 @@ Section~\ref{sec:link-char} describes the approach to characterize communication
 \section{System Model}
 \label{sec:system-model}
 
-The harware system is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing communication endpoints, or data routing elements.
+The hardware system is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing communication endpoints, or data routing elements.
 Sections~\ref{sec:system-vertices} and \ref{sec:system-edges} describe the specific system components explored.
 Associated with each edge is a performance model function $M: C \rightarrow P$ that maps communication $C$ to an achievable performance $P$.
 
@@ -49,6 +49,15 @@ Processing elements and data storage elements serve as communication endpoints.
 \texttt{hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration and characterization.
 This tool can be executed on a target system to generate $G_s$ for that system.
 Presently, the tool has only been tested on Linux operating systems.
+
+For example, consider the IBM ``Minsky'' machine, shown in Figure~\ref{fig:topo-minsky-example}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth,draft]{figures/topo-minsky-example.png}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:topo-minsky-example}
+\end{figure}
 
 %
 % SECTION
@@ -521,11 +530,9 @@ Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{f
 
 \subsection{Single-Socket x86 with NVIDIA P100 ``Blaise''}
 
-\subsection{Single-Socket x86 with NVIDIA GTX 1070 ``deneb''}
+\subsection{Dual-Socket Power8 and NVIDIA Pascal P100 ``Minsky''}
 
-\subsection{Single-Socket x86 with NVIDIA GTX 970m ``rigel''}
-
-\subsection{IBM Power9 and NVIDIA Volta V100 ``Hal0000''}
+\subsection{Dual-Socket Power9 and NVIDIA Volta V100 ``hal000''}
 
 \section{Write-Combined Memory}
 
@@ -533,64 +540,115 @@ CPU bandwidth writing to wc memory
 
 GPU bandwidth copying back to wc memory
 
-\section{NVLink vs NVLink 2 vs PCIe}
 
+\section{Observations}
+
+Misnky2
+\begin{itemize}
+\item GPU-GPU coherence bandwidth depends on local/remote
+\item GPU-GPU prefetch bandwidth depends on local/remote
+\item CPU-GPU um bandwidth has crossover
+\item GPU-CPU um bandwidth has crossover
+\end{itemize}
+
+Impact1
+\begin{itemize}
+    \item Pageable copy bandwidth faster than pinned
+    \item WC bandwidth small for small transfers
+\end{itemize}
+
+
+\section{Basic CUDA}
+
+Applicable Systems
+\begin{itemize}
+    \item CUDA 9.1 / Power8 / NVLink1 / Pascal
+    \item CUDA 9.1 / Power9 / NVLink2 / Volta
+    \item x86 / PCIe3 / Pascal
+    \item x86 / PCIe3 / Kepler
+\end{itemize}
+
+Applicable Measures
 \begin{itemize}
     \item pageable memory bandwidth
     \item pinned memory bandwidth
     \item write-combined bandwidth (\texttt{cudaHostAllocWriteCombined})
     \item direct mapped bandwidth  (\texttt{cudaHostAllocMapped})
-    \item wc / direct mapped bandwidth  (\texttt{cudaHostAllocMapped | cudaHostAllocWriteCombined})
 \end{itemize}
 
 \section{Unified Memory}
+
+
+
+\subsection{Unified Memory Bandwidth}
+
+Applicable Systems
+\begin{itemize}
+    \item CUDA 9.1 / Power8 / NVLink1 / Pascal
+    \item CUDA 9.1 / Power9 / NVLink2 / Volta
+    \item x86 / PCIe / Pascal
+    \item x86 / PCIe / Kepler
+\end{itemize}
+
+Applicable Measures
+\begin{itemize}
+    \item Coherence vs Prefetch (CPU - GPU)
+    \item Coherence vs Prefetch (GPU - CPU)
+    \item Coherence vs Prefetch (GPU - GPU)
+\end{itemize}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth,draft]{figures/minsky_um-bw_cpu0-gpu0.png}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth,draft]{figures/minsky_um-bw_gpu0-cpu0.png}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:}
+\end{figure}
+
+\subsection{Unified Memory Latency}
 
 \begin{itemize}
     \item CUDA 9.1 / Power8 / NVLink1 / Pascal
     \item CUDA 9.1 / Power9 / NVLink2 / Volta
     \item x86 / PCIe / Pascal
-    \item x86 / PCIe / Volta
-    \item x86 / PCIe / Kepler
+    \item x86 / PCIe / Maxwell
 \end{itemize}
-
-\subsection{Coherence Bandwidth}
-\begin{itemize}
-    \item CPU->GPU coherence bandwidth (r/w, access patterns)
-    \item GPU->GPU coherence bandwidth (r/w, access patterns)
-\end{itemize}
-    
-\subsection{Prefetch Bandwidth}
-
-\texttt{cudaMemPrefetchAsync}
 
 \begin{itemize}
-    \item CPU->GPU prefetch bandwidth
-    \item GPU->CPU prefetch bandwidth
-    \item GPU->GPU prefetch bandwidth 
+    \item CPU - GPU
+    \item GPU - CPU
+    \item GPU - GPU
 \end{itemize}
 
 
+\section{Extensions}
 \subsection{cudaMemAdviseSetReadMostly}
 \begin{itemize}
-    \item
+    \item CPU-GPU coherence bandwidth (r/w, x access patterns)
+    \item GPU-GPU coherence bandwidth (r/w, x access patterns)
+    \item estimate invalidation cost (CPU-GPU, GPU->GPU)
 \end{itemize}
 
-\subsection{cudaMemAdviseSetReadMostly}
-\begin{itemize}
-    \item CPU->GPU coherence bandwidth (r/w, x access patterns)
-    \item GPU->GPU coherence bandwidth (r/w, x access patterns)
-    \item estimate invalidation cost (CPU->GPU, GPU->GPU)
-\end{itemize}
-
-
-\section{System Atomics}
-
+\subsection{System Atomics}
 \begin{itemize}
     \item Latency and throughput for PCIe PASCAL / NVLink1 Pascal 
     \item Latency and throughput for PCIe Volta / NVLink2 Volta
 \end{itemize}
 
-\section{Volta access counters for triggering migration}
+\subsection{Multi-GPU Sync}
+\begin{itemize}
+    \item CUDA 9.1 / Power9 / NVLink2 / Volta
+\end{itemize}
+
+
+\section{Parking Lot}
+\subsection{Volta access counters for triggering migration}
 \begin{itemize}
     \item local CPU->GPU
     \item remote CPU->GPU
@@ -598,12 +656,6 @@ GPU bandwidth copying back to wc memory
     \item remote GPU->GPU
 \end{itemize}
 
-\begin{itemize}
-    \item effect of cudaMemAdviseSetPreferredLocation
-    \item remote CPU->GPU
-    \item local GPU->GPU
-    \item remote GPU->GPU
-\end{itemize}
 
 \section{Atomics and Unified Memory}
 \begin{itemize}
