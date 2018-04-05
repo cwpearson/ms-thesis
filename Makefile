@@ -19,6 +19,8 @@ all:
 	${LATEX} ecethesis
 
 docker:
+	echo ===== FIGURES =====
+	${DOCKER} make -C figures
 	echo ===== LATEX 1 =====
 	${DOCKER} ${LATEX} ecethesis
 	echo ===== BIBTEX =====
@@ -30,3 +32,4 @@ docker:
 
 clean:
 	rm -f *.toc *.log *.lof *.lot *.aux *.bbl *.blg ecethesis.pdf sections/*.aux
+	make -C figures clean
