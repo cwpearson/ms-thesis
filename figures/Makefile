@@ -1,7 +1,8 @@
 
 TARGETS = \
-minsky-topo-actual.pdf \
-minsky-topo-logical.pdf
+minsky-topo-hardware.pdf \
+minsky-topo-cuda-simple.pdf \
+minsky-topo-cuda-detail.pdf \
 
 all: $(TARGETS)
 

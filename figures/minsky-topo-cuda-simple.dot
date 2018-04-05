@@ -1,0 +1,20 @@
+graph G {
+
+    //ratio=fill;
+    //ranksep=1.5;
+    nodesep=0.25;
+
+    cpu -- gpu0;
+    cpu -- gpu1;
+    cpu -- gpu2;
+    cpu -- gpu3;
+
+    gpu0 -- gpu1;
+    gpu0 -- gpu2;
+    gpu0 -- gpu3;
+
+    gpu1 -- gpu2;
+    gpu1 -- gpu3;
+
+    gpu2 -- gpu3;
+}
