@@ -17,12 +17,29 @@ Section~\ref{sec:system-model} describes an overview of the system model.
 Section~\ref{sec:topology-exploration} describes a method for discovering data sources, sinks, and communication paths in a system.
 Section~\ref{sec:link-char} describes the approach to characterize communication links.
 
+
+\section{Hardware Topology vs. Logical Topology}
+
+Consider the IBM ``Minsky'' machine shown in Figure~\ref{fig:minsky-actual-logical}.
+
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\textwidth,draft]{figures/actual-cuda-memcpy.png}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/minsky-topo-actual.pdf}
+        \caption{Actual Minsky Topology}
+        \label{fig:gull}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/minsky-topo-logical.pdf}
+        \caption{Logical Minsky Topology}
+        \label{fig:gull}
+    \end{subfigure}
+
     \caption[\todo{short}]{\todo{long}}
-    \label{fig:actual-cuda-memcpy}
+    \label{fig:minsky-actual-logical}
 \end{figure}
+
 
 \section{System Model}
 \label{sec:system-model}
@@ -50,14 +67,7 @@ Processing elements and data storage elements serve as communication endpoints.
 This tool can be executed on a target system to generate $G_s$ for that system.
 Presently, the tool has only been tested on Linux operating systems.
 
-For example, consider the IBM ``Minsky'' machine, shown in Figure~\ref{fig:topo-minsky-example}.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth,draft]{figures/topo-minsky-example.png}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:topo-minsky-example}
-\end{figure}
 
 %
 % SECTION

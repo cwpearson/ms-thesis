@@ -1,0 +1,30 @@
+{
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "custom",
+            "tools": [
+                "make",
+            ]
+        },
+        {
+            "name": "latexmk",
+            "tools": [
+                "latexmk"
+            ]
+        },
+        {
+            "name": "pdflatex -> bibtex -> pdflatex*2",
+            "tools": [
+                "pdflatex",
+                "bibtex",
+                "pdflatex",
+                "pdflatex"
+            ]
+        }
+    ],
+    "latex-workshop.latex.tools": [{
+        "name": "make",
+        "command": "make",
+        "args": []
+      }]
+}

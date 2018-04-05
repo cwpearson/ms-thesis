@@ -7,6 +7,8 @@ PWD := $(shell pwd)
 
 DOCKER = docker run --rm -i --user="${USR}:${GRP}" --net=none -v "${PWD}":/data cwpearson/latex:tikz
 all:
+	echo ===== FIGURES =====
+	make -C figures
 	echo ===== LATEX 1 =====
 	${LATEX} ecethesis
 	echo ===== BIBTEX =====
