@@ -19,11 +19,9 @@ digital signal processors~\todo{cite google pixel2},
 vision processing units (Eyeriss~\cite{chen2017eyeriss} ~\todo{cite movidius, microsoft, mobilieye}),
 and many others.
 
-
-
 Thanks to \todo{fundamental physical challenges}, accelerators require memories close to their high-performance specialized compute elements.
 Without these memories to ``feed the beast'', the performance of the accelerator would be severely limited by its link to the host memory.
-For discrete-type accelerators, moving data into accelerator memory to support high-performance execution is a first-order developer challenge.
+Moving data into accelerator memory to support high-performance execution is a first-order design consideration for any accelerated application.
 This work lays the foundation for mitigating the data-placement challenge and reducing developer effort.
 
 \todo{cognitive computing apps as a motivating example}
@@ -33,17 +31,19 @@ Analytics and neural-network applications ingest huge amounts of data, and even 
 That motivates developers to use accelerators for these applications.
 To achieve high performance on accelerators, developers must marshal and coordinate their data movement and computation.
 
-This document describes an automated approach to modeling the performance of data movement in systems that use programmable accelerators.
-The performance of logical communication paths available to the application is determined by the hardware and software present in the system, and can be empirically measured and understood by enumerating the system topology 
-
-Any automated solution to this problem will require a detailed characterization of the underlying heterogeneous system and its data movement capabilities.
-This work demonstrates a systematic heterogeneous system communication characterization.
-Furthermore, it presents a systematic method for analyzing applications to determine how their performance is influenced by heterogeneous systems.
+This work describes an automated approach to analyzing the performance of data movement in systems that use programmable accelerators.
+Broadly, the approach consists of two components
+\begin{enumerate}
+    \item A system characterization tool, which enumerates and characterizes the performance of logical communication paths (Chapter~\ref{ch:sys-char}).
+    \item An application characterization tool, which profiles unmodifed applications to record how they inteact with the system (Chapter~\ref{ch:app-char}).
+\end{enumerate}
+These tools are examined in the context of heterogeneous systems made of CPUs and NVIDIA GPUs and machine-learning workloads due to the maturity of that hardware/software ecosystem.
+Together, these tools provide a foundation for automating analysis of the relationship between system design and application performance (Chapter~\ref{ch:modeling}).
 
 The rest of this document is organized as follows:
-chapter 2 describes background and related work;
-chapter 3 describes the hardware system characterization approach;
-chapter 4 describes the application characterization approach;
-chapter 5 describes the methodology for combining the system and application characterization to understand application performance;
-chapter 6 discusses related work;
-and finally, chapter 7 concludes.
+Chapter~\ref{ch:background} describes background information on NVIDIA GPUs, the CUDA programming system, interconnects, and 
+Chapter~\ref{ch:sys-char} describes the hardware system characterization approach;
+Chapter~\ref{ch:app-char} describes the application characterization approach;
+Chapter~\ref{ch:modeling} describes a methodology for combining the system and application characterization to understand application performance;
+Chapter~\ref{ch:related} discusses related work;
+and finally, Chapter~\ref{ch:conclusion} concludes.

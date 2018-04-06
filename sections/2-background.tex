@@ -1,59 +1,68 @@
 \chapter{Background}
+\label{ch:background}
 
-This section describes the hardware systems that connect NVIDIA GPUs to host systems, and the communication capabilities exposed by the CUDA API.
+This work examines the relationship between system and application performance in the context of systems comprised of CPUs and NVIDIA GPUs.
+To that end, this section describes
+\begin{itemize}
+\item How NVIDIA GPUs fit into the computing system architecture (Section~\ref{sec:gpu-sys-arch}).
+\item Common system interconnects used to couple GPUs to each other and the rest of the system (Section~\ref{sec:interconnects}).
+\item Communication-related components of CUDA, the NVIDIA GPU programming system (Section~\ref{sec:cuda}).
+\item The relationship between CUDA's abstractions and the underlying system hardware (Section~\ref{sec:sys-abstraction}).
+\item The Linux and CUDA components used by the application profiler (Section~\ref{sec:profiling}).
+\end{itemize}
 
-\section{Integration of Accelerators}
 
-The degree to which these accelerators are integrated with the host system varies.
-Figure~\ref{fig:integration-spectrum} depicts how integrated some common accelerators are.
-Fully-integrated accelerators are characterized by direct and transparent access to system memory, no additional programming system or compiler support, and no explicit control through an OS or vendor API.
-For example, floating-point accelerators are fully integrated.
-They have migrated into the host instruction-set architecture, have first-class access to system memory, and are supported without specialized toolchains or programming systems.
-Similarly, SIMD vector extensions are nearly as integrated, but may require some special attention to memory alignment, precision, or rounding modes.
-In contrast, fully-discrete accelerators have their own memory, have esoteric programming systems, and demand explicit control.
-For example, FPGAs are programmed in hardware-description languages, may require the host system to be rebooted to be reconfigured, and often require the programmer to explicity transfer data to their memory.
-As on the of the most mature accelerators, GPUs occupy a middle ground.
-GPUs vary from partially-integrated to discrete: when a GPU is integrated on the same die as the CPU, it may share the same physical memory, but the computation model remains for compute tasks to be ``offloaded'' to the GPU, with the CPU managing the execution.
+\section{GPUs and System Architecture}
+\label{sec:gpu-sys-arch}
 
-\begin{figure}
+Most GPUs used in high-performance computing are fully-discrete accelerators.
+From the software side, they demand explicit management through esoteric programming systems.
+The CPU typically acts as a manager,  and ``offloads'' specialized compute tasks to the GPU.
+From the hardware perspective, GPUs are separated from the CPU and system storage by a local interconnect link.
+The GPU has its own local memory, which must be populated with data for the GPU to operate on.
+Finally, though not covered in this work, the GPU compute cores have dramatically different performance characteristics than CPU cores, and require specialized programming styles.
+
+
+\begin{figure}[ht]
     \centering
-    \begin{tikzpicture}[
-        nodestyle/.style={},
-        axisline/.style={
-            <->,
-            very thick,
-            shorten <=2pt,
-            shorten >=2pt,},
-        axistext/.style={},
-        ]
-
-        \pgfmathsetmacro{\rt}{1} % thickness
-        \pgfmathsetmacro{\rs}{0.2} % spacing
-
-        \pgfmathsetmacro\ra{\rs}
-        \pgfmathsetmacro\rb{\ra+\rt+\rs}
-        \pgfmathsetmacro\rc{\rb+\rt+\rs}
-
-
-        \draw[axisline] (0,0) node[anchor=north west] {Integrated} -- (10,0) node[anchor=north east] {Discrete};
-
-        \draw[fill=gray] (0,\ra) rectangle (1,\ra+\rt);
-        \node [above] at (2.1, \ra+0.25\rt) {IEEE 754};
-
-        \shade[left color=darkgray, right color=white] (0,\rb) rectangle (2,\rb+\rt);
-        \node [above] at (2.8, \rb+0.25\rt) {SIMD extensions};
-
-        \shade[left color=white, right color=darkgray] (3,\ra) rectangle (10,\ra+\rt) node[pos=0.5] {DSPs};
-        \shade[left color=white, right color=darkgray] (5,\rb) rectangle (10,\rb+\rt) node[pos=0.5] {GPUs};
-        \shade[left color=white, right color=darkgray] (7,\rc) rectangle (10,\rc+\rt) node[pos=0.5] {FPGAs};
-
-    \end{tikzpicture}
-    \caption{Spectrum of integration for accelerators.}
-    \label{fig:integration-spectrum}
+    \begin{subfigure}[b]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{figures/x86-kepler-bw.pdf}
+        \caption{AMD Opteron 6200 / PCIe 3.0 / K20X }
+        \label{fig:x86-kepler-bw}
+    \end{subfigure}
+	~
+	\begin{subfigure}[b]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{figures/x86-pascal-bw.pdf}
+        \caption{Intel Xeon Platinum 8180M / PCIe 3.0 / Pascal P100}
+        \label{fig:x86-pascal-bw}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{figures/p8-pascal-bw.pdf}
+        \caption{Power8 / NVLink / Pascal}
+        \label{fig:p8-pascal-bw}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.2\textwidth}
+        \includegraphics[width=\textwidth]{figures/p9-volta-bw.pdf}
+        \caption{Power9 / NVLink / Volta}
+        \label{fig:p9-pascal-bw}
+    \end{subfigure}
+    \caption[\todo{short}]{Relative interconnect bandwidths of some hypothetical systems. \cite{amd2012opteron6200}}
+    \label{fig:gpu-sys-arch}
 \end{figure}
+
+Figure~\ref{fig:gpu-sys-arch} shows some example interconnect bandwidth numbers for some hypothetical systems.
+In all cases, the bandwidth between the CPU or GPU and their respective memories is much higher than the bandwidth between the CPU and GPU.
+Figure~\ref{fig:x86-kepler-bw} is representative of a node of a supercomputer designed in 2012.
+Figure~\ref{fig:x86-pascal-bw} represents a similar system, with components updated to 2017.
+Figure~\ref{fig:p8-pascal-bw} is a c.2016 system with an IBM Power8 CPU and NVLink.
+Figure~ref{fig:p9-volta-bw} represents next-generation link bandwidths coming online in the Summit\todo{cite} and Sierra\todo{cite} supercomputers.
+
 
 
 \section{Interconnects}
+\label{sec:interconnects}
 
 Modern systems with discrete GPUs typically feature one of two kinds of common accelerator interconnects.
 These interconnects may couple the GPUs to the CPUs and/or other GPUs.
@@ -145,6 +154,8 @@ This API definition imposes the following basic structure on all CUDA programs, 
 \end{enumerate}
 
 Unified virtual addressing (Section~\ref{sec:uva}) and unified memory (Section ~\ref{sec:um}) allow the programmer to make some of these steps implicit.
+
+
 
 \subsubsection{Page-Locked Memory}
 
@@ -313,31 +324,24 @@ Access counters eventually trigger migration.
 On devices with compute capability 6.0+, the unified memory system operates at page-granularity rather than allocation-granularity.
 Pages will migrate between GPUs on peer accesses, and \texttt{cudaMallocManaged} may be used to allocate more memory than is physically present on the GPU.
 
+\subsection{CUDA Streams}
 
-\subsubsection{Atomic Operations prior to CC 6.0}
 
-Beginning with CC 1.1 and continuing through CC 2.0, CUDA introduced an increasingly complete set of atomic operations, culminating in support for common 32-bit and 64-bit operations on integers and floating-point types in global and shared memory (\cite{nvidia2008cuda20} C.1)
-All of these atomic operations were atomic with respect only to the executing GPU.
 
-\subsubsection{Atomic Operations with CC 6.0+}
 
-Compute Capability 6.0 brings two new kinds of atomics operations: system atomics (\texttt{atomic\*\_system}) and block atomics (\texttt{atomic\*\_block}) (\cite{nvidia2017cuda80}, B.12).
-System atomics are atomic with respect to all CPUs and GPUs in the system.
-Block atomics are atomic only with respect to other threads in the thread block.
+\section{System Communication Abstraction}
+\label{sec:sys-abstraction}
 
-\subsection{Parking Lot}
+\todo{Where do these paths come from}
 
-\todo{cudaMemcpy and managed memory (J2.2.1)?}
+\todo{why are there different paths}
 
-\todo{Texture memory?}
-%\subsubsection{Texture memory and CUDNN}
-%\todo{3.2.11}
+\todo{How do you use these paths}
 
-\subsection{HSA}
-\label{sec:hsa}
 
 
 \section{Profiling Tooling}
+\label{sec:profiling}
 
 \subsection{CUDA Profiling Tools Interface}
 \label{sec:cupti}
@@ -358,25 +362,29 @@ Chapter~\ref{ch:app-char} describes how \todo{hwcomm-apptracer} uses LD\_PRELOAD
 
 \cite{kerrisk2017ld}
 
-\subsection{ Communication Paths}
 
-\todo{why are there different paths}
 
-\todo{How do you use these paths}
 
-\todo{streams to overlap computation with communication}
 
 \section{Parking Lot}
 
-\todo{QPI?}
+\subsection{Atomics}
 
-\todo{CAPI?}
+\subsubsection{Atomic Operations prior to CC 6.0}
 
-Coherent Accelerator Processor Interface (CAPI) is a processor expansion bus standard.
+Beginning with CC 1.1 and continuing through CC 2.0, CUDA introduced an increasingly complete set of atomic operations, culminating in support for common 32-bit and 64-bit operations on integers and floating-point types in global and shared memory (\cite{nvidia2008cuda20} C.1)
+All of these atomic operations were atomic with respect only to the executing GPU.
 
-\subsection{OpenCAPI}
+\subsubsection{Atomic Operations with CC 6.0+}
+
+Compute Capability 6.0 brings two new kinds of atomics operations: system atomics (\texttt{atomic\*\_system}) and block atomics (\texttt{atomic\*\_block}) (\cite{nvidia2017cuda80}, B.12).
+System atomics are atomic with respect to all CPUs and GPUs in the system.
+Block atomics are atomic only with respect to other threads in the thread block.
 
 
+\todo{cudaMemcpy and managed memory (J2.2.1)?}
 
-\subsection{HSA}
-\label{sec:hsa}
+\todo{Texture memory?}
+%\subsubsection{Texture memory and CUDNN}
+%\todo{3.2.11}
+
