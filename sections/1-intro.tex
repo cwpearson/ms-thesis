@@ -7,8 +7,6 @@
     The first chapter can also give the background of previous work on the subject and the method used in attacking the problem.
 }
 
-This document describes an automated approach to modeling the performance of data movement in systems that use programmable accelerators.
-
 With the end of Dennard scaling, computer architects have sough to satisfy demand for increasing performance by providing specialized hardware accelerators tuned to computation with particular characteristics.
 Perhaps the most successful examples of this trend is the uniform adoption and IEEE 754 specification of floating-point hardware, and widespread adoption of graphics processing units (GPUs) for more general data-parallel compute tasks.
 With the success of GPUs as a template, architects are moving forward with a wide variety of specialized processors, such as
@@ -34,6 +32,9 @@ The data-placement and data-movement challenge is exacerbated by the growing dem
 Analytics and neural-network applications ingest huge amounts of data, and even if the amount of compute per data element is small, the aggregate required computation can be commensurately large.
 That motivates developers to use accelerators for these applications.
 To achieve high performance on accelerators, developers must marshal and coordinate their data movement and computation.
+
+This document describes an automated approach to modeling the performance of data movement in systems that use programmable accelerators.
+The performance of logical communication paths available to the application is determined by the hardware and software present in the system, and can be empirically measured and understood by enumerating the system topology 
 
 Any automated solution to this problem will require a detailed characterization of the underlying heterogeneous system and its data movement capabilities.
 This work demonstrates a systematic heterogeneous system communication characterization.
