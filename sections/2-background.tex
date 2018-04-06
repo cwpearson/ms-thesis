@@ -55,9 +55,34 @@ GPUs vary from partially-integrated to discrete: when a GPU is integrated on the
 
 \section{Interconnects}
 
+Modern systems with discrete GPUs typically feature one of two kinds of common accelerator interconnects.
+These interconnects may couple the GPUs to the CPUs and/or other GPUs.
+Table 
+
+\begin{table}[h]
+	\centering
+	\caption[Basic CUDA Memory-management APIs]{\todo{long caption}}
+	\label{tab:interconnect-overview}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{}             & \textbf{PCIe 3.0} & \textbf{NVLink} & \textbf{NVLink2}                        \\ \hline
+		Speed & \todo{Some GBs} & \todo{Some GBs}&\todo{Some GBs}   \\ \hline
+		
+	\end{tabular}
+\end{table}
+
 \subsection{PCIe}
 
+Peripheral Component Interconnect Express (PCIe) is an expansion bus standard~\cite{pcie10a}.
+It is structured around hubs
+
 \subsection{NVLink1 / NVLink2}
+
+NVLink is a communication protocol developed by NVIDIA.
+Data and control signals can be sent over NVLink
+
+
+
 
 %
 %
