@@ -27,7 +27,7 @@ Finally, though not covered in this work, the GPU compute cores have dramaticall
     \centering
     \begin{subfigure}[b]{0.2\textwidth}
         \includegraphics[width=\textwidth]{figures/x86-kepler-bw.pdf}
-        \caption{AMD Opteron 6200 / PCIe 3.0 / K20X }
+        \caption{AMD Opteron 6200 / PCIe 2.0 / K20X }
         \label{fig:x86-kepler-bw}
     \end{subfigure}
 	~
@@ -48,7 +48,7 @@ Finally, though not covered in this work, the GPU compute cores have dramaticall
         \caption{Power9 / NVLink / Volta}
         \label{fig:p9-pascal-bw}
     \end{subfigure}
-    \caption[\todo{short}]{Relative interconnect bandwidths of some hypothetical systems. \cite{amd2012opteron6200}}
+    \caption[\todo{short}]{Relative interconnect bandwidths of some hypothetical systems. \cite{amd2012opteron6200} \cite{stuechli2013power8}}.
     \label{fig:gpu-sys-arch}
 \end{figure}
 
@@ -56,7 +56,7 @@ Figure~\ref{fig:gpu-sys-arch} shows some example interconnect bandwidth numbers 
 In all cases, the bandwidth between the CPU or GPU and their respective memories is much higher than the bandwidth between the CPU and GPU.
 Figure~\ref{fig:x86-kepler-bw} is representative of a node of a supercomputer designed in 2012.
 Figure~\ref{fig:x86-pascal-bw} represents a similar system, with components updated to 2017.
-Figure~\ref{fig:p8-pascal-bw} is a c.2016 system with an IBM Power8 CPU and NVLink.
+Figure~\ref{fig:p8-pascal-bw} is a c.2014 system with an IBM Power8 CPU and NVLink.
 Figure~ref{fig:p9-volta-bw} represents next-generation link bandwidths coming online in the Summit\todo{cite} and Sierra\todo{cite} supercomputers.
 
 
