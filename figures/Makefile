@@ -4,7 +4,12 @@ app-abstraction.pdf \
 minsky-topo-hardware.pdf \
 minsky-topo-cuda-simple.pdf \
 minsky-topo-cuda-detail.pdf \
-m2_um_cpu0-gpu0.pdf
+m2_um_cpu0-gpu0.pdf \
+x86-kepler-bw.pdf \
+x86-pascal-bw.pdf \
+p8-pascal-bw.pdf \
+p9-volta-bw.pdf \
+
 
 all: $(TARGETS)
 
@@ -13,7 +18,6 @@ all: $(TARGETS)
 
 %.pdf: %.svg
 	inkscape -D -z --file=$< --export-pdf=$@
-	# inkscape -D -z --file=$< --export-pdf=$@ --export-latex
 
 %.pdf: ../data/%.csv
 	python make_plot.py $< $@
