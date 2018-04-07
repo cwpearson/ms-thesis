@@ -1,26 +1,30 @@
 
-TARGETS = \
-app-abstraction.pdf \
-minsky-topo-hardware.pdf \
-minsky-topo-cuda-simple.pdf \
-minsky-topo-cuda-detail.pdf \
-m2_um_cpu0-gpu0.pdf \
-x86-kepler-bw.pdf \
-x86-pascal-bw.pdf \
-p8-pascal-bw.pdf \
-p9-volta-bw.pdf \
+TARGETS =
 
+DATA_DIR = ../data
+GEN_DIR = generated
+CSV_FILES=$(wildcard $(DATA_DIR)/*.csv)
+SVG_FILES=$(wildcard *.svg)
+DOT_FILES=$(wildcard *.dot)
+
+GEN_FILES := $(patsubst $(DATA_DIR)/%.csv, $(GEN_DIR)/%.pdf, ${CSV_FILES})
+GEN_FILES += $(patsubst %.svg, $(GEN_DIR)/%.pdf, ${SVG_FILES})
+GEN_FILES += $(patsubst %.dot, $(GEN_DIR)/%.pdf, ${DOT_FILES})
+TARGETS += $(GEN_FILES)
 
 all: $(TARGETS)
 
-%.pdf: %.dot
+generated:
+	mkdir -p generated
+
+generated/%.pdf: %.dot generated
 	dot -Tpdf $< -o $@
 
-%.pdf: %.svg
+generated/%.pdf: %.svg generated
 	inkscape -D -z --file=$< --export-pdf=$@
 
-%.pdf: ../data/%.csv
+generated/%.pdf: ../data/%.csv generated
 	python make_plot.py $< $@
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(TARGETS) $(GEN_DIR)/*.pdf

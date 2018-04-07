@@ -10,7 +10,7 @@ Figure~\ref{fig:app-abstraction} shows a schematic of this stack.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\textwidth]{figures/app-abstraction.pdf}
+    \includegraphics[width=0.5\textwidth]{figures/generated/app-abstraction.pdf}
     \caption[\todo{short}]{\todo{improve this figure}. The CUDA application interacts with the underlying hardware through libraries, the CUDA driver and the operating system.}
     \label{fig:app-abstraction}
 \end{figure}
@@ -29,20 +29,20 @@ Figure~\ref{fig:minsky-topo-cuda-detail} shows more detailed communication capab
 \begin{figure}[ht]
     \centering
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/minsky-topo-hardware.pdf}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-hardware.pdf}
         \caption{Minky Hardware Topology. Comonents have different distances and link bandwidths.}
         \label{fig:minsky-topo-hardware}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/minsky-topo-cuda-simple.pdf}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda-simple.pdf}
         \caption{Minsky CUDA Topology. 
                  There is no concept of multiple CPUs, and the API may be used to directly move data between any two devices.}
         \label{fig:minsky-topo-cuda-simple}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/minsky-topo-cuda-detail.pdf}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda-detail.pdf}
         \caption{Minsky Detailed CUDA Topology.
                 Combining the two previous graphs yields distinctly-performing logical communication paths.}
         \label{fig:minsky-topo-cuda-detail}
@@ -646,6 +646,13 @@ Applicable Measures
 
 \subsection{Unified Memory Bandwidth}
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth,draft]{figures/m2_um-bw_cpu0-gpu0.pdf}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:}
+\end{figure}
+
 Applicable Systems
 \begin{itemize}
     \item CUDA 9.1 / Power8 / NVLink1 / Pascal
@@ -661,19 +668,7 @@ Applicable Measures
     \item Coherence vs Prefetch (GPU - GPU)
 \end{itemize}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth,draft]{figures/minsky_um-bw_cpu0-gpu0.png}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:}
-\end{figure}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth,draft]{figures/minsky_um-bw_gpu0-cpu0.png}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:}
-\end{figure}
 
 \subsection{Unified Memory Latency}
 
