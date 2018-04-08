@@ -646,12 +646,36 @@ Applicable Measures
 
 \subsection{Unified Memory Bandwidth}
 
+
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\textwidth,draft]{figures/m2_um-bw_cpu0-gpu0.pdf}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_prefetch_gpu-local-remote.pdf}
+        \caption{}
+        \label{fig:minsky-topo-hardware}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_coherence_gpu-local-remote.pdf}
+        \caption{}
+        \label{fig:minsky-topo-cuda-simple}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_cpu0-gpu0.pdf}
+        \caption{}
+        \label{fig:minsky-topo-hardware}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_gpu0-cpu0.pdf}
+        \caption{}
+        \label{fig:minsky-topo-cuda-simple}
+    \end{subfigure}
     \caption[\todo{short}]{\todo{long}}
-    \label{fig:}
+    \label{fig:minsky-hardware-logical}
 \end{figure}
+
 
 Applicable Systems
 \begin{itemize}

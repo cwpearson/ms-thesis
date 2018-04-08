@@ -8,6 +8,21 @@ plots:
     title: "IBM Minsky Unified Memory Bandwidth"
   m2_um-bw_coherence_gpu-local-remote.csv:
     title: "IBM Minsky Unified Memory Coherence Bandwidth"
+    series:
+      0: 
+        color: "black"
+        lw: 2
+      1: 
+        color: "black"
+        style: "--"
+        lw: 2
+      2: 
+        color: "gray"
+        lw: 2
+      3: 
+        color: "gray"
+        style: "--"
+        lw: 2
   m2_um-bw_prefetch_gpu-local-remote.csv:
     title: "IBM Minsky Unified Memory Prefetch Bandwidth"
     series:
@@ -24,4 +39,20 @@ plots:
       3: 
         color: "gray"
         style: "--"
+        lw: 2
+  m2_um-bw_cpu0-gpu0.csv:
+    series:
+      0: 
+        color: "black"
+        lw: 2
+      1: 
+        color: "gray"
+        lw: 2
+  m2_um-bw_gpu0-cpu0.csv:
+    series:
+      0: 
+        color: "black"
+        lw: 2
+      1: 
+        color: "gray"
         lw: 2
