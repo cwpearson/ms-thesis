@@ -6,9 +6,7 @@ GRP := $(shell id -g)
 PWD := $(shell pwd)
 
 DOCKER = docker run --rm -i --user="${USR}:${GRP}" --net=none -v "${PWD}":/data cwpearson/latex:tikz
-all:
-	echo ===== FIGURES =====
-	$(MAKE) -C figures
+all: figures
 	echo ===== LATEX 1 =====
 	${LATEX} ecethesis
 	echo ===== BIBTEX =====
@@ -29,6 +27,11 @@ docker:
 	${DOCKER} ${LATEX} ecethesis
 	echo ===== LATEX 3 =====
 	${DOCKER} ${LATEX} ecethesis
+
+.PHONY: figures
+figures:
+	echo ===== FIGURES =====
+	$(MAKE) -C figures
 
 clean:
 	rm -f *.toc *.log *.lof *.lot *.aux *.bbl *.blg ecethesis.pdf sections/*.aux

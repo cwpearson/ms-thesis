@@ -51,7 +51,7 @@ cfg = {}
 if path.exists(yaml_file):
     with open(yaml_file, 'rb') as f:
         cfg = yaml.load(f)
-pp.pprint(cfg)
+# pp.pprint(cfg)
 
 def cfg_exists(*keys):
     if key_exists(cfg, *("plots", csv_name,) + keys):
@@ -81,7 +81,23 @@ if cfg_exists("title"):
     print "setting custom title"
     plt.title(cfg_get("title"))
 
+if cfg_exists("series"):
+    for series in cfg_get("series"):
+        if cfg_exists("series", series, "color"):
+            print "setting custom color"
+            plt.gca().get_lines()[series].set_color(cfg_get("series", series, "color"))
+        if cfg_exists("series", series, "style"):
+            print "setting custom style"
+            plt.gca().get_lines()[series].set_linestyle(cfg_get("series", series, "style"))
+        if cfg_exists("series", series, "lw"):
+            print "setting custom lw"
+            plt.gca().get_lines()[series].set_lw(cfg_get("series", series, "lw"))
+        if cfg_exists("series", series, "label"):
+            print "setting custom labels"
+            h, l = ax.get_legend_handles_labels()
+            l[series]=cfg_get("series", series, "label")
+            ax.legend(h, l)
+    ax.legend() # regenerate legend
 
 # plt.show()
-
 plt.savefig(sys.argv[2], bbox_inches="tight", clip_on=False, transparent=True)
