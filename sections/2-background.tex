@@ -66,29 +66,50 @@ Figure~ref{fig:p9-volta-bw} represents next-generation link bandwidths coming on
 
 Modern systems with discrete GPUs typically feature one of two kinds of common accelerator interconnects.
 These interconnects may couple the GPUs to the CPUs and/or other GPUs.
-Table 
+Table~\ref{tab:interconnect-overview} summarizes the theoretical bandwidth of common interconnect configurations.
 
 \begin{table}[h]
 	\centering
-	\caption[Basic CUDA Memory-management APIs]{\todo{long caption}}
+	\caption[Interconnect Performance Summary]{
+		Theoretical performance for common interconnect configurations.
+		Most PCIe 3.0-attached GPUs use 16 lanes, or PCIe x16.
+		The IBM ``Minsky'' system, described in Section~\ref{}, uses two NVLink 1.0 lanes to connect pairs of devices, with each lane operating at 20 GB/s~\cite{nvidia2016p100}.
+		The IBM Power9 / Volta system, described in Section~\ref{}, uses three NVLink 2.0 lanes to connect pairs of devices, with each lane operating at 25 GB/s~\cite{nvidia2017v100}.
+	}
 	\label{tab:interconnect-overview}
 	\begin{tabular}{|c|c|c|c|}
 		\hline
-		\textbf{}             & \textbf{PCIe 3.0} & \textbf{NVLink} & \textbf{NVLink2}                        \\ \hline
-		Speed & \todo{Some GBs} & \todo{Some GBs}&\todo{Some GBs}   \\ \hline
-		
+		\textbf{Interconnect} & \textbf{Bandwidth}  & \textbf{Year} & \textbf{Architecture}\\ \hline
+		\makecell{\textbf{PCIe 3.0}   \\ 16 lanes } & 12.8\footnote{984.6 MB/s per lane} GB/s     & 2010 & Tree   \\ \hline
+		\makecell{\textbf{NVLink 1.0 / NVHS} \\ 2 lanes  } &   40\footnote{20 GB/s per lane} GB/s & 2016 & Point-to-Point \\ \hline
+		\makecell{\textbf{NVLink 2.0 / NVHS} \\ 3 lanes  } &   75\footnote{25 GB/s per lane} GB/s & 2017 & Point-to-Point \\ \hline
 	\end{tabular}
 \end{table}
 
 \subsection{PCIe}
 
 Peripheral Component Interconnect Express (PCIe) is an expansion bus standard~\cite{pcie10a}.
-It is structured around hubs
+PCIe components form a tree, rooted at the \textit{root complex}.
+PCIe devices such as GPUs or SSDs are \textit{endpoints}, with a single upstream port and no downstream ports.
+Data is sent point-to-point between participating endpoints and/or the root complex via unique PCIe addresses.
+The topology also may include \textit{switches}, components with a single upstream port and multiple downstream ports.
+Switches do not receive data packes, and are only used to extend the topology.
+Components are connected by PCIe \textit{links}, each of which consists of one to 32 lanes.
+The total bandwidth of the link depends on the PCIe revision and the number of lanes.
+Figure~\ref{fig:pcie-example} shows an example topology.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/generated/pcie-example.pdf}
+    \caption[Example PCIe topology.]{An example PCIe topology, showing the root complex at the root of the tree, with endpoints and switches connected by links.}
+    \label{fig:pcie-example}
+\end{figure}
 
 \subsection{NVLink1 / NVLink2}
 
 NVLink is a communication protocol developed by NVIDIA.
-Data and control signals can be sent over NVLink
+Data and control signals can be sent over NVLink.
+Current NVLink implementations use a proprietary High-Speed Signaling interconnect called NVHS \cite{harris2016insidepascal}
 
 
 
