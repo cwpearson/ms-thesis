@@ -67,6 +67,8 @@ Figure~ref{fig:p9-volta-bw} represents next-generation link bandwidths coming on
 Modern systems with discrete GPUs typically feature one of two kinds of common accelerator interconnects.
 These interconnects may couple the GPUs to the CPUs and/or other GPUs.
 Table~\ref{tab:interconnect-overview} summarizes the theoretical bandwidth of common interconnect configurations.
+Figure~\ref{fig:interconnect-cartoon} shows example PCIe and NVLink topologies.
+Section~\ref{sec:cuda-peer} describes how these topologies affect parts of the CUDA peer-communication API.
 
 \begin{table}[h]
 	\centering
@@ -80,11 +82,32 @@ Table~\ref{tab:interconnect-overview} summarizes the theoretical bandwidth of co
 	\begin{tabular}{|c|c|c|c|}
 		\hline
 		\textbf{Interconnect} & \textbf{Bandwidth}  & \textbf{Year} & \textbf{Architecture}\\ \hline
-		\makecell{\textbf{PCIe 3.0}   \\ 16 lanes } & 12.8\footnote{984.6 MB/s per lane} GB/s     & 2010 & Tree   \\ \hline
-		\makecell{\textbf{NVLink 1.0 / NVHS} \\ 2 lanes  } &   40\footnote{20 GB/s per lane} GB/s & 2016 & Point-to-Point \\ \hline
-		\makecell{\textbf{NVLink 2.0 / NVHS} \\ 3 lanes  } &   75\footnote{25 GB/s per lane} GB/s & 2017 & Point-to-Point \\ \hline
+		\textbf{PCIe 3.0}          & 12.8 GB/s (16 lanes) & 2010 & Tree   \\ \hline
+		\textbf{NVLink 1.0 / NVHS} &   40 GB/s (2 lanes)  & 2016 & Point-to-Point \\ \hline
+		\textbf{NVLink 2.0 / NVHS} &   75 GB/s (3 lanes)  & 2017 & Point-to-Point \\ \hline
 	\end{tabular}
 \end{table}
+
+\begin{figure}[ht]
+    \centering
+	\begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/pcie-example.pdf}
+		\caption[]{}
+		\label{fig:pcie-cartoon}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/nvlink-example.pdf}
+		\caption[]{}
+		\label{fig:pcie-cartoon}
+    \end{subfigure}
+    \caption[Example PCIe and NVLink interconnect topologies]{
+		(a): an example PCIe topology, showing the root complex at the root of the tree, with endpoints and switches connected by links.
+		(b): an example NVLink topology, with each device supporting four NVLinks, and using two to connect to each of its neighbor devices.
+		In both examples, a second CPU socket has access to the topopolgy, but must first have its communication pass through the CPU socket assocated with the interconnects.
+	}
+    \label{fig:interconnect-cartoon}
+\end{figure}
 
 \subsection{PCIe}
 
@@ -96,20 +119,19 @@ The topology also may include \textit{switches}, components with a single upstre
 Switches do not receive data packes, and are only used to extend the topology.
 Components are connected by PCIe \textit{links}, each of which consists of one to 32 lanes.
 The total bandwidth of the link depends on the PCIe revision and the number of lanes.
-Figure~\ref{fig:pcie-example} shows an example topology.
+Figure~\ref{fig:pcie-cartoon} shows an example topology.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{figures/generated/pcie-example.pdf}
-    \caption[Example PCIe topology.]{An example PCIe topology, showing the root complex at the root of the tree, with endpoints and switches connected by links.}
-    \label{fig:pcie-example}
-\end{figure}
 
-\subsection{NVLink1 / NVLink2}
+
+
+\subsection{NVLink}
 
 NVLink is a communication protocol developed by NVIDIA.
-Data and control signals can be sent over NVLink.
-Current NVLink implementations use a proprietary High-Speed Signaling interconnect called NVHS \cite{harris2016insidepascal}
+Current NVLink implementations use a proprietary High-Speed Signaling interconnect called NVHS \cite{harris2016insidepascal}.
+Like PCIe, each NVLink connects two devices.
+Unlike PCIe, there is no concept of upstream or downstream ports, and devices may have multiple ports.
+Multiple links may connect devices, in which case the links are bonded and both contribute to the available bandwidth between devices.
+Figure~\ref{fig:nvlink-cartoon} shows an example topology.
 
 
 
@@ -237,11 +259,32 @@ Furthermore, all mapped allocations are autmatically portable between GPUs, not 
 \texttt{cudaMemcpyPeer} is no longer needed for device-to-device memory copies; \texttt{cudaMemcpy} may be used instead.
 
 \subsubsection{Peer Access and UVA}
+\label{sec:cuda-peer}
 
 Peer access was introduced with CUDA 4.0.
 \texttt{cudaDeviceEnablePeerAccess()} allows CC 2.0+ devices to address memory in another device's address space~(\cite{nvidia2011cudac40}, 3.2.6.4).
 For example, if GPU1 loads through a pointer to data on GPU0, the data will be directly fetched from GPU0 memory, at the cost of one PCIe transasction and one globably memory load, and be cached in the L2 of GPU0.
 Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit system~\cite{schroeder2011peer}.
+The availablility of peer access may rely on a combination of interconnect topology and system hardware.
+
+\begin{table}[h]
+	\centering
+	\caption[\todo{short}]{\todo{long}}
+	\label{tab:cuda-peer-topology}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{System} & \textbf{Configuration} & \textbf{Peer Access} \\ \hline
+		\todo{system} & shared switch  & Yes \\ \hline
+		\todo{system} & different switches  & No \\ \hline
+		IBM ``Minsky'' & direct NVLink connection  & Yes \\ \hline
+		IBM ``Minsky'' & no direct NVLink connection  & No \\ \hline
+		IBM P9 / Volta & direct NVLink connection  & Yes \\ \hline
+		IBM P9 / Volta & no direct NVLink connection  & Yes \\ \hline
+
+	\end{tabular}
+\end{table}
+
+
 
 \subsubsection{Unified Memory with CC 3.0+ (Kepler+)}
 
