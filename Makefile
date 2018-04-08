@@ -18,7 +18,7 @@ all: figures
 
 docker:
 	echo ===== FIGURES =====
-	${DOCKER} xvfb-run --server-args="-screen 0, 1024x768x24" make -C figures
+	${DOCKER} make -C figures
 	echo ===== LATEX 1 =====
 	${DOCKER} ${LATEX} ecethesis
 	echo ===== BIBTEX =====
