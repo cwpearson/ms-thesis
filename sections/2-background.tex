@@ -402,6 +402,79 @@ Pages will migrate between GPUs on peer accesses, and \texttt{cudaMallocManaged}
 
 \todo{How do you use these paths}
 
+Application access to computing systems is made through a stack of abstractions.
+In CUDA applications, the application developer makes use of the CUDA API.
+Those API calls are implemented in various libraries, such as \texttt{libcudart.so} on linux systems.
+In turn, those libraries make use of system calls provided by the operating system.
+The operating system interfaces with various drivers, including the NVIDIA GPU drivers and the interconnect drivers, to make use of the underlying hardware.
+Figure~\ref{fig:app-abstraction} shows a schematic of this stack.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/generated/app-abstraction.pdf}
+    \caption[\todo{short}]{\todo{improve this figure}. The CUDA application interacts with the underlying hardware through libraries, the CUDA driver and the operating system.}
+    \label{fig:app-abstraction}
+\end{figure}
+
+Through these layers of abstraction, the underlying communication capabilities are modified.
+For example, PCIe interconnects transfer data with packets, but the CUDA API does not expose the ability to create custom packets to send to the GPU.
+Furthermore, the performance of the hardware is modified.
+For example, when CUDA unified memory is used, some of the link bandwidth may be reserved for control signals that help ensure data coherence.
+Section~\ref{sec:results} shows how different uses of the CUDA API can achieve different performance on the same phyiscal hardware.
+
+Consider the three different views of the IBM ``Minsky'' machine shown in Figure~\ref{fig:minsky-hardware-logical} (Section~\ref{sec:minsky} describes the machine in more detail).
+Figure~\ref{fig:minsky-topo-hardware}    shows an annotated topographical view of the hardware.
+Figure~\ref{fig:minsky-topo-cuda-simple} represents the equal connectivity of the components presented through the CUDA API.
+Figure~\ref{fig:minsky-topo-cuda-detail} shows more detailed communication capabilities between allocations on those components.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-hardware.pdf}
+        \caption{Minky Hardware Topology. Comonents have different distances and link bandwidths.}
+        \label{fig:minsky-topo-hardware}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda-simple.pdf}
+        \caption{Minsky CUDA Topology. 
+                 There is no concept of multiple CPUs, and the API may be used to directly move data between any two devices.}
+        \label{fig:minsky-topo-cuda-simple}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda-detail.pdf}
+        \caption{Minsky Detailed CUDA Topology.
+                Combining the two previous graphs yields distinctly-performing logical communication paths.}
+        \label{fig:minsky-topo-cuda-detail}
+    \end{subfigure}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:minsky-hardware-logical}
+\end{figure}
+
+
+High-performance data movement in heterogeneous systems requires understanding properties of the logical communication capabilities exposed by the system.
+The real-world properties of these communication capabilities depends on 
+\begin{enumerate}
+    \item Performance of the logical communication paths provided by the system.
+    \item How the application uses those logical communication paths.
+\end{enumerate}
+
+With full knowledge of link properties it is possible to derive an accurate model of the first two elements on this list, that approach has three key barriers
+\begin{itemize}
+    \item Detailed link hardware properties are not available, e.g., when the link provides a competitive advantage for an OEM.
+    \item Detailed link software properies are not available, e.g., when the drivers are proprietary.
+    \item Even if a link is pysically present on the system, it may not be available to the application {e.g., due to bugs in the system configuration}
+\end{itemize}
+Instead of deriving a model of link performance from the ``first principles'' of link properties, this work attempts to generate an empirical model of performance of data movement in the system.
+
+The third item on the list is covered in Section~\ref{sec:app-char}.
+
+Though data movement between many different system components is possible, this work focuses on CPU-CPU and CPU-GPU data transfers.
+Section~\ref{sec:system-model} describes an overview of the system model.
+Section~\ref{sec:topology-exploration} describes a method for discovering data sources, sinks, and communication paths in a system.
+Section~\ref{sec:link-char} describes the approach to characterize communication links.
+
 
 
 \section{Profiling Tooling}

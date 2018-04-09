@@ -9,6 +9,7 @@
 * [Latest `master`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_master.pdf)
 * [Latest `develop`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_develop.pdf)
 * [v0.1](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.1.pdf) given to Wen-Mei Hwu on 3/15/2018.
+* [v0.2](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.2.pdf) shown to Wen-Mei Hwu on 4/08/2018.
 
 
 ## References
