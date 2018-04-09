@@ -23,7 +23,7 @@ generated/%.pdf: %.dot generated
 generated/%.pdf: %.svg generated
 	inkscape -D -z --file=$< --export-pdf=$@
 
-generated/%.pdf: ../data/%.csv generated make_plot.py
+generated/%.pdf: $(DATA_DIR)/%.csv generated make_plot.py $(DATA_DIR)/plots.yml
 	python make_plot.py $< $@
 
 clean:

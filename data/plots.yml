@@ -4,6 +4,60 @@ plots:
       label: "Transfer Rate (MB/s)"
     xaxis:
       scale: "log"
+  hal_um-bw_coherence_gpu-local-remote.csv:
+    title: "IBM Hal Unified Memory Coherence Bandwidth"
+    series:
+      0: 
+        color: "black"
+        label: "Local (0 to 1)"
+        lw: 2
+      1: 
+        color: "black"
+        label: "Remote (0 to 2)"
+        lw: 2
+        style: "--"
+      2: 
+        color: "gray"
+        label: "Local (1 to 0)"
+        lw: 2
+      3: 
+        color: "gray"
+        label: "Remote (2 to 0)"
+        lw: 2
+        style: "--"
+  hal_um-bw_prefetch_gpu-local-remote.csv:
+    title: "IBM Hal Unified Memory Prefetch Bandwidth"
+    series:
+      0: 
+        color: "black"
+        lw: 2
+      1: 
+        color: "black"
+        style: "--"
+        lw: 2
+      2: 
+        color: "gray"
+        lw: 2
+      3: 
+        color: "gray"
+        style: "--"
+        lw: 2
+  hal_um-bw_cpu0-gpu0.csv:
+    series:
+      0: 
+        color: "black"
+        lw: 2
+      1: 
+        color: "gray"
+        lw: 2
+  hal_um-bw_gpu0-cpu0.csv:
+    series:
+      0: 
+        color: "black"
+        lw: 2
+      1: 
+        color: "gray"
+        lw: 2
   m2_um-bw_cpu0-gpu0.csv:
     title: "IBM Minsky Unified Memory Bandwidth"
   m2_um-bw_coherence_gpu-local-remote.csv:
