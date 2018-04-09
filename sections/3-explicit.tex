@@ -3,6 +3,56 @@
 
 \section{CPU / GPU Transfers}
 
+Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu} show memory transfer rates between CUDA pinned allocations on each CPU socket and all four GPUs on the IBM ``Minsky'' machine.
+
+\begin{enumerate}
+    \item {
+    There is a distinct performance difference in transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
+    At large transfer sizes, figure~\ref{fig:minsky-pinned-cpu} shows a \mytilde 5 GB/s difference, regardless of the source CPU socket.
+    Figure~\ref{fig:minsky-pinned-gpu} shows an even larger performance difference of up to 10GB/s.
+    Additionally, GPU $\rightarrow$ CPU transfers in the (CPU0-GPU0-GPU1) triad have erratic performance as transfer sizes change.
+    }
+    \item {
+        Remote CPU $\rightarrow$ GPU transfers may have different performance than GPU $\rightarrow$ CPU transfers.
+        In Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu}, CPU $\rightarrow$ GPU remote transfers achieve nearly 30 GB/s, while GPU $\rightarrow$ CPU transfers peak at around 20 GB/s.
+    }
+\end{enumerate}
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_pinned_cpu0-gpu.pdf}
+        \caption{}
+        \label{fig:minsky-topo-hardware}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_pinned_cpu1-gpu.pdf}
+        \caption{}
+        \label{fig:minsky-topo-cuda-simple}
+    \end{subfigure}
+    \caption[\todo{short}]{Minsky CPU to GPU pinned memory bandwidth.}
+    \label{fig:minsky-pinned-cpu}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_pinned_gpu-cpu0.pdf}
+        \caption{}
+        \label{fig:minsky-topo-hardware}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_pinned_gpu-cpu1.pdf}
+        \caption{}
+        \label{fig:minsky-topo-cuda-simple}
+    \end{subfigure}
+    \caption[\todo{short}]{Minsky GPU to CPU pinned memory bandwidth.}
+    \label{fig:minsky-pinned-gpu}
+\end{figure}
+
+
 This characterization method outlined in Algorithm~\ref{alg:cuda-h2d} is available for paths terminated by a CPU socket and a CUDA GPU.
 A pinned memory allocation on the host and corresponding GPU memory allocation on the GPU are established.
 Bandwidth betwene host and devices achieved at various transfer sizes is established by copying various amounts of data between the memory allocations.
