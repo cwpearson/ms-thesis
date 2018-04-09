@@ -1,13 +1,25 @@
 
 TARGETS =
 
-DATA_DIR = ../data
+CSV_FILES =
+
 GEN_DIR = generated
-CSV_FILES=$(wildcard $(DATA_DIR)/*.csv)
+
+DATA_DIR = ../data
+CSV_FILES += $(wildcard $(DATA_DIR)/*.csv)
+
+REGPLOT_DIR = ../regplot
+CSV_FILES += $(wildcard $(REGPLOT_DIR)/*.csv)
+
+
+
+
+
 SVG_FILES=$(wildcard *.svg)
 DOT_FILES=$(wildcard *.dot)
 
 GEN_FILES := $(patsubst $(DATA_DIR)/%.csv, $(GEN_DIR)/%.pdf, ${CSV_FILES})
+GEN_FILES := $(patsubst $(REGPLOT_DIR)/%.csv, $(GEN_DIR)/%.pdf, ${GEN_FILES})
 GEN_FILES += $(patsubst %.svg, $(GEN_DIR)/%.pdf, ${SVG_FILES})
 GEN_FILES += $(patsubst %.dot, $(GEN_DIR)/%.pdf, ${DOT_FILES})
 TARGETS += $(GEN_FILES)
@@ -25,6 +37,9 @@ generated/%.pdf: %.svg generated
 
 generated/%.pdf: $(DATA_DIR)/%.csv generated make_plot.py $(DATA_DIR)/plots.yml
 	python make_plot.py $< $@
+
+generated/%.pdf: $(REGPLOT_DIR)/%.csv generated $(REGPLOT_DIR)/plot.py
+	python $(REGPLOT_DIR)/plot.py $< $@
 
 clean:
 	rm -f $(TARGETS) $(GEN_DIR)/*.pdf
