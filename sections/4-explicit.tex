@@ -3,20 +3,40 @@
 
 \section{CPU / GPU Transfers}
 
-Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu} show memory transfer rates between CUDA pinned allocations on each CPU socket and all four GPUs on the IBM ``Minsky'' machine.
+The algorithm described in Algorithm~\ref{alg-cuda-h2d} is used to evaluate the achievable bandwidth for the logical endpoints and methods shown in Table~\ref{tab:explicit-transfer}.
 
-\begin{enumerate}
-    \item {
-    There is a distinct performance difference in transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
-    At large transfer sizes, figure~\ref{fig:minsky-pinned-cpu} shows a \mytilde 5 GB/s difference, regardless of the source CPU socket.
-    Figure~\ref{fig:minsky-pinned-gpu} shows an even larger performance difference of up to 10GB/s.
-    Additionally, GPU $\rightarrow$ CPU transfers in the (CPU0-GPU0-GPU1) triad have erratic performance as transfer sizes change.
+\begin{table}[ht]
+    \centering
+    \caption[\todo{short}]{\todo{long}}
+    \label{tab:explicit-transfer}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{Source} & \textbf{Transfer Methods} \\ \hline 
+    \makecell{Host Pinned Allocation \\ Host Pageable Allocation \\ Host Write-Combining Allocation \\ Device Allocation} & cudaMemcpy \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{algorithm}[ht]
+    \SetAlgoLined
+    \KwResult{bandwidth vs. transfer size between socket $s$ and CUDA GPU $g$}
+    bind CPU thread to $s$\;
+    bind memory allocation to $s$\;
+    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
+    socketPool $\gets$ \texttt{cudaMallocHost(poolSize)}\;
+    gpuPool $\gets$ \texttt{cudaMalloc(poolSize)}\;
+    \For{transferSize := $1$ to poolSize}{
+        start $\gets$ wall\_time()\;
+        \eIf{direction == deviceToHost} {
+            \texttt{cudaMemcpy(socketPool, gpuPool, transferSize, cudaMemcpyHostToDevice)}\;
+        }{
+            \texttt{cudaMemcpy(gpuPool, socketPool, transferSize, cudaMemcpyHostToDevice)}\;
+        }
+        stop $\gets$ wall\_time()\;
+        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
     }
-    \item {
-        Remote CPU $\rightarrow$ GPU transfers may have different performance than GPU $\rightarrow$ CPU transfers.
-        In Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu}, CPU $\rightarrow$ GPU remote transfers achieve nearly 30 GB/s, while GPU $\rightarrow$ CPU transfers peak at around 20 GB/s.
-    }
-\end{enumerate}
+    \caption{CUDA cudaMemcpy with pinned memory.}
+    \label{alg:cuda-h2d}
+\end{algorithm}
 
 \begin{figure}[ht]
     \centering
@@ -51,6 +71,25 @@ Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu} show memory 
     \caption[\todo{short}]{Minsky GPU to CPU pinned memory bandwidth.}
     \label{fig:minsky-pinned-gpu}
 \end{figure}
+
+Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu} show memory transfer rates between CUDA pinned allocations on each CPU socket and all four GPUs on the IBM ``Minsky'' machine.
+
+\subsection{Achievable Transfer Bandwidth}
+
+
+\subsection{Effect of Local / Remote on Bandwidth}
+
+There is a distinct performance difference in transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
+At large transfer sizes, figure~\ref{fig:minsky-pinned-cpu} shows a \mytilde 5 GB/s difference, regardless of the source CPU socket.
+Figure~\ref{fig:minsky-pinned-gpu} shows an even larger performance difference of up to 10GB/s.
+Additionally, GPU $\rightarrow$ CPU transfers in the (CPU0-GPU0-GPU1) triad have erratic performance as transfer sizes change.
+
+\subsection{Effect of Transfer Direction}
+
+Remote CPU $\rightarrow$ GPU transfers may have different performance than GPU $\rightarrow$ CPU transfers.
+        In Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu}, CPU $\rightarrow$ GPU remote transfers achieve nearly 30 GB/s, while GPU $\rightarrow$ CPU transfers peak at around 20 GB/s.
+
+
 
 
 This characterization method outlined in Algorithm~\ref{alg:cuda-h2d} is available for paths terminated by a CPU socket and a CUDA GPU.

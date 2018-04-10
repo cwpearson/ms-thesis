@@ -220,7 +220,7 @@ Overuse of page-locked memory on the host will degrade overall application perfo
 		\texttt{cudaMallocHost()}   & allocate page-locked memory on the host & 1.0~\cite{nvidia2007cuda10} \\ \hline
 		\texttt{cudaFreeHost()}     & free page-locked memory on the host     & 1.0~\cite{nvidia2007cuda10} \\ \hline
 		\texttt{cudaHostAlloc()}    & cudaMallocHost with additional options  & 3.0~\cite{nvidia2010cuda30} \\ \hline
-		\texttt{cudaHostRegister()} & Page-lock a range of host memory        & 4.0~\cite{nvidia2011cuda40} \\ \hline
+		\texttt{cudaHostRegister()} & Page-lock a range of host memory        & 4.0~\cite{nvidia2011cudac40} \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -421,8 +421,6 @@ For example, when CUDA unified memory is used, some of the link bandwidth may be
 Section~\ref{sec:results} shows how different uses of the CUDA API can achieve different performance on the same phyiscal hardware.
 
 
-
-
 \section{Profiling Tooling}
 \label{sec:profiling}
 
@@ -445,12 +443,19 @@ Chapter~\ref{ch:app-char} describes how \todo{hwcomm-apptracer} uses LD\_PRELOAD
 
 \cite{kerrisk2017ld}
 
+\section{Linux Non-Uniform Memory Access}
+
+Linux includes a system for exposing non-uniform memory access architectures (NUMA) to applications.
+Applications can leverage the numactl\cite{wickman2015numactl} library to affect their own NUMA execution policy.
+
 \section{System Descriptions}
 \label{ref:system-description}
 
 The system characterization was executed on two high-performance heterogeneous systems: an IBM S822LC ``Minsky''~\cite{ibm2015minsky}, and an NVIDIA DGX-1~\cite{nvidia2016dgx1}.
 The two systems both feature 512 GB of system memory, two multi-core GPUs, and multiple NVIDIA Tesla P100 GPUs.
 Their key differences are in CPU architecture (64-lit little-endian PowerPC for ``Minsky'', x86-64 for DGX-1), number of GPUs (4 vs 8), and GPU connection topology (bonded NVLink vs hybrid PCIe/NVLink).
+
+\todo{Discuss NUMA arch for each system}
 
 \subsection{IBM S822LC ``Minsky''}
 \label{sec:minsky-description}
