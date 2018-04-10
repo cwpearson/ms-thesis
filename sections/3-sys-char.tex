@@ -1,6 +1,64 @@
 \chapter{System Characterization}
 \label{ch:sys-char}
 
+Chapter~\ref{ch:introduction} introduced the objective of characterizing the communication performance of heterogeneous systems.
+Section~\ref{sec:sys-abstraction} described how applications interact with an abstraction presented by the system hardware, operating system, and software.
+This chapter describes a top-down and bottom-up approach to characterizing system performance. 
+Chapters~\ref{ch:explicit}~and~\ref{ch:unified} describe results obtained from the top-down approach in more detail.
+
+\section{Physical and Logical Communication Paths}
+
+Consider the three different views of the IBM ``Minsky'' machine shown in Figure~\ref{fig:minsky-hardware-logical} (Section~\ref{sec:minsky} describes the machine in more detail).
+Figure~\ref{fig:minsky-topo-hardware}    shows an annotated topographical view of the hardware.
+Figure~\ref{fig:minsky-topo-cuda-simple} represents the equal connectivity of the components presented through the CUDA API.
+Figure~\ref{fig:minsky-topo-cuda-detail} shows more detailed communication capabilities between allocations on those components.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-hardware.pdf}
+        \caption{Minky Hardware Topology. Comonents have different distances and link bandwidths.}
+        \label{fig:minsky-topo-hardware}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda-simple.pdf}
+        \caption{Minsky CUDA Topology. 
+                 There is no concept of multiple CPUs, and the API may be used to directly move data between any two devices.}
+        \label{fig:minsky-topo-cuda-simple}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda-detail.pdf}
+        \caption{Minsky Detailed CUDA Topology.
+                Combining the two previous graphs yields distinctly-performing logical communication paths.}
+        \label{fig:minsky-topo-cuda-detail}
+    \end{subfigure}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:minsky-hardware-logical}
+\end{figure}
+
+
+High-performance data movement in heterogeneous systems requires understanding properties of the logical communication capabilities exposed by the system.
+The real-world properties of these communication capabilities depends on 
+\begin{enumerate}
+    \item Performance of the logical communication paths provided by the system.
+    \item How the application uses those logical communication paths.
+\end{enumerate}
+
+With full knowledge of link properties it is possible to derive an accurate model of the first two elements on this list, that approach has three key barriers
+\begin{itemize}
+    \item Detailed link hardware properties are not available, e.g., when the link provides a competitive advantage for an OEM.
+    \item Detailed link software properies are not available, e.g., when the drivers are proprietary.
+    \item Even if a link is pysically present on the system, it may not be available to the application {e.g., due to bugs in the system configuration}
+\end{itemize}
+Instead of deriving a model of link performance from the ``first principles'' of link properties, this work attempts to generate an empirical model of performance of data movement in the system.
+
+Though data movement between many different system components is possible, this work focuses on CPU-CPU and CPU-GPU data transfers.
+Section~\ref{sec:system-model} describes an overview of the system model.
+Section~\ref{sec:topology-exploration} describes a method for discovering data sources, sinks, and communication paths in a system.
+Section~\ref{sec:link-char} describes the approach to characterize communication links.
+
 \section{System Model}
 \label{sec:system-model}
 
@@ -259,134 +317,10 @@ Algorithm~\ref{alg:h2h} describes the approach.
 \texttt{sum\_array()} is a function used to ensure that every data element is accessed, and the compiler does not optimize out the otherwise unused remote data read.
 \texttt{sum\_array()} adds the elements in the region using loads and accumulates of a desired size.
 
-%
-% SECTION
-%
+
 \section{System Characterization Case Studies}
 
-The system characterization was executed on two high-performance heterogeneous systems: an IBM S822LC ``Minsky''~\cite{ibm2015minsky}, and an NVIDIA DGX-1~\cite{nvidia2016dgx1}.
-The two systems both feature 512 GB of system memory, two multi-core GPUs, and multiple NVIDIA Tesla P100 GPUs.
-Their key differences are in CPU architecture (ppc64le for ``Minsky'', x86-64 for DGX-1), number of GPUs (4 vs 8), and GPU connection topology (bonded NVLink vs hybrid PCIe/NVLink).
 
-\subsection{IBM S822LC ``Minsky''}
-\label{sec:topology-minsky}
-
-\begin{table}[]
-    \centering
-    \caption[Minsky hardware summary.]{
-        Brief summary of Minsky hardware.
-        }
-    \label{tab:minsky}
-    \begin{tabular}{|c|c|}
-    \hline
-    \textbf{} & \textbf{Specification}                  \\ \hline
-    CPU               &  \makecell{2x IBM Power8 \\ 20C / 80T \\ 4 GHz}  \\ \hline
-    System Memory     &  512 GB DDR4                          \\ \hline
-    GPU               &  4 NVIDIA P100                        \\ \hline
-    \end{tabular}
-\end{table}
-
-The IBM S822LC ``Minsky'' machine features two Power8 CPUs and four NVIDIA P100 GPUs.
-Each Power8 CPU is part of a fully-connected triad of one Power8 CPU and two P100 GPUs.
-Each device in the triad is connected by two NVLinks.
-The two triads are connected at the Power8 CPUs by an IBM SMP bus\todo{cite}.
-Table~\ref{tab:minsky} summarizes the hardware configuration.
-
-The IMB ``Minsky'' machine consists of two symmetric sections, connected by an IBM X bus between two 10-core Power8+ CPUs with 8-way simultaneous multithreading (SMT).
-Each CPU is connected to 256GB of DDR3 RAM.
-Each CPU is also connected to two NVIDIA Tesla P100 GPUs by two bonded NVLink blocks.
-Those P100s within the symmetric section are also connected to each other by two bonded NVLinks.
-The second CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
-Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref{fig:topo-minsky-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
-
-
-\begin{figure}
-    \centering
-    \begin{tikzpicture}[
-        cpunode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
-        gpunode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        blocknode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        nvlink/.style={>={latex[length=10pt]}, <->, very thick, double distance=2pt, shorten <=2pt, shorten >=2pt},
-        smp/.style={>={latex[length=10pt]}, <->, very thick, double distance=2pt, shorten <=2pt, shorten >=2pt},
-        ]
-        %Nodes
-        \node[cpunode]   (s0)                  {Socket0};
-        \node[cpunode]   (s1)    [right=4cm of s0] {Socket1};
-        \node[gpunode]   (g0)    [below=2cm of s0] {GPU0};
-        \node[gpunode]   (g1)    [left=2cm of g0]  {GPU1};
-        \node[gpunode]   (g2)    [below=2cm of s1] {GPU2};
-        \node[gpunode]   (g3)    [right=2cm of g2] {GPU3};
-
-        %Lines
-        \path[] (s0.east)  edge [smp] node [above] {SMP}    (s1.west);
-
-        \path[] (s0.south) edge [nvlink] node [left]  {NVLink}  (g0.north);
-        \path[] (s0.west)  edge [nvlink] node [left]  {NVLink}  (g1.north);
-        \path[] (g0.west)  edge [nvlink] node [below] {NVLink}  (g1.east);
-
-        \path[] (s1.south) edge [nvlink] node [left]  {NVLink}  (g2.north);
-        \path[] (s1.east)  edge [nvlink] node [right] {NVLink}  (g3.north);
-        \path[] (g2.east)  edge [nvlink] node [below] {NVLink}  (g3.west);
-    \end{tikzpicture}
-    \caption{IBM ``Minsky'' simplified topology.}
-    \label{fig:topo-minsky-simple}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/minsky-soc0-gpu0.png}
-        \caption{A gull}
-        \label{fig:gull}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/minsky-gpu0-gpu0.png}
-        \caption{A gull}
-        \label{fig:gull}
-    \end{subfigure}
-
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:minksy}
-\end{figure}
-
-\subsection{NVIDIA DGX-1}
-\label{sec:topology-dgx1}
-
-The NVIDIA DGX-1 machine consists of two symmetric sections.
-Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
-Each CPU is connected to 256GB of DDR4 RAM.
-Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
-The sections are connected by an Intel QPI bus between the CPUs, as well as NVLinks between corresponding GPUs.
-The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
-Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{fig:topo-dgx-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
-
-
-\begin{figure}
-    \centering
-    \begin{tikzpicture}[
-        cpunode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
-        gpunode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        blocknode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        ]
-        %Nodes
-        \node[cpunode]   (s0)                  {Socket0};
-        \node[blocknode] (b0)    [below=of s0] {Disk0};
-        \node[cpunode]   (s1)    [right=of s0] {Socket1};
-        \node[gpunode]   (g0)    [below=of s1] {GPU0};
-
-        %Lines
-        \path[-] (s0.east)  edge node [above] {SMP}    (s1.west);
-        \path[-] (s0.south) edge node [left]  {PCIe0}  (b0.north);
-        \path[-] (s1.south) edge node [right] {PCIe1}  (g0.north);
-    \end{tikzpicture}
-    \caption{NVIDIA DGX-1 simple topology.}
-    \label{fig:topo-dgx-simple}
-\end{figure}
-
-\subsection{Single-Socket x86 with NVIDIA P100 ``Blaise''}
-
-\subsection{Dual-Socket Power9 and NVIDIA Volta V100 ``hal000''}
 
 \section{Write-Combined Memory}
 
