@@ -70,34 +70,39 @@ ax = data.plot(kind='line')
 
 
 if cfg_exists("xaxis", "scale"):
-    print "setting custom xaxis scale"
+    print out_path, ": setting custom xaxis scale"
     ax.set_xscale(cfg_get("xaxis", "scale"), nonposx='clip')
 
 if cfg_exists("yaxis", "label"):
-    print "setting custom yaxis label"
+    print out_path, ": setting custom yaxis label"
     ax.set_ylabel(cfg_get("yaxis","label"))
 
 if cfg_exists("title"):
-    print "setting custom title"
+    print out_path, ": setting custom title"
     plt.title(cfg_get("title"))
 
 if cfg_exists("series"):
     for series in cfg_get("series"):
         if cfg_exists("series", series, "color"):
-            print "setting custom color"
+            print out_path, ": setting custom color"
             plt.gca().get_lines()[series].set_color(cfg_get("series", series, "color"))
         if cfg_exists("series", series, "style"):
-            print "setting custom style"
+            print out_path, ": setting custom style"
             plt.gca().get_lines()[series].set_linestyle(cfg_get("series", series, "style"))
         if cfg_exists("series", series, "lw"):
-            print "setting custom lw"
+            print out_path, ": setting custom lw"
             plt.gca().get_lines()[series].set_lw(cfg_get("series", series, "lw"))
+        ax.legend() # regenerate legend
+
+# Set labels last
+h, l = ax.get_legend_handles_labels()
+if cfg_exists("series"):
+    for series in cfg_get("series"):
         if cfg_exists("series", series, "label"):
-            print "setting custom labels"
-            h, l = ax.get_legend_handles_labels()
+            print out_path, ": setting custom label"
             l[series]=cfg_get("series", series, "label")
-            ax.legend(h, l)
-    ax.legend() # regenerate legend
+ax.legend(h, l)
+
 
 # plt.show()
 plt.savefig(sys.argv[2], bbox_inches="tight", clip_on=False, transparent=True)

@@ -1,30 +1,45 @@
 
 TARGETS =
 
-DATA_DIR = ../data
+CSV_FILES =
+
 GEN_DIR = generated
-CSV_FILES=$(wildcard $(DATA_DIR)/*.csv)
+
+PLOT_DIR = ../data/plot
+CSV_FILES += $(wildcard $(PLOT_DIR)/*.csv)
+
+REGPLOT_DIR = ../data/regplot
+CSV_FILES += $(wildcard $(REGPLOT_DIR)/*.csv)
+
+
+GEN_FILES := $(patsubst $(PLOT_DIR)/%.csv, $(GEN_DIR)/%.pdf, ${CSV_FILES})
+GEN_FILES := $(patsubst $(REGPLOT_DIR)/%.csv, $(GEN_DIR)/%.pdf, ${GEN_FILES})
+
+
 SVG_FILES=$(wildcard *.svg)
 DOT_FILES=$(wildcard *.dot)
 
-GEN_FILES := $(patsubst $(DATA_DIR)/%.csv, $(GEN_DIR)/%.pdf, ${CSV_FILES})
+
 GEN_FILES += $(patsubst %.svg, $(GEN_DIR)/%.pdf, ${SVG_FILES})
 GEN_FILES += $(patsubst %.dot, $(GEN_DIR)/%.pdf, ${DOT_FILES})
 TARGETS += $(GEN_FILES)
 
 all: $(TARGETS)
 
-generated:
-	mkdir -p generated
+$(GEN_DIR):
+	mkdir -p $(GEN_DIR)
 
-generated/%.pdf: %.dot generated
+$(GEN_DIR)/%.pdf: %.dot $(GEN_DIR)
 	dot -Tpdf $< -o $@
 
-generated/%.pdf: %.svg generated
+$(GEN_DIR)/%.pdf: %.svg $(GEN_DIR)
 	inkscape -D -z --file=$< --export-pdf=$@
 
-generated/%.pdf: ../data/%.csv generated make_plot.py
-	python make_plot.py $< $@
+$(GEN_DIR)/%.pdf: $(PLOT_DIR)/%.csv $(GEN_DIR) $(PLOT_DIR)/plot.py $(PLOT_DIR)/plots.yml
+	python $(PLOT_DIR)/plot.py $< $@
+
+$(GEN_DIR)/%.pdf: $(REGPLOT_DIR)/%.csv $(GEN_DIR) $(REGPLOT_DIR)/plot.py
+	python $(REGPLOT_DIR)/plot.py $< $@
 
 clean:
 	rm -f $(TARGETS) $(GEN_DIR)/*.pdf

@@ -15,6 +15,7 @@ all: figures
 	${LATEX} ecethesis
 	echo ===== LATEX 3 =====
 	${LATEX} ecethesis
+	cp ecethesis.pdf msthesis.pdf
 
 docker:
 	echo ===== FIGURES =====

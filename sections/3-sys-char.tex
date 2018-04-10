@@ -1,25 +1,12 @@
 \chapter{System Characterization}
 \label{ch:sys-char}
 
-Application access to computing systems is made through a stack of abstractions.
-In CUDA applications, the application developer makes use of the CUDA API.
-Those API calls are implemented in various libraries, such as \texttt{libcudart.so} on linux systems.
-In turn, those libraries make use of system calls provided by the operating system.
-The operating system interfaces with various drivers, including the NVIDIA GPU drivers and the interconnect drivers, to make use of the underlying hardware.
-Figure~\ref{fig:app-abstraction} shows a schematic of this stack.
+Chapter~\ref{ch:introduction} introduced the objective of characterizing the communication performance of heterogeneous systems.
+Section~\ref{sec:sys-abstraction} described how applications interact with an abstraction presented by the system hardware, operating system, and software.
+This chapter describes a top-down and bottom-up approach to characterizing system performance. 
+Chapters~\ref{ch:explicit}~and~\ref{ch:unified} describe results obtained from the top-down approach in more detail.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{figures/generated/app-abstraction.pdf}
-    \caption[\todo{short}]{\todo{improve this figure}. The CUDA application interacts with the underlying hardware through libraries, the CUDA driver and the operating system.}
-    \label{fig:app-abstraction}
-\end{figure}
-
-Through these layers of abstraction, the underlying communication capabilities are modified.
-For example, PCIe interconnects transfer data with packets, but the CUDA API does not expose the ability to create custom packets to send to the GPU.
-Furthermore, the performance of the hardware is modified.
-For example, when CUDA unified memory is used, some of the link bandwidth may be reserved for control signals that help ensure data coherence.
-Section~\ref{sec:results} shows how different uses of the CUDA API can achieve different performance on the same phyiscal hardware.
+\section{Physical and Logical Communication Paths}
 
 Consider the three different views of the IBM ``Minsky'' machine shown in Figure~\ref{fig:minsky-hardware-logical} (Section~\ref{sec:minsky} describes the machine in more detail).
 Figure~\ref{fig:minsky-topo-hardware}    shows an annotated topographical view of the hardware.
@@ -66,8 +53,6 @@ With full knowledge of link properties it is possible to derive an accurate mode
     \item Even if a link is pysically present on the system, it may not be available to the application {e.g., due to bugs in the system configuration}
 \end{itemize}
 Instead of deriving a model of link performance from the ``first principles'' of link properties, this work attempts to generate an empirical model of performance of data movement in the system.
-
-The third item on the list is covered in Section~\ref{sec:app-char}.
 
 Though data movement between many different system components is possible, this work focuses on CPU-CPU and CPU-GPU data transfers.
 Section~\ref{sec:system-model} describes an overview of the system model.
@@ -297,143 +282,8 @@ Both peer enabled and disabled.
     when is preferable \\
 }
 
-This characterization method outlined in Algorithm~\ref{alg:gpu-gpu-peer} is available for paths terminated by a CUDA GPU on both ends.
-If the GPUs support peer access
-
-A GPU memory allocation is established on each GPU.
-Bandwidth achieved at various transfer sizes between GPUs is established by copying various amounts of data between the memory allocations.
 
 
-\begin{algorithm}[ht]
-    \SetAlgoLined
-    \SetKwInOut{Input}{input}
-    \SetKwInOut{Output}{output}
-    \Input{$b$, whether peer transfers between CUDA GPUs should be enabled}
-    \Output{a set of (bandwidth, transfer size) tuples $t$ for transfers between CUDA GPUs $g_0$ and $g_1$}
-    $t$ $\gets$ \{\}\;
-    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-    gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    \If{$b$}{
-        \texttt{cudaSetDevice($g_0$)\;}
-        \texttt{cudaDeviceEnablePeerAccess($g_1$)\;}
-        \texttt{cudaSetDevice($g_1$)\;}
-        \texttt{cudaDeviceEnablePeerAccess($g_0$)\;}
-    }
-    \For{transferSize := $1$ to poolSize}{
-        start $\gets$ wall\_time()\;
-        \texttt{cudaMemcpyPeer(gpu1Pool, gpu0Pool, transferSize)}\;
-        stop $\gets$ wall\_time()\;
-        t $\gets$ t $\cup$ \{ ( transferSize, $\frac{transferSize}{stop - start}$ ) \}\;
-    }
-    \caption{Characterizing data transfer performance between CUDA GPUs.}
-    \label{alg:gpu-gpu-peer}
-\end{algorithm}
-\todo{Loop in powers of two}
-
-\subsection{GPU to GPU with Direct Access}
-\label{sec:gpu-gpu-direct}
-
-\subsection{Between GPU and CPU with cudaMemcpy}
-\label{sec:gpu-cpu}
-
-Both directions
-
-Pageable and pinned
-
-\subsection{CPU Write-Combining Allocation to GPU with with cudaMemcpy}
-\label{sec:wc-gpu}
-
-\subsection{CPU Mapped allocation to GPU with with direct access}
-\label{sec:cpu-gpu-direct}
-
-\subsubsection{CUDA \texttt{cudaMemcpy} with Pinned Memory}
-
-This characterization method outlined in Algorithm~\ref{alg:cuda-h2d} is available for paths terminated by a CPU socket and a CUDA GPU.
-A pinned memory allocation on the host and corresponding GPU memory allocation on the GPU are established.
-Bandwidth betwene host and devices achieved at various transfer sizes is established by copying various amounts of data between the memory allocations.
-
-\begin{algorithm}[ht]
-    \SetAlgoLined
-    \KwResult{bandwidth vs. transfer size between socket $s$ and CUDA GPU $g$}
-    bind CPU thread to $s$\;
-    bind memory allocation to $s$\;
-    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-    socketPool $\gets$ \texttt{cudaMallocHost(poolSize)}\;
-    gpuPool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    \For{transferSize := $1$ to poolSize}{
-        start $\gets$ wall\_time()\;
-        \eIf{direction == deviceToHost} {
-            \texttt{cudaMemcpy(socketPool, gpuPool, transferSize, cudaMemcpyHostToDevice)}\;
-        }{
-            \texttt{cudaMemcpy(gpuPool, socketPool, transferSize, cudaMemcpyHostToDevice)}\;
-        }
-        stop $\gets$ wall\_time()\;
-        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-    }
-    \caption{CUDA cudaMemcpy with pinned memory.}
-    \label{alg:cuda-h2d}
-\end{algorithm}
-
-\subsubsection{CUDA \texttt{cudaMemcpy} between CUDA GPUs}
-
-This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for paths terminated by a CUDA GPU on both ends.
-A GPU memory allocation is established on each GPU.
-Bandwidth achieved at various transfer sizes between GPUs is established by copying various amounts of data between the memory allocations.
-
-\begin{algorithm}[ht]
-    \SetAlgoLined
-    \KwResult{bandwidth vs. transfer size between CUDA GPUs $g_0$ and $g_1$}
-    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-    gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    \For{transferSize := $1$ to poolSize}{
-        start $\gets$ wall\_time()\;
-        \texttt{cudaMemcpy(gpu1Pool, gpu0Pool, transferSize, cudaMemcpyDeviceToDevice)}\;
-        stop $\gets$ wall\_time()\;
-        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-    }
-    \caption{CUDA cudaMemcpy between CUDA GPUs}
-    \label{alg:cuda-d2d}
-\end{algorithm}
-
-\subsubsection{CUDA \texttt{memcpyPeer}}
-
-This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for paths terminated by a CUDA GPU on both ends.
-A GPU memory allocation is established on each GPU.
-Bandwidth between GPUs achieved at various transfer sizes is established by copying various amounts of data between the memory allocations.
-
-\begin{algorithm}[ht]
-    \SetAlgoLined
-    \KwResult{bandwidth vs. transfer size between CUDA GPUs $g_0$ and $g_1$}
-    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-    gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    \For{transferSize := $1$ to poolSize}{
-        start $\gets$ wall\_time()\;
-        \texttt{cudaMemcpyPeer(gpu1Pool, gpu0Pool, transferSize)}\;
-        stop $\gets$ wall\_time()\;
-        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-    }
-    \caption{CUDA cudaMemcpy between CUDA GPUs}
-    \label{alg:cuda-p2p}
-\end{algorithm}
-
-\todo{The difference between this and cudaMemcpy(cudaMemcpyDeviceToDevice)}
-
-\subsubsection{CUDA Unified Memory}
-
-This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for path terminated by CUDA-supported devices on both ends.
-A single unified memory allocation is established, and the entire allocation is touched by the source device to ensure the data is resident on that device.
-Bandwidth between devices under various access patterns is established by executing a kernel with the corresponding pattern on the destination device.
-
-\textbf{Linear Pattern}
-
-\todo{description}
-
-\textbf{Random Pattern}
-
-\todo{description}
 
 
 \subsubsection{OpenMP Socket to Socket Bandwidth}
@@ -467,136 +317,10 @@ Algorithm~\ref{alg:h2h} describes the approach.
 \texttt{sum\_array()} is a function used to ensure that every data element is accessed, and the compiler does not optimize out the otherwise unused remote data read.
 \texttt{sum\_array()} adds the elements in the region using loads and accumulates of a desired size.
 
-%
-% SECTION
-%
+
 \section{System Characterization Case Studies}
 
-The system characterization was executed on two high-performance heterogeneous systems: an IBM S822LC ``Minsky''~\cite{ibm2015minsky}, and an NVIDIA DGX-1~\cite{nvidia2016dgx1}.
-The two systems both feature 512 GB of system memory, two multi-core GPUs, and multiple NVIDIA Tesla P100 GPUs.
-Their key differences are in CPU architecture (ppc64le for ``Minsky'', x86-64 for DGX-1), number of GPUs (4 vs 8), and GPU connection topology (bonded NVLink vs hybrid PCIe/NVLink).
 
-\subsection{IBM S822LC ``Minsky''}
-\label{sec:topology-minsky}
-
-The IMB ``Minsky'' machine consists of two symmetric sections, connected by an IBM X bus between two 10-core Power8+ CPUs with 8-way simultaneous multithreading (SMT).
-Each CPU is connected to 256GB of DDR3 RAM.
-Each CPU is also connected to two NVIDIA Tesla P100 GPUs by two bonded NVLink blocks.
-Those P100s within the symmetric section are also connected to each other by two bonded NVLinks.
-The second CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
-Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref{fig:topo-minsky-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
-
-
-\begin{figure}
-    \centering
-    \begin{tikzpicture}[
-        cpunode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
-        gpunode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        blocknode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        nvlink/.style={>={latex[length=10pt]}, <->, very thick, double distance=2pt, shorten <=2pt, shorten >=2pt},
-        smp/.style={>={latex[length=10pt]}, <->, very thick, double distance=2pt, shorten <=2pt, shorten >=2pt},
-        ]
-        %Nodes
-        \node[cpunode]   (s0)                  {Socket0};
-        \node[cpunode]   (s1)    [right=4cm of s0] {Socket1};
-        \node[gpunode]   (g0)    [below=2cm of s0] {GPU0};
-        \node[gpunode]   (g1)    [left=2cm of g0]  {GPU1};
-        \node[gpunode]   (g2)    [below=2cm of s1] {GPU2};
-        \node[gpunode]   (g3)    [right=2cm of g2] {GPU3};
-
-        %Lines
-        \path[] (s0.east)  edge [smp] node [above] {SMP}    (s1.west);
-
-        \path[] (s0.south) edge [nvlink] node [left]  {NVLink}  (g0.north);
-        \path[] (s0.west)  edge [nvlink] node [left]  {NVLink}  (g1.north);
-        \path[] (g0.west)  edge [nvlink] node [below] {NVLink}  (g1.east);
-
-        \path[] (s1.south) edge [nvlink] node [left]  {NVLink}  (g2.north);
-        \path[] (s1.east)  edge [nvlink] node [right] {NVLink}  (g3.north);
-        \path[] (g2.east)  edge [nvlink] node [below] {NVLink}  (g3.west);
-    \end{tikzpicture}
-    \caption{IBM ``Minsky'' simplified topology.}
-    \label{fig:topo-minsky-simple}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/minsky-soc0-gpu0.png}
-        \caption{A gull}
-        \label{fig:gull}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/minsky-gpu0-gpu0.png}
-        \caption{A gull}
-        \label{fig:gull}
-    \end{subfigure}
-
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:minksy}
-\end{figure}
-
-\subsection{NVIDIA DGX-1}
-\label{sec:topology-dgx1}
-
-The NVIDIA DGX-1 machine consists of two symmetric sections.
-Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
-Each CPU is connected to 256GB of DDR4 RAM.
-Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
-The sections are connected by an Intel QPI bus between the CPUs, as well as NVLinks between corresponding GPUs.
-The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
-Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{fig:topo-dgx-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
-
-
-\begin{figure}
-    \centering
-    \begin{tikzpicture}[
-        cpunode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
-        gpunode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        blocknode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        ]
-        %Nodes
-        \node[cpunode]   (s0)                  {Socket0};
-        \node[blocknode] (b0)    [below=of s0] {Disk0};
-        \node[cpunode]   (s1)    [right=of s0] {Socket1};
-        \node[gpunode]   (g0)    [below=of s1] {GPU0};
-
-        %Lines
-        \path[-] (s0.east)  edge node [above] {SMP}    (s1.west);
-        \path[-] (s0.south) edge node [left]  {PCIe0}  (b0.north);
-        \path[-] (s1.south) edge node [right] {PCIe1}  (g0.north);
-    \end{tikzpicture}
-    \caption{NVIDIA DGX-1 simple topology.}
-    \label{fig:topo-dgx-simple}
-\end{figure}
-
-\subsection{Single-Socket x86 with NVIDIA P100 ``Blaise''}
-
-\subsection{Dual-Socket Power8 and NVIDIA Pascal P100 ``Minsky''}
-\label{sec:minsky}
-\begin{table}[]
-    \centering
-    \caption[Minsky hardware summary.]{
-        Brief summary of Minsky hardware.
-        }
-    \label{tab:minsky}
-    \begin{tabular}{|c|c|}
-    \hline
-    \textbf{} & \textbf{Specification}                  \\ \hline
-    CPU               &  \makecell{2x IBM Power8 \\ 20C / 80T \\ 4 GHz}  \\ \hline
-    System Memory     &  512 GB DDR4                          \\ \hline
-    GPU               &  4 NVIDIA P100                        \\ \hline
-    \end{tabular}
-\end{table}
-
-The IBM S822LC ``Minsky'' machine features two Power8 CPUs and four NVIDIA P100 GPUs.
-Each Power8 CPU is part of a fully-connected triad of one Power8 CPU and two P100 GPUs.
-Each device in the triad is connected by two NVLinks.
-The two triads are connected at the Power8 CPUs by an IBM SMP bus\todo{cite}.
-Table~\ref{tab:minsky} summarizes the hardware configuration.
-
-\subsection{Dual-Socket Power9 and NVIDIA Volta V100 ``hal000''}
 
 \section{Write-Combined Memory}
 
@@ -619,94 +343,6 @@ Impact1
 \begin{itemize}
     \item Pageable copy bandwidth faster than pinned
     \item WC bandwidth small for small transfers
-\end{itemize}
-
-
-\section{Basic CUDA}
-
-Applicable Systems
-\begin{itemize}
-    \item CUDA 9.1 / Power8 / NVLink1 / Pascal
-    \item CUDA 9.1 / Power9 / NVLink2 / Volta
-    \item x86 / PCIe3 / Pascal
-    \item x86 / PCIe3 / Kepler
-\end{itemize}
-
-Applicable Measures
-\begin{itemize}
-    \item pageable memory bandwidth
-    \item pinned memory bandwidth
-    \item write-combined bandwidth (\texttt{cudaHostAllocWriteCombined})
-    \item direct mapped bandwidth  (\texttt{cudaHostAllocMapped})
-\end{itemize}
-
-\section{Unified Memory}
-
-
-
-\subsection{Unified Memory Bandwidth}
-
-
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_prefetch_gpu-local-remote.pdf}
-        \caption{}
-        \label{fig:minsky-topo-hardware}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_coherence_gpu-local-remote.pdf}
-        \caption{}
-        \label{fig:minsky-topo-cuda-simple}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_cpu0-gpu0.pdf}
-        \caption{}
-        \label{fig:minsky-topo-hardware}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_gpu0-cpu0.pdf}
-        \caption{}
-        \label{fig:minsky-topo-cuda-simple}
-    \end{subfigure}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:minsky-hardware-logical}
-\end{figure}
-
-
-Applicable Systems
-\begin{itemize}
-    \item CUDA 9.1 / Power8 / NVLink1 / Pascal
-    \item CUDA 9.1 / Power9 / NVLink2 / Volta
-    \item x86 / PCIe / Pascal
-    \item x86 / PCIe / Kepler
-\end{itemize}
-
-Applicable Measures
-\begin{itemize}
-    \item Coherence vs Prefetch (CPU - GPU)
-    \item Coherence vs Prefetch (GPU - CPU)
-    \item Coherence vs Prefetch (GPU - GPU)
-\end{itemize}
-
-
-
-\subsection{Unified Memory Latency}
-
-\begin{itemize}
-    \item CUDA 9.1 / Power8 / NVLink1 / Pascal
-    \item CUDA 9.1 / Power9 / NVLink2 / Volta
-    \item x86 / PCIe / Pascal
-    \item x86 / PCIe / Maxwell
-\end{itemize}
-
-\begin{itemize}
-    \item CPU - GPU
-    \item GPU - CPU
-    \item GPU - GPU
 \end{itemize}
 
 

@@ -9,8 +9,8 @@ To that end, this section describes
 \item Communication-related components of CUDA, the NVIDIA GPU programming system (Section~\ref{sec:cuda}).
 \item The relationship between CUDA's abstractions and the underlying system hardware (Section~\ref{sec:sys-abstraction}).
 \item The Linux and CUDA components used by the application profiler (Section~\ref{sec:profiling}).
+\item The heterogeneous systems used as case studies in this work (Section~\ref{sec:system-descriptions}).
 \end{itemize}
-
 
 \section{GPUs and System Architecture}
 \label{sec:gpu-sys-arch}
@@ -58,8 +58,6 @@ Figure~\ref{fig:x86-kepler-bw} is representative of a node of a supercomputer de
 Figure~\ref{fig:x86-pascal-bw} represents a similar system, with components updated to 2017.
 Figure~\ref{fig:p8-pascal-bw} is a c.2014 system with an IBM Power8 CPU and NVLink.
 Figure~ref{fig:p9-volta-bw} represents next-generation link bandwidths coming online in the Summit\todo{cite} and Sierra\todo{cite} supercomputers.
-
-
 
 \section{Interconnects}
 \label{sec:interconnects}
@@ -402,6 +400,27 @@ Pages will migrate between GPUs on peer accesses, and \texttt{cudaMallocManaged}
 
 \todo{How do you use these paths}
 
+Application access to computing systems is made through a stack of abstractions.
+In CUDA applications, the application developer makes use of the CUDA API.
+Those API calls are implemented in various libraries, such as \texttt{libcudart.so} on linux systems.
+In turn, those libraries make use of system calls provided by the operating system.
+The operating system interfaces with various drivers, including the NVIDIA GPU drivers and the interconnect drivers, to make use of the underlying hardware.
+Figure~\ref{fig:app-abstraction} shows a schematic of this stack.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/generated/app-abstraction.pdf}
+    \caption[\todo{short}]{\todo{improve this figure}. The CUDA application interacts with the underlying hardware through libraries, the CUDA driver and the operating system.}
+    \label{fig:app-abstraction}
+\end{figure}
+
+Through these layers of abstraction, the underlying communication capabilities are modified.
+For example, PCIe interconnects transfer data with packets, but the CUDA API does not expose the ability to create custom packets to send to the GPU.
+Furthermore, the performance of the hardware is modified.
+For example, when CUDA unified memory is used, some of the link bandwidth may be consumed by control signals that help ensure data coherence.
+Section~\ref{sec:results} shows how different uses of the CUDA API can achieve different performance on the same phyiscal hardware.
+
+
 
 
 \section{Profiling Tooling}
@@ -426,6 +445,103 @@ Chapter~\ref{ch:app-char} describes how \todo{hwcomm-apptracer} uses LD\_PRELOAD
 
 \cite{kerrisk2017ld}
 
+\section{System Descriptions}
+\label{ref:system-description}
+
+The system characterization was executed on two high-performance heterogeneous systems: an IBM S822LC ``Minsky''~\cite{ibm2015minsky}, and an NVIDIA DGX-1~\cite{nvidia2016dgx1}.
+The two systems both feature 512 GB of system memory, two multi-core GPUs, and multiple NVIDIA Tesla P100 GPUs.
+Their key differences are in CPU architecture (64-lit little-endian PowerPC for ``Minsky'', x86-64 for DGX-1), number of GPUs (4 vs 8), and GPU connection topology (bonded NVLink vs hybrid PCIe/NVLink).
+
+\subsection{IBM S822LC ``Minsky''}
+\label{sec:minsky-description}
+
+\begin{table}[]
+    \centering
+    \caption[Minsky hardware summary.]{
+        Brief summary of Minsky hardware.
+        }
+    \label{tab:minsky}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{} & \textbf{Specification}                              \\ \hline
+    CPU           & \makecell{2x IBM Power8 \\ 20C / 80T \\ 4 GHz}  \\ \hline
+    System Memory & 512 GB DDR \todo{3 or 4}                                     \\ \hline
+	GPU           & 4 NVIDIA P100                                   \\ \hline
+	Interconnect  & NVLink 1.0                                      \\ \hline
+    \end{tabular}
+\end{table}
+
+The IBM S822LC ``Minsky'' machine features two Power8 CPUs and four NVIDIA P100 GPUs.
+Each Power8 CPU is part of a fully-connected triad of one Power8 CPU and two P100 GPUs.
+Each device in the triad is connected by two NVLinks.
+The two triads are connected at the Power8 CPUs by an IBM SMP bus\todo{cite}.
+Table~\ref{tab:minsky} summarizes the hardware configuration.
+
+The IMB ``Minsky'' machine consists of two symmetric sections, connected by an IBM X bus between two 10-core Power8+ CPUs with 8-way simultaneous multithreading (SMT).
+Each CPU is connected to 256GB of DDR3 RAM.
+Each CPU is also connected to two NVIDIA Tesla P100 GPUs by two bonded NVLink blocks.
+Those P100s within the symmetric section are also connected to each other by two bonded NVLinks.
+The second CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
+Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref{fig:topo-minsky-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
+
+
+\begin{figure}
+    \centering
+	\includegraphics[width=0.5\textwidth]{figures/generated/minsky-hardware.pdf}
+    \caption[Minsky Hardware]{\todo{Minsky}}
+    \label{fig:topo-minsky-simple}
+\end{figure}
+
+
+\subsection{NVIDIA DGX-1}
+\label{sec:dgx1-description}
+
+The NVIDIA DGX-1 machine consists of two symmetric sections.
+Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
+Each CPU is connected to 256GB of DDR4 RAM.
+Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
+The sections are connected by an Intel QPI bus between the CPUs, as well as NVLinks between corresponding GPUs.
+The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
+Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{fig:topo-dgx-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
+
+
+\begin{figure}
+    \centering
+	\includegraphics[width=0.5\textwidth]{figures/generated/dgx1-hardware.pdf}
+    \caption[DGX-1 Hardware]{\todo{DGX-1}}
+    \label{fig:topo-dgx-simple}
+\end{figure}
+
+
+\subsection{IBM AC922}
+\label{sec:hal-description}
+
+\cite{caldeira2018ac922}
+
+\begin{table}[]
+    \centering
+    \caption[Power9 hardware summary.]{
+        Brief summary of Power9 hardware.
+        }
+    \label{tab:hal}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{} & \textbf{Specification}                              \\ \hline
+    CPU           & \makecell{2x IBM Power9 \\ 40C 160T \\ 3.0 GHz  }  \\ \hline
+    System Memory & 1TB DDR4                                   \\ \hline
+	GPU           & 4 NVIDIA V100                                   \\ \hline
+	Interconnect  & NVLink 2.0                                      \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{figure}
+    \centering
+	\includegraphics[width=0.5\textwidth]{figures/generated/hal-hardware.pdf}
+    \caption[Power9 Hardware]{\todo{Power9}}
+    \label{fig:topo-dgx-simple}
+\end{figure}
+
+\subsection{Single-Socket x86 with NVIDIA P100 ``Blaise''}
 
 
 
