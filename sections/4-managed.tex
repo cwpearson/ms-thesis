@@ -100,6 +100,43 @@ Applicable Measures
 
 \section{Page Fault Latency}
 
+Unified memory page fault latency is estimated by constructing a linked list in managed memory.
+The stride between linked list elements is a large number, to avoid prefetching effects on page faults.
+The managed memory allocation is prefetched to the source, and a single-threaded traversal function (shown in Listing~\ref{lst:traversal}) is executed on the destination.
+Each access to the list incurs a page fault.
+The incremental change in function execution time as the number of strides increases is therefore an approximate measure of the page fault latency.
+Table~\ref{tab:page-fault-latency} summarizes the estimated page fault latencies.
+Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency} show the raw traversal times.
+
+\begin{lstlisting}[language=c++, caption=Linked List Traversal, label=lst:traversal]
+    __global__ void gpu_traverse(size_t *ptr, const size_t steps)
+    {
+      size_t next = 0;
+      for (int i = 0; i < steps; ++i)
+      {
+        next = ptr[next];
+      }
+      ptr[next] = 1;
+    }
+\end{lstlisting}
+    
+
+\begin{table}[h]
+	\centering
+	\caption[\todo{short}]{Page Fault latency}
+	\label{tab:page-fault-latency}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{Page Fault} & \textbf{Minsky Latency} & \textbf{Power9 Latency} \\ \hline
+		CPU0 $\leftarrow$ GPU0  (local) & 17.9 & 24.4   \\ \hline
+        CPU0 $\rightarrow$ GPU0 (local) & 15.2 & 23.6  \\ \hline
+        CPU0 $\leftarrow$ GPU2  (remote) & 19.5 & 24.5   \\ \hline
+        CPU0 $\rightarrow$ GPU2 (remote) & 16.6 & 23.2  \\ \hline
+        GPU0 $\leftarrow$ GPU1  (local) & 26.9 & 35.9   \\ \hline
+		GPU0 $\rightarrow$ GPU2 (remote) & 35.6 & 38.5  \\ \hline
+	\end{tabular}
+\end{table}
+
 
 \begin{figure}[ht]
     \centering
@@ -120,9 +157,14 @@ Applicable Measures
         \caption{}
         \label{}
     \end{subfigure}
-    \caption[\todo{short}]{\todo{long}}
-    \label{}
+    \caption[\todo{short}]{ 
+        Total kernel execution times on IBM Minsky for linked-list traversal.
+        Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
+        For example, GPU0 to CPU0 means the managed allocation is on GPU0, and the traversal function is executing on CPU0.
+    }
+    \label{fig:minsky-page-fault-latency}
 \end{figure}
+
 
 \begin{figure}[ht]
     \centering
@@ -143,19 +185,11 @@ Applicable Measures
         \caption{}
         \label{}
     \end{subfigure}
-    \caption[\todo{short}]{\todo{long}}
-    \label{}
+    \caption[\todo{short}]{
+        Total kernel execution times on IBM Power9 for linked-list traversal.
+        Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
+        For example, GPU0 to CPU0 means the managed allocation is on GPU0, and the traversal function is executing on CPU0.
+        }
+    \label{fig:hal-page-fault-latency}
 \end{figure}
 
-\begin{itemize}
-    \item CUDA 9.1 / Power8 / NVLink1 / Pascal
-    \item CUDA 9.1 / Power9 / NVLink2 / Volta
-    \item x86 / PCIe / Pascal
-    \item x86 / PCIe / Maxwell
-\end{itemize}
-
-\begin{itemize}
-    \item CPU - GPU
-    \item GPU - CPU
-    \item GPU - GPU
-\end{itemize}
