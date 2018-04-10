@@ -513,20 +513,22 @@ Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{f
 \end{figure}
 
 
-\subsection{Dual-Socket Power9 and NVIDIA Volta V100 ``hal000''}
+\subsection{IBM AC922}
 \label{sec:hal-description}
+
+\cite{caldeira2018ac922}
 
 \begin{table}[]
     \centering
     \caption[Power9 hardware summary.]{
         Brief summary of Power9 hardware.
         }
-    \label{tab:minsky}
+    \label{tab:hal}
     \begin{tabular}{|c|c|}
     \hline
     \textbf{} & \textbf{Specification}                              \\ \hline
-    CPU           & \makecell{2x IBM Power9 }  \\ \hline
-    System Memory & 1TB DDR \todo{3 or 4}                                   \\ \hline
+    CPU           & \makecell{2x IBM Power9 \\ 40C 160T \\ 3.0 GHz  }  \\ \hline
+    System Memory & 1TB DDR4                                   \\ \hline
 	GPU           & 4 NVIDIA V100                                   \\ \hline
 	Interconnect  & NVLink 2.0                                      \\ \hline
     \end{tabular}
