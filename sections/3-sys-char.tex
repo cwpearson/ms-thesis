@@ -224,23 +224,23 @@ Since this is the capability is exposed to applications, it is useful to charact
 
 An overview of the characterization algorithm is shown in Algorithm~\ref{alg:link-char}.
 
-\begin{algorithm}[ht]
-    \SetAlgoLined
-    \KwResult{Characterization of all links between all vertices in $G_s$ }
-     Build $G_s$ as described in Section~\ref{sec:topology-exploration}\;
-     \For{$v_1$ in $V$}{
-         \For{$v_2$ in $V$}{
-             \If{$v_1 \ne v_2$}{
-                Chars $\gets$ SupportedCharacterizers($v_1$,$v_2$)\;
-                \For{c in Chars} {
-                    c($v_1$, $v_2$)\;
-                }
-             }
-         }
-     }
-     \caption{Link characterization.}
-     \label{alg:link-char}
-\end{algorithm}
+% \begin{algorithm}[ht]
+%     \SetAlgoLined
+%     \KwResult{Characterization of all links between all vertices in $G_s$ }
+%      Build $G_s$ as described in Section~\ref{sec:topology-exploration}\;
+%      \For{$v_1$ in $V$}{
+%          \For{$v_2$ in $V$}{
+%              \If{$v_1 \ne v_2$}{
+%                 Chars $\gets$ SupportedCharacterizers($v_1$,$v_2$)\;
+%                 \For{c in Chars} {
+%                     c($v_1$, $v_2$)\;
+%                 }
+%              }
+%          }
+%      }
+%      \caption{Link characterization.}
+%      \label{alg:link-char}
+% \end{algorithm}
 
 For each pair of vertices, \todo{hwcomm} determines whether direct communication between those vertices is supported by the operating system or vendor libraries.
 For vertices with a path of more than one link between them (e.g. Disk0 to Socket1 in Figure~\ref{fig:simple-topology}) those individual links will be characterized separately.
@@ -292,27 +292,27 @@ The symmetric multi-processing links between CPU sockets are characterized by a 
 This workload creates multiple threads reading remote data in an attempt to saturate the socket memory controllers and SMP bus.
 Algorithm~\ref{alg:h2h} describes the approach.
 
-\begin{algorithm}[ht]
-    \SetAlgoLined
-    \KwResult{bandwidth vs. transfer size between CPU sockets $src$ and $dst$}
-    numThreads $\gets$ 10\;
-    \todo{Choice of elemSize}\;
-    \For{poolSize $\gets$ 128 to sweepFinish} {
-        bind process to $src$\;
-        bind memory allocation to $src$\;
-        \For{tid $\gets$ 0 := numThreads}{
-            regions[tid] $\gets$ alloc(poolSize)\;
-        }
-        bind process to $dst$\;
-        start OpenMP parallel region\;
-        start $\gets$ wall\_time()\;
-        \texttt{sum\_array(region[omp\_get\_thread\_num(), elemSize])}\;
-        stop $\gets$ wall\_time()\;
-        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-    }
-    \caption{Synthetic workload for testing SMP bus.}
-    \label{alg:h2h}
-\end{algorithm}
+% \begin{algorithm}[ht]
+%     \SetAlgoLined
+%     \KwResult{bandwidth vs. transfer size between CPU sockets $src$ and $dst$}
+%     numThreads $\gets$ 10\;
+%     \todo{Choice of elemSize}\;
+%     \For{poolSize $\gets$ 128 to sweepFinish} {
+%         bind process to $src$\;
+%         bind memory allocation to $src$\;
+%         \For{tid $\gets$ 0 := numThreads}{
+%             regions[tid] $\gets$ alloc(poolSize)\;
+%         }
+%         bind process to $dst$\;
+%         start OpenMP parallel region\;
+%         start $\gets$ wall\_time()\;
+%         \texttt{sum\_array(region[omp\_get\_thread\_num(), elemSize])}\;
+%         stop $\gets$ wall\_time()\;
+%         bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
+%     }
+%     \caption{Synthetic workload for testing SMP bus.}
+%     \label{alg:h2h}
+% \end{algorithm}
 
 \texttt{sum\_array()} is a function used to ensure that every data element is accessed, and the compiler does not optimize out the otherwise unused remote data read.
 \texttt{sum\_array()} adds the elements in the region using loads and accumulates of a desired size.
