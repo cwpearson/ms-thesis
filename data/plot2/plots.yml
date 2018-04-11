@@ -1,0 +1,19 @@
+test.pdf:
+  series:
+    - file: hal_pinned.csv
+      col: 0
+    - file: hal_pinned.csv
+      col: 1
+      label: new label 1
+    - file: hal_pinned.csv
+      col: 2
+      label: new label 2
+  yaxis:
+    label: ylabel
+    lim:
+      - 0
+      - 70000
+  xaxis:
+    label: xlabel
+    scale: log
+  title: the title
