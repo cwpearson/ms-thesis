@@ -475,7 +475,7 @@ Their key differences are in CPU architecture (64-lit little-endian PowerPC for 
     CPU           & \makecell{2x IBM Power8 \\ 20C / 80T \\ 4 GHz}  \\ \hline
     System Memory & 512 GB DDR4                                    \\ \hline
 	GPU           & 4 NVIDIA P100                                   \\ \hline
-	Interconnect  & NVLink 1.0                                      \\ \hline
+	CPU/GPU Interconnect  & NVLink 1.0                                      \\ \hline
     \end{tabular}
 \end{table}
 
@@ -491,7 +491,7 @@ Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref
 
 \begin{figure}
     \centering
-	\includegraphics[width=0.5\textwidth]{figures/generated/minsky-hardware.pdf}
+	\includegraphics[width=0.8\textwidth]{figures/generated/minsky-hardware.pdf}
     \caption[Minsky Hardware]{\todo{Minsky}}
     \label{fig:topo-minsky-simple}
 \end{figure}
@@ -500,21 +500,34 @@ Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref
 \subsection{NVIDIA DGX-1}
 \label{sec:dgx1-description}
 
-
+\begin{table}[]
+    \centering
+    \caption[NVIDIA DGX-1 hardware summary.]{Summary of NVIDIA DGX-1 Hardware}
+    \label{tab:dgx1}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{} & \textbf{Specification}                                          \\ \hline
+    CPU           & \makecell{2x Intel Xeon E5-2698 v4 \\ 40C / 80T \\ 2.2 GHz} \\ \hline
+    System Memory & 512 GB DDR4                                                 \\ \hline
+	GPU           & 4 NVIDIA P100                                               \\ \hline
+	CPU/GPU Interconnect  & NVLink 1.0 / PCIe 3.0                                       \\ \hline
+    \end{tabular}
+\end{table}
 
 The NVIDIA DGX-1 machine consists of two symmetric sections\cite{nvidia2017dgx1}.
 Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
 Each CPU is connected to 256GB of DDR4 RAM.
 Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
-The sections are connected by an Intel 9.6GT/s QPI bus between the CPUs, as well as NVLinks between corresponding GPUs.
+The sections are connected by an Intel 9.6GT/s QPI bus between the CPUs providing 38.4 GB/s of bidirectional bandwidth, as well as NVLinks between corresponding GPUs.
 The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
+Table~\ref{tab:dgx1} summarizes the hardware configuration.
 Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{fig:topo-dgx-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
 
 
 
 \begin{figure}
     \centering
-	\includegraphics[width=0.5\textwidth]{figures/generated/dgx1-hardware.pdf}
+	\includegraphics[width=0.8\textwidth]{figures/generated/dgx1-hardware.pdf}
     \caption[DGX-1 Hardware]{\todo{DGX-1}}
     \label{fig:topo-dgx-simple}
 \end{figure}
@@ -542,13 +555,13 @@ Table~\ref{tab:minsky} summarizes the hardware configuration.
     CPU           & \makecell{2x IBM Power9 \\ 40C 160T \\ 3.0 GHz  }  \\ \hline
     System Memory & 1TB DDR4                                   \\ \hline
 	GPU           & 4 NVIDIA V100                                   \\ \hline
-	Interconnect  & NVLink 2.0                                      \\ \hline
+	CPU/GPU Interconnect  & NVLink 2.0                                      \\ \hline
     \end{tabular}
 \end{table}
 
 \begin{figure}
     \centering
-	\includegraphics[width=0.5\textwidth]{figures/generated/hal-hardware.pdf}
+	\includegraphics[width=0.8\textwidth]{figures/generated/hal-hardware.pdf}
     \caption[Power9 Hardware]{\todo{Power9}}
     \label{fig:topo-dgx-simple}
 \end{figure}
