@@ -3,12 +3,12 @@
 
 \section{CPU / GPU Transfers}
 
-The algorithm described in Algorithm~\ref{alg-cuda-h2d} is used to evaluate the achievable bandwidth for the logical endpoints and methods shown in Table~\ref{tab:explicit-transfer}.
+Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for the logical endpoints and methods shown in Table~\ref{tab:explicit}.
 
 \begin{table}[ht]
     \centering
     \caption[\todo{short}]{\todo{long}}
-    \label{tab:explicit-transfer}
+    \label{tab:explicit}
     \begin{tabular}{|c|c|}
     \hline
     \textbf{Source} & \textbf{Transfer Methods} \\ \hline 
@@ -74,10 +74,11 @@ The algorithm described in Algorithm~\ref{alg-cuda-h2d} is used to evaluate the 
 
 Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu} show memory transfer rates between CUDA pinned allocations on each CPU socket and all four GPUs on the IBM ``Minsky'' machine.
 
-\subsection{Achievable Transfer Bandwidth}
+\subsection{Comparison of Pageable, Pinned, and Write-Combining Host Allocations}
 
 
-\subsection{Effect of Local / Remote on Bandwidth}
+
+\subsection{Effect of Local / Remote Transfer Destination}
 
 There is a distinct performance difference in transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
 At large transfer sizes, figure~\ref{fig:minsky-pinned-cpu} shows a \mytilde 5 GB/s difference, regardless of the source CPU socket.
@@ -89,35 +90,31 @@ Additionally, GPU $\rightarrow$ CPU transfers in the (CPU0-GPU0-GPU1) triad have
 Remote CPU $\rightarrow$ GPU transfers may have different performance than GPU $\rightarrow$ CPU transfers.
         In Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu}, CPU $\rightarrow$ GPU remote transfers achieve nearly 30 GB/s, while GPU $\rightarrow$ CPU transfers peak at around 20 GB/s.
 
+\subsection{Differences between Logically Identical Transfers}
 
-
-
-This characterization method outlined in Algorithm~\ref{alg:cuda-h2d} is available for paths terminated by a CPU socket and a CUDA GPU.
-A pinned memory allocation on the host and corresponding GPU memory allocation on the GPU are established.
-Bandwidth betwene host and devices achieved at various transfer sizes is established by copying various amounts of data between the memory allocations.
-
-
-\begin{algorithm}[ht]
-    \SetAlgoLined
-    \KwResult{bandwidth vs. transfer size between socket $s$ and CUDA GPU $g$}
-    bind CPU thread to $s$\;
-    bind memory allocation to $s$\;
-    poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-    socketPool $\gets$ \texttt{cudaMallocHost(poolSize)}\;
-    gpuPool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-    \For{transferSize := $1$ to poolSize}{
-        start $\gets$ wall\_time()\;
-        \eIf{direction == deviceToHost} {
-            \texttt{cudaMemcpy(socketPool, gpuPool, transferSize, cudaMemcpyHostToDevice)}\;
-        }{
-            \texttt{cudaMemcpy(gpuPool, socketPool, transferSize, cudaMemcpyHostToDevice)}\;
-        }
-        stop $\gets$ wall\_time()\;
-        bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_cpu0-gpus.pdf}
+        \caption{}
+        \label{fig:}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_cpu1-gpus.pdf}
+        \caption{}
+        \label{fig:}
+    \end{subfigure}
+    \caption[\todo{short}]{
+        IBM Minsky \texttt{cudaMemcpy} performance with pageable host allocations from (a) CPU0 to all GPUs and (b) CPU1 to all GPUs.
     }
-    \caption{CUDA cudaMemcpy with pinned memory.}
-    \label{alg:cuda-h2d}
-\end{algorithm}
+    \label{fig:topo-asymmetry}
+\end{figure}
+
+Figure~\ref{fig:topo-asymmetry} shows the performance of \texttt{cudaMemcpy} moving pageable host allocations from CPU0 or CPU1 to all GPUs on the IBM Minsky.
+For transfers originating at CPU0, the achievable bandwidth does not depend on the destination device, but for transfers originating from CPU1, transfers 1-10MB in size are much slower to remote GPUs than local GPUs.
+
+
 
 \section{GPU / GPU Transfers}
 

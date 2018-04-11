@@ -458,10 +458,10 @@ Three high-performance heterogeneous systems are used in this work: an IBM S822L
 All systems feature multiple GPUs and multiple socketed CPUs.
 Their key differences are in CPU architecture (64-lit little-endian PowerPC for S822LC and AC922', x86-64 for DGX-1), number of GPUs (4 for the IBM machines, 8 for NVIDIA), and GPU connection topology (NVLink 1.0 for S822LC, NVLink 2.0 for AC922, and hybrid PCIe 3.0 / NVLink 1.0 for DGX-1).
 
-\todo{Discuss NUMA arch for each system}
-
 \subsection{IBM S822LC for High Performance Computing ``Minsky''}
 \label{sec:minsky-description}
+
+\todo{where to discuss NUMA for each system?}
 
 \begin{table}[]
     \centering
@@ -565,10 +565,6 @@ Table~\ref{tab:minsky} summarizes the hardware configuration.
     \caption[Power9 Hardware]{\todo{Power9}}
     \label{fig:topo-dgx-simple}
 \end{figure}
-
-\subsection{Single-Socket x86 with NVIDIA P100 ``Blaise''}
-
-
 
 
 \section{Parking Lot}
