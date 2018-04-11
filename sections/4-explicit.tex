@@ -47,7 +47,6 @@ Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for th
         \Return $elapsed$
     \EndFunction
 
-
     \end{algorithmic}
 \end{algorithm}
 
@@ -184,80 +183,56 @@ Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows the performance of \texttt{cud
 \section{GPU / GPU Transfers}
 
 
-\subsubsection{CUDA \texttt{cudaMemcpy} between CUDA GPUs}
+Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for the logical endpoints and methods shown in Table~\ref{tab:explicit}.
 
-This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for paths terminated by a CUDA GPU on both ends.
-A GPU memory allocation is established on each GPU.
-Bandwidth achieved at various transfer sizes between GPUs is established by copying various amounts of data between the memory allocations.
+\begin{table}[ht]
+    \centering
+    \caption[\todo{short}]{\todo{long}}
+    \label{tab:explicit}
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{Endpoints} & \textbf{Transfer Methods} \\ \hline 
+    Device Allocation & cudaMemcpy (peer access disabled) \\ \hline
+    Device Allocation & cudaMemcpy (peer access enabled) \\ \hline
+    \end{tabular}
+\end{table}
 
-% \begin{algorithm}[ht]
-%     \SetAlgoLined
-%     \KwResult{bandwidth vs. transfer size between CUDA GPUs $g_0$ and $g_1$}
-%     poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-%     gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-%     gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-%     \For{transferSize := $1$ to poolSize}{
-%         start $\gets$ wall\_time()\;
-%         \texttt{cudaMemcpy(gpu1Pool, gpu0Pool, transferSize, cudaMemcpyDeviceToDevice)}\;
-%         stop $\gets$ wall\_time()\;
-%         bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-%     }
-%     \caption{CUDA cudaMemcpy between CUDA GPUs}
-%     \label{alg:cuda-d2d}
-% \end{algorithm}
+\begin{algorithm}
+    \caption{Measuring explicit \texttt{cudaMemcpy} performance}
+    \label{alg:explicit}
+    \begin{algorithmic}[1]
+    \Statex
+    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$, $peer\_access$}
+        \If{$peer\_access$}
+            \State \texttt{cudaSetDevice($src$)}
+            \State \texttt{cudaDeviceEnablePeerAccess($dst$)}
+            \State \texttt{cudaSetDevice($dst$)}
+            \State \texttt{cudaDeviceEnablePeerAccess($src$)}
+        \Else
+            \State \texttt{cudaSetDevice($src$)}
+            \State \texttt{cudaDeviceDisablePeerAccess($dst$)}
+            \State \texttt{cudaSetDevice($dst$)}
+            \State \texttt{cudaDeviceDisablePeerAccess($src$)}        
+        \EndIf
 
-\subsubsection{CUDA \texttt{memcpyPeer}}
+        \State \texttt{cudaSetDevice($src$)} \Comment{Source allocation}
+        \State $srcPtr \gets$ \texttt{cudaMalloc($transfer\_size$)}
 
-This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for paths terminated by a CUDA GPU on both ends.
-A GPU memory allocation is established on each GPU.
-Bandwidth between GPUs achieved at various transfer sizes is established by copying various amounts of data between the memory allocations.
+        \State \texttt{cudaSetDevice($dst$)} \Comment{Destination allocation}
+        \State $dstPtr \gets$ \texttt{cudaMalloc($transfer\_size$)}
 
-% \begin{algorithm}[ht]
-%     \SetAlgoLined
-%     \KwResult{bandwidth vs. transfer size between CUDA GPUs $g_0$ and $g_1$}
-%     poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-%     gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-%     gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-%     \For{transferSize := $1$ to poolSize}{
-%         start $\gets$ wall\_time()\;
-%         \texttt{cudaMemcpyPeer(gpu1Pool, gpu0Pool, transferSize)}\;
-%         stop $\gets$ wall\_time()\;
-%         bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-%     }
-%     \caption{CUDA cudaMemcpy between CUDA GPUs}
-%     \label{alg:cuda-p2p}
-% \end{algorithm}
+        \State $elapsed \gets infinity$ \Comment{minimum of $num\_iters$ observations}
+        \For{$i \gets 1 \textrm{ to } num\_iters$}
+            \State $start \gets$ walltime()
+            \State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
+            \State $end \gets$ walltime()
+            \State $elapsed \gets$ min($elapsed$, $end-start$)
+        \EndFor
 
+    \Return $elapsed$
+    \EndFunction
 
-This characterization method outlined in Algorithm~\ref{alg:gpu-gpu-peer} is available for paths terminated by a CUDA GPU on both ends.
-If the GPUs support peer access
-
-A GPU memory allocation is established on each GPU.
-Bandwidth achieved at various transfer sizes between GPUs is established by copying various amounts of data between the memory allocations.
+    \end{algorithmic}
+\end{algorithm}
 
 
-% \begin{algorithm}[ht]
-%     \SetAlgoLined
-%     \SetKwInOut{Input}{input}
-%     \SetKwInOut{Output}{output}
-%     \Input{$b$, whether peer transfers between CUDA GPUs should be enabled}
-%     \Output{a set of (bandwidth, transfer size) tuples $t$ for transfers between CUDA GPUs $g_0$ and $g_1$}
-%     $t$ $\gets$ \{\}\;
-%     poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-%     gpu0Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-%     gpu1Pool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-%     \If{$b$}{
-%         \texttt{cudaSetDevice($g_0$)\;}
-%         \texttt{cudaDeviceEnablePeerAccess($g_1$)\;}
-%         \texttt{cudaSetDevice($g_1$)\;}
-%         \texttt{cudaDeviceEnablePeerAccess($g_0$)\;}
-%     }
-%     \For{transferSize := $1$ to poolSize}{
-%         start $\gets$ wall\_time()\;
-%         \texttt{cudaMemcpyPeer(gpu1Pool, gpu0Pool, transferSize)}\;
-%         stop $\gets$ wall\_time()\;
-%         t $\gets$ t $\cup$ \{ ( transferSize, $\frac{transferSize}{stop - start}$ ) \}\;
-%     }
-%     \caption{Characterizing data transfer performance between CUDA GPUs.}
-%     \label{alg:gpu-gpu-peer}
-% \end{algorithm}
