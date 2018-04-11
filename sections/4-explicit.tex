@@ -164,7 +164,7 @@ Additionally, GPU $\rightarrow$ CPU transfers in the (CPU0-GPU0-GPU1) triad have
 
 \begin{table}[ht]
     \centering
-    \caption[Matrix: Transfer rate affected by direction]{Does trasnfer rate vary on identical links?}
+    \caption[Matrix: Transfer rate vary on identical links]{Does transfer rate vary on identical links?}
     \label{tab:explicit}
     \begin{tabular}{|c|c|c|c|}
     \hline
@@ -235,4 +235,35 @@ Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for th
     \end{algorithmic}
 \end{algorithm}
 
+\subsection{Transfer Rate and Peer Access}
 
+
+\begin{table}[ht]
+    \centering
+    \caption[Matrix: Transfer rate affected by peer access]{Is transfer rate affected by peer access?}
+    \label{tab:explicit}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind}       & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    GPU $\rightarrow$ Local GPU  & \checkmark      & \checkmark     & \\ \hline
+    GPU $\rightarrow$ Remote GPU & N/A             & $\times$       & \\ \hline
+    \end{tabular}
+\end{table}
+
+
+\subsection{Transfer Rate and Direction}
+
+
+\begin{table}[ht]
+    \centering
+    \caption[Matrix: Transfer rate affected by direction]{Is GPU-GPU transfer rate affected by direction?}
+    \label{tab:explicit}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind}       & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$   & $\times$   & \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A        & $\times$   & \\ \hline
+    GPU $\leftrightarrow$ Local GPU  (peer disabled) & $\times$   & $\times$   & \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark & \checkmark & \\ \hline
+    \end{tabular}
+\end{table}
