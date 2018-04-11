@@ -131,12 +131,12 @@ Additionally, GPU $\rightarrow$ CPU transfers in the (CPU0-GPU0-GPU1) triad have
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind} & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU        & \checkmark & & \\ \hline
-    Pageable $\leftarrow$ GPU         & \checkmark & & \\ \hline
-    Pinned $\rightarrow$ GPU          & \checkmark & & \\ \hline
-    Pinned $\leftarrow$ GPU           & \checkmark & & \\ \hline
-    Write-Combining $\rightarrow$ GPU & \checkmark & & \\ \hline
-    Write-Combining $\leftarrow$ GPU  & \checkmark & & \\ \hline
+    Pageable $\rightarrow$ GPU        & \checkmark & $\times$   & \\ \hline
+    Pageable $\leftarrow$ GPU         & \checkmark & \checkmark & \\ \hline
+    Pinned $\rightarrow$ GPU          & \checkmark & \checkmark & \\ \hline
+    Pinned $\leftarrow$ GPU           & \checkmark & \checkmark & \\ \hline
+    Write-Combining $\rightarrow$ GPU & \checkmark & \checkmark & \\ \hline
+    Write-Combining $\leftarrow$ GPU  & \checkmark & \checkmark & \\ \hline
     \end{tabular}
 \end{table}
 
@@ -146,43 +146,40 @@ Additionally, GPU $\rightarrow$ CPU transfers in the (CPU0-GPU0-GPU1) triad have
     \label{tab:explicit}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind} & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\leftrightarrow$ GPU        & depends on affinity & & \\ \hline
-    Pinned $\leftrightarrow$ GPU          & depends on affinity & & \\ \hline
-    Write-Combining $\leftrightarrow$ GPU & $\times$ & & \\ \hline
+    \textbf{Transfer Kind}                & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    Pageable $\leftrightarrow$ GPU        & depends on affinity & \checkmark     & \\ \hline
+    Pinned $\leftrightarrow$ GPU          & depends on affinity & for some sizes & \\ \hline
+    Write-Combining $\leftrightarrow$ GPU & $\times$            & for some sizes & \\ \hline
     \end{tabular}
 \end{table}
 
-\subsection{Effect of Transfer Direction}
 
-Remote CPU $\rightarrow$ GPU transfers may have different performance than GPU $\rightarrow$ CPU transfers.
-        In Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu}, CPU $\rightarrow$ GPU remote transfers achieve nearly 30 GB/s, while GPU $\rightarrow$ CPU transfers peak at around 20 GB/s.
-
-\subsection{Differences between Logically Identical Transfers}
+\subsection{Differences between Identical Transfers}
 
 \begin{figure}[ht]
     \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_cpu0-gpus.pdf}
-        \caption{}
-        \label{fig:}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_cpu1-gpus.pdf}
-        \caption{}
-        \label{fig:}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        IBM Minsky \texttt{cudaMemcpy} performance with pageable host allocations from (a) CPU0 to all GPUs and (b) CPU1 to all GPUs.
-    }
-    \label{fig:topo-asymmetry}
+    \includegraphics[width=0.7\textwidth]{figures/generated/minsky_pageable_cpu1-gpu01.pdf}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:minsky_pageable_cpu1-gpu01}
 \end{figure}
 
-Figure~\ref{fig:topo-asymmetry} shows the performance of \texttt{cudaMemcpy} moving pageable host allocations from CPU0 or CPU1 to all GPUs on the IBM Minsky.
-For transfers originating at CPU0, the achievable bandwidth does not depend on the destination device, but for transfers originating from CPU1, transfers 1-10MB in size are much slower to remote GPUs than local GPUs.
+\begin{table}[ht]
+    \centering
+    \caption[Matrix: Transfer rate affected by direction]{Does trasnfer rate vary on identical links?}
+    \label{tab:explicit}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind}                & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    Pageable $\rightarrow$ GPU        & $\times$   & $\times$ & \\ \hline
+    Pageable $\leftarrow$ GPU         & \checkmark & $\times$ & \\ \hline
+    Pinned $\rightarrow$ GPU          & $\times$   & $\times$ & \\ \hline
+    Pinned $\leftarrow$ GPU           & $\times$   & $\times$ & \\ \hline
+    Write-Combining $\rightarrow$ GPU & $\times$   & $\times$ & \\ \hline
+    Write-Combining $\leftarrow$ GPU  & $\times$   & $\times$ & \\ \hline
+    \end{tabular}
+\end{table}
 
-
+Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows the performance of \texttt{cudaMemcpy} moving data between pageable host allocations on CPU1 to GPU1 on Minsky.
 
 \section{GPU / GPU Transfers}
 
