@@ -1,15 +1,15 @@
-test.pdf:
+../../figures/generated/pageable_cpu0-gpu0.pdf:
   series:
-    - file: hal_pinned.csv
-      col: 0
-    - file: hal_pinned.csv
-      col: 1
-      label: new label 1
-    - file: hal_pinned.csv
-      col: 2
-      label: new label 2
+    - file: m2_pageable.csv
+      col: a
+    - file: m2_pageable.csv
+      col: b
+      label: S822LC
+    - file: hal_pageable.csv
+      col: c
+      label: AC922
   yaxis:
-    label: ylabel
+    label: Transfer Bandwidth (MB/s)
     lim:
       - 0
       - 70000
@@ -17,3 +17,164 @@ test.pdf:
     label: xlabel
     scale: log
   title: the title
+../../figures/generated/pinned_cpu0-gpu0.pdf:
+  series:
+    - file: m2_pinned.csv
+      col: a
+    - file: m2_pinned.csv
+      col: b
+      label: S822LC
+    - file: hal_pinned.csv
+      col: c
+      label: AC922
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 70000
+  xaxis:
+    label: xlabel
+    scale: log
+  title: the title
+../../figures/generated/wc_cpu0-gpu0.pdf:
+  series:
+    - file: m2_wc.csv
+      col: a
+    - file: m2_wc.csv
+      col: b
+      label: S822LC
+    - file: hal_wc.csv
+      col: c
+      label: AC922
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 70000
+  xaxis:
+    label: xlabel
+    scale: log
+  title: the title
+../../figures/generated/minsky_pinned_cpu0-gpu.pdf:
+  series:
+    - file: m2_pinned.csv
+      col: a
+    - label: Local (CPU0 to GPU0)
+      file: m2_pinned.csv
+      col: b
+    - label: Local (CPU0 to GPU1)
+      file: m2_pinned.csv
+      col: c
+    - label: Remote (CPU0 to GPU2)
+      file: m2_pinned.csv
+      col: d
+    - label: Remote (CPU0 to GPU3)
+      file: m2_pinned.csv
+      col: e
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Transfers from CPU0
+../../figures/generated/minsky_pinned_cpu1-gpu.pdf:
+  series:
+    - file: m2_pinned.csv
+      col: a
+    - label: Remote (CPU1 to GPU0)
+      file: m2_pinned.csv
+      col: f
+    - label: Remote (CPU1 to GPU1)
+      file: m2_pinned.csv
+      col: g
+    - label: Local (CPU1 to GPU2)
+      file: m2_pinned.csv
+      col: h
+    - label: Local (CPU1 to GPU3)
+      file: m2_pinned.csv
+      col: i
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Transfers from CPU1
+../../figures/generated/minsky_pinned_gpu-cpu0.pdf:
+  series:
+    - file: m2_pinned.csv
+      col: a
+    - file: m2_pinned.csv
+      col: j
+    - file: m2_pinned.csv
+      col: k
+    - file: m2_pinned.csv
+      col: l
+    - file: m2_pinned.csv
+      col: m
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 30000
+  xaxis:
+    scale: log
+  title: Transfers to CPU0
+../../figures/generated/minsky_pinned_gpu-cpu1.pdf:
+  series:
+    - file: m2_pinned.csv
+      col: a
+    - file: m2_pinned.csv
+      col: n
+    - file: m2_pinned.csv
+      col: o
+    - file: m2_pinned.csv
+      col: p
+    - file: m2_pinned.csv
+      col: q
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Transfers to CPU1
+
+../../figures/generated/minsky_pageable_cpu0-gpus.pdf:
+  series:
+    - file: m2_pageable.csv
+      col: a
+    - label: Local (CPU0 to GPU0)
+      file: m2_pageable.csv
+      col: b
+    - label: Local (CPU0 to GPU1)
+      file: m2_pageable.csv
+      col: c
+    - label: Remote (CPU0 to GPU2)
+      file: m2_pageable.csv
+      col: d
+    - label: Remote (CPU0 to GPU3)
+      file: m2_pageable.csv
+      col: e
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Transfers from CPU0
+
+../../figures/generated/minsky_pageable_cpu1-gpus.pdf:
+  series:
+    - file: m2_pageable.csv
+      col: a
+    - label: Remote (CPU1 to GPU0)
+      file: m2_pageable.csv
+      col: f
+    - label: Remote (CPU1 to GPU1)
+      file: m2_pageable.csv
+      col: g
+    - label: Local (CPU1 to GPU2)
+      file: m2_pageable.csv
+      col: h
+    - label: Local (CPU1 to GPU3)
+      file: m2_pageable.csv
+      col: i
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Transfers from CPU1

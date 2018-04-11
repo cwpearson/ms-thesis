@@ -77,6 +77,11 @@ if cfg_exists("yaxis", "label"):
     print out_path, ": setting custom yaxis label"
     ax.set_ylabel(cfg_get("yaxis","label"))
 
+if cfg_exists("yaxis", "lim"):
+    print out_path, ": setting custom ylim"
+    lim = cfg_get("yaxis", "lim")
+    ax.set_ylim(lim)
+
 if cfg_exists("title"):
     print out_path, ": setting custom title"
     plt.title(cfg_get("title"))

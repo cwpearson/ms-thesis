@@ -51,70 +51,6 @@ Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for th
     \end{algorithmic}
 \end{algorithm}
 
-% \begin{algorithm}[ht]
-%     \SetAlgoLined
-
-%     \Procedure{name}{$x$}
-%     \State Woah
-%     \EndProcedure
-
-%     \KwResult{bandwidth vs. transfer size between CPU $c$ and GPU $g$}
-%     bind application execution to $c$\;
-%     bind application memory allocation to $c$\;
-%     poolSize $\gets$ $\frac{gpuMemory}{2}$\;
-%     socketPool $\gets$ \texttt{cudaMallocHost(poolSize)}\;
-%     gpuPool $\gets$ \texttt{cudaMalloc(poolSize)}\;
-%     \For{transferSize := $1$ to poolSize}{
-%         start $\gets$ wall\_time()\;
-%         \eIf{direction == deviceToHost} {
-%             \texttt{cudaMemcpy(socketPool, gpuPool, transferSize, cudaMemcpyHostToDevice)}\;
-%         }{
-%             \texttt{cudaMemcpy(gpuPool, socketPool, transferSize, cudaMemcpyHostToDevice)}\;
-%         }
-%         stop $\gets$ wall\_time()\;
-%         bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-%     }
-%     \caption{CUDA cudaMemcpy with pinned memory.}
-%     \label{alg:cuda-h2d}
-% \end{algorithm}
-
-
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_pinned_cpu0-gpu.pdf}
-        \caption{}
-        \label{fig:minsky-topo-hardware}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_pinned_cpu1-gpu.pdf}
-        \caption{}
-        \label{fig:minsky-topo-cuda-simple}
-    \end{subfigure}
-    \caption[\todo{short}]{Minsky CPU to GPU pinned memory bandwidth.}
-    \label{fig:minsky-pinned-cpu}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_pinned_gpu-cpu0.pdf}
-        \caption{}
-        \label{fig:minsky-topo-hardware}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_pinned_gpu-cpu1.pdf}
-        \caption{}
-        \label{fig:minsky-topo-cuda-simple}
-    \end{subfigure}
-    \caption[\todo{short}]{Minsky GPU to CPU pinned memory bandwidth.}
-    \label{fig:minsky-pinned-gpu}
-\end{figure}
-
-Figures~\ref{fig:minsky-pinned-cpu}~and~\ref{fig:minsky-pinned-gpu} show memory transfer rates between CUDA pinned allocations on each CPU socket and all four GPUs on the IBM ``Minsky'' machine.
-
 \subsection{Comparison of Pageable, Pinned, and Write-Combining Host Allocations}
 
 Figure~\ref{fig:pageable-pinned-wc} shows the transfer performance from CPU0 to GPU0 for pageable, pinned, and write-combined allocations.
@@ -144,12 +80,78 @@ Figure~\ref{fig:pageable-pinned-wc} shows the transfer performance from CPU0 to 
     \label{fig:pageable-pinned-wc}
 \end{figure}
 
-\subsection{Effect of Local / Remote Transfer Destination}
+\subsection{Effect of Affinity and Direction}
 
 There is a distinct performance difference in transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
-At large transfer sizes, figure~\ref{fig:minsky-pinned-cpu} shows a \mytilde 5 GB/s difference, regardless of the source CPU socket.
+Figure~\ref{fig:minsky-pinned} shows cudaMemcpy performance between pinned allocations and GPU allocations on Minsky.
+Figures~\ref{fig:minsky_pinned_cpu0-gpu}~and~\ref{fig:minsky_pinned_cpu1-gpu} show that pinned transfers to/from local GPUs are 3GB/s faster than remote GPUs.
+At large transfer sizes, figure~\ref{fig:minsky_pinned_cpu0-gpu} shows a \mytilde 5 GB/s difference, regardless of the source CPU socket.
 Figure~\ref{fig:minsky-pinned-gpu} shows an even larger performance difference of up to 10GB/s.
 Additionally, GPU $\rightarrow$ CPU transfers in the (CPU0-GPU0-GPU1) triad have erratic performance as transfer sizes change.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_cpu0-gpu.pdf}
+        \caption{}
+        \label{fig:minsky_pinned_cpu0-gpu}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_cpu1-gpu.pdf}
+        \caption{}
+        \label{fig:minsky_pinned_cpu1-gpu}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_gpu-cpu0.pdf}
+        \caption{}
+        \label{fig:minsky_pinned_gpu-cpu0}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_gpu-cpu1.pdf}
+        \caption{}
+        \label{fig:minsky_pinned_gpu-cpu1}
+    \end{subfigure}
+    \caption[\todo{short}]{
+        IBM Minsky \texttt{cudaMemcpy} performance with pinned host allocations from 
+        (a) CPU0 to all GPUs
+        (b) CPU1 to all GPUs
+        (c) All GPUs to CPU0
+        (d) All GPUs to CPU1
+    }
+    \label{fig:minsky-pinned}
+\end{figure}
+
+\begin{table}[ht]
+    \centering
+    \caption[Matrix: Transfer rate affected by affinity]{Does affinity affect transfer rate?}
+    \label{tab:explicit}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind} & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    Pageable $\rightarrow$ GPU        & \checkmark & & \\ \hline
+    Pageable $\leftarrow$ GPU         & \checkmark & & \\ \hline
+    Pinned $\rightarrow$ GPU          & \checkmark & & \\ \hline
+    Pinned $\leftarrow$ GPU           & \checkmark & & \\ \hline
+    Write-Combining $\rightarrow$ GPU & \checkmark & & \\ \hline
+    Write-Combining $\leftarrow$ GPU  & \checkmark & & \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[ht]
+    \centering
+    \caption[Matrix: Transfer rate affected by direction]{Does direction affect transfer rate?}
+    \label{tab:explicit}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind} & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    Pageable $\leftrightarrow$ GPU        & depends on affinity & & \\ \hline
+    Pinned $\leftrightarrow$ GPU          & depends on affinity & & \\ \hline
+    Write-Combining $\leftrightarrow$ GPU & $\times$ & & \\ \hline
+    \end{tabular}
+\end{table}
 
 \subsection{Effect of Transfer Direction}
 
