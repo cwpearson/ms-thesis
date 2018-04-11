@@ -454,9 +454,9 @@ This policy controls on which CPUs processes may execute, and on which NUMA node
 \section{System Descriptions}
 \label{ref:system-description}
 
-The system characterization was executed on two high-performance heterogeneous systems: an IBM S822LC ``Minsky''~\cite{ibm2015minsky}, and an NVIDIA DGX-1~\cite{nvidia2016dgx1}.
-The two systems both feature 512 GB of system memory, two multi-core GPUs, and multiple NVIDIA Tesla P100 GPUs.
-Their key differences are in CPU architecture (64-lit little-endian PowerPC for ``Minsky'', x86-64 for DGX-1), number of GPUs (4 vs 8), and GPU connection topology (bonded NVLink vs hybrid PCIe/NVLink).
+Three high-performance heterogeneous systems are used in this work: an IBM S822LC for High Performance Computing ``Minsky''~\cite{caldeira2016s822lc}, an IBM AC922~\cite{caldeira2018ac922}, and an NVIDIA DGX-1~\cite{nvidia2016dgx1}.
+All systems feature multiple GPUs and multiple socketed CPUs.
+Their key differences are in CPU architecture (64-lit little-endian PowerPC for S822LC and AC922', x86-64 for DGX-1), number of GPUs (4 for the IBM machines, 8 for NVIDIA), and GPU connection topology (NVLink 1.0 for S822LC, NVLink 2.0 for AC922, and hybrid PCIe 3.0 / NVLink 1.0 for DGX-1).
 
 \todo{Discuss NUMA arch for each system}
 
@@ -480,10 +480,10 @@ Their key differences are in CPU architecture (64-lit little-endian PowerPC for 
 \end{table}
 
 The IBM S822LC ``Minsky'' machine features two POWER8 CPUs and four NVIDIA P100 GPUs\cite{caldeira2016s822lc}.
-Each POWER8 s has 10 cores, with 8-way simultaneous multithreading, and is attached to 256GB of DDR4 memory. for a total of 160 threads and 512 GB of memory.
+Each POWER8 CPU has 10 cores, with 8-way simultaneous multithreading, and is attached to 256GB of DDR4 memory. for a total of 160 threads and 512 GB of memory.
 Each POWER8 CPU is part of a fully-connected triad of one POWER8 CPU and two P100 GPUs.
-Each device in the triad is connected by two NVLinks.
-The two triads are connected at the POWER8 CPUs by an IBM SMP bus\todo{cite}.
+Each device in the triad is connected by a gang of two NVLink 1.0 lanes for a total bidirectional bandwidth of 80 GB/s.
+The two triads are connected at the POWER8 CPUs by an IBM SMP X bus with 38.4 GB/s of bidirectional bandwidth.
 Table~\ref{tab:minsky} summarizes the hardware configuration.
 
 Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref{fig:topo-minsky-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
@@ -500,13 +500,16 @@ Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref
 \subsection{NVIDIA DGX-1}
 \label{sec:dgx1-description}
 
-The NVIDIA DGX-1 machine consists of two symmetric sections.
+
+
+The NVIDIA DGX-1 machine consists of two symmetric sections\cite{nvidia2017dgx1}.
 Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
 Each CPU is connected to 256GB of DDR4 RAM.
 Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
-The sections are connected by an Intel QPI bus between the CPUs, as well as NVLinks between corresponding GPUs.
+The sections are connected by an Intel 9.6GT/s QPI bus between the CPUs, as well as NVLinks between corresponding GPUs.
 The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
 Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{fig:topo-dgx-actual} shows a detailed view.} of the topology discovered by \todo{hwcomm}.
+
 
 
 \begin{figure}
@@ -520,7 +523,12 @@ Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{f
 \subsection{IBM AC922}
 \label{sec:hal-description}
 
-\cite{caldeira2018ac922}
+The IBM AC922 machine features two POWER9 CPUs and four NVIDIA V100 GPUs\cite{caldeira2018ac922}.
+Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory. for a total of 160 threads and 1TB of memory.
+Each POWER9 CPU is part of a fully-connected triad of one POWER9 CPU and two V100 GPUs.
+Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirection bandwidth of 150 GB/s.
+The two triads are connected at the POWER9 CPUs by an IBM SMP X bus with 64 GB/s bandwidth.
+Table~\ref{tab:minsky} summarizes the hardware configuration.
 
 \begin{table}[]
     \centering
