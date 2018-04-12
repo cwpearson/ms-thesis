@@ -237,6 +237,29 @@ Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for th
 
 \subsection{Transfer Rate and Peer Access}
 
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_memcpy_local.pdf}
+        \caption{}
+        \label{fig:}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/hal_peer_local.pdf}
+        \caption{}
+        \label{fig:}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/hal_peer_remote.pdf}
+        \caption{}
+        \label{fig:}
+    \end{subfigure}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:}
+\end{figure}
+
 
 \begin{table}[ht]
     \centering
@@ -246,7 +269,7 @@ Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for th
     \hline
     \textbf{Transfer Kind}       & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     GPU $\rightarrow$ Local GPU  & \checkmark      & \checkmark     & \\ \hline
-    GPU $\rightarrow$ Remote GPU & N/A             & $\times$       & \\ \hline
+    GPU $\rightarrow$ Remote GPU & N/A             & \checkmark     & \\ \hline
     \end{tabular}
 \end{table}
 
@@ -260,10 +283,27 @@ Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for th
     \label{tab:explicit}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}       & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$   & $\times$   & \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A        & $\times$   & \\ \hline
-    GPU $\leftrightarrow$ Local GPU  (peer disabled) & $\times$   & $\times$   & \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark & \checkmark & \\ \hline
+    \textbf{Transfer Kind}                           & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$        & $\times$       & \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A             & $\times$       & \\ \hline
+    GPU $\leftrightarrow$ Local GPU  (peer disabled) & $\times$        & $\times$       & \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark      & \checkmark     & \\ \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Transfer Rate on Identical Links}
+
+
+\begin{table}[ht]
+    \centering
+    \caption[Matrix: Transfer rate affected by direction]{Is GPU-GPU transfer rate affected by direction?}
+    \label{tab:explicit}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind}                           & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    GPU $\leftrightarrow$ Local GPU  (peer enabled)  &                 &                & \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer enabled)  &                 &                & \\ \hline
+    GPU $\leftrightarrow$ Local GPU  (peer disabled) &                 &                & \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer disabled) &                 &                & \\ \hline
     \end{tabular}
 \end{table}

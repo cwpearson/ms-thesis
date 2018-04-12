@@ -194,3 +194,96 @@
   xaxis:
     scale: log
   title: Minsky Pageable Transfers from CPU1
+
+../../figures/generated/minsky_memcpy_local.pdf:
+  series:
+    - file: m2_memcpy-nopeer.csv
+      col: a
+    - label: Peer Access Enabled
+      file: m2_memcpy-peer.csv
+      col: c
+    - label: Peer Access Disabled
+      file: m2_memcpy-nopeer.csv
+      col: e
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 70000
+  xaxis:
+    scale: log
+  title: Minsky GPU0-GPU1 Transfers, GPU0 to GPU1
+
+../../figures/generated/hal_peer_local.pdf:
+  series:
+    - file: hal_memcpy-nopeer.csv
+      col: a
+    - label: GPU1 to GPU0 (peer)
+      file: hal_memcpy-peer.csv
+      col: b
+    - label: GPU0 to GPU1 (peer)
+      file: hal_memcpy-peer.csv
+      col: e
+    - label: GPU3 to GPU2 (peer)
+      file: hal_memcpy-peer.csv
+      col: j
+    - label: GPU2 to GPU3 (peer)
+      file: hal_memcpy-peer.csv
+      col: m
+    - label: GPU1 to GPU0 (no peer)
+      file: hal_memcpy-nopeer.csv
+      col: b
+    - label: GPU0 to GPU1 (no peer)
+      file: hal_memcpy-nopeer.csv
+      col: e
+    - label: GPU3 to GPU2 (no peer)
+      file: hal_memcpy-nopeer.csv
+      col: j
+    - label: GPU2 to GPU3 (no peer)
+      file: hal_memcpy-nopeer.csv
+      col: m
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 70000
+  xaxis:
+    scale: log
+  title: AC922 GPU-GPU Local Transfers
+
+../../figures/generated/hal_peer_remote.pdf:
+  series:
+    - file: hal_memcpy-nopeer.csv
+      col: a
+    - label: GPU0 to GPU2 (peer)
+      file: hal_memcpy-peer.csv
+      col: h
+    - label: GPU0 to GPU3 (peer)
+      file: hal_memcpy-peer.csv
+      col: k
+    - label: GPU1 to GPU2 (peer)
+      file: hal_memcpy-peer.csv
+      col: i
+    - label: GPU1 to GPU3 (peer)
+      file: hal_memcpy-peer.csv
+      col: l
+    - label: GPU0 to GPU2 (no peer)
+      file: hal_memcpy-nopeer.csv
+      col: h
+    - label: GPU0 to GPU3 (no peer)
+      file: hal_memcpy-nopeer.csv
+      col: k
+    - label: GPU1 to GPU2 (no peer)
+      file: hal_memcpy-nopeer.csv
+      col: i
+    - label: GPU1 to GPU3 (no peer)
+      file: hal_memcpy-nopeer.csv
+      col: l
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 70000
+  xaxis:
+    scale: log
+  title: AC922 GPU-GPU Remote Transfers
