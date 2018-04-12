@@ -325,3 +325,67 @@
   xaxis:
     scale: log
   title: AC922 Transfers between GPU0 and GPU2 (peer access disabled)
+
+../../figures/generated/hal_nopeer_identical-local.pdf:
+  series:
+    - file: hal_memcpy-nopeer.csv
+      col: a
+    - label: GPU0 to GPU1
+      file: hal_memcpy-nopeer.csv
+      col: e
+    - label: GPU2 to GPU3
+      file: hal_memcpy-nopeer.csv
+      col: m
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: AC922 Local Transfers on Identical Links (peer access disabled)
+
+../../figures/generated/hal_nopeer_identical-remote.pdf:
+  series:
+    - file: hal_memcpy-nopeer.csv
+      col: a
+    - label: GPU1 to GPU2
+      file: hal_memcpy-nopeer.csv
+      col: f
+    - label: GPU0 to GPU3
+      file: hal_memcpy-nopeer.csv
+      col: k
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: AC922 Remote Transfers on Identical Links (peer access disabled)
+
+../../figures/generated/minsky_nopeer_identical-local.pdf:
+  series:
+    - file: m2_memcpy-nopeer.csv
+      col: a
+    - label: GPU0 to GPU1
+      file: m2_memcpy-nopeer.csv
+      col: e
+    - label: GPU2 to GPU3
+      file: m2_memcpy-nopeer.csv
+      col: m
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Minsky Local Transfers on Identical Links (peer access disabled)
+
+../../figures/generated/minsky_nopeer_identical-remote.pdf:
+  series:
+    - file: m2_memcpy-nopeer.csv
+      col: a
+    - label: GPU1 to GPU2
+      file: m2_memcpy-nopeer.csv
+      col: f
+    - label: GPU0 to GPU3
+      file: m2_memcpy-nopeer.csv
+      col: k
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Minsky Remote Transfers on Identical Links (peer access disabled)  
