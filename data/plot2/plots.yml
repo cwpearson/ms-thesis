@@ -287,3 +287,41 @@
   xaxis:
     scale: log
   title: AC922 GPU-GPU Remote Transfers
+
+../../figures/generated/minsky_nopeer_remote.pdf:
+  series:
+    - file: m2_memcpy-nopeer.csv
+      col: a
+    - label: GPU0 to GPU2
+      file: m2_memcpy-nopeer.csv
+      col: h
+    - label: GPU2 to GPU0
+      file: m2_memcpy-nopeer.csv
+      col: c
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 30000
+  xaxis:
+    scale: log
+  title: Minsky Transfers between GPU0 and GPU2 (peer access disabled)
+
+../../figures/generated/hal_nopeer_remote.pdf:
+  series:
+    - file: hal_memcpy-nopeer.csv
+      col: a
+    - label: GPU0 to GPU2
+      file: hal_memcpy-nopeer.csv
+      col: h
+    - label: GPU2 to GPU0
+      file: hal_memcpy-nopeer.csv
+      col: c
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 30000
+  xaxis:
+    scale: log
+  title: AC922 Transfers between GPU0 and GPU2 (peer access disabled)
