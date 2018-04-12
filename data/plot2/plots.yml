@@ -55,85 +55,6 @@
     label: xlabel
     scale: log
   title: the title
-../../figures/generated/minsky_pinned_cpu0-gpu.pdf:
-  series:
-    - file: m2_pinned.csv
-      col: a
-    - label: Local (CPU0 to GPU0)
-      file: m2_pinned.csv
-      col: b
-    - label: Local (CPU0 to GPU1)
-      file: m2_pinned.csv
-      col: c
-    - label: Remote (CPU0 to GPU2)
-      file: m2_pinned.csv
-      col: d
-    - label: Remote (CPU0 to GPU3)
-      file: m2_pinned.csv
-      col: e
-  yaxis:
-    label: Transfer Bandwidth (MB/s)
-  xaxis:
-    scale: log
-  title: Transfers from CPU0
-../../figures/generated/minsky_pinned_cpu1-gpu.pdf:
-  series:
-    - file: m2_pinned.csv
-      col: a
-    - label: Remote (CPU1 to GPU0)
-      file: m2_pinned.csv
-      col: f
-    - label: Remote (CPU1 to GPU1)
-      file: m2_pinned.csv
-      col: g
-    - label: Local (CPU1 to GPU2)
-      file: m2_pinned.csv
-      col: h
-    - label: Local (CPU1 to GPU3)
-      file: m2_pinned.csv
-      col: i
-  yaxis:
-    label: Transfer Bandwidth (MB/s)
-  xaxis:
-    scale: log
-  title: Transfers from CPU1
-../../figures/generated/minsky_pinned_gpu-cpu0.pdf:
-  series:
-    - file: m2_pinned.csv
-      col: a
-    - file: m2_pinned.csv
-      col: j
-    - file: m2_pinned.csv
-      col: k
-    - file: m2_pinned.csv
-      col: l
-    - file: m2_pinned.csv
-      col: m
-  yaxis:
-    label: Transfer Bandwidth (MB/s)
-    lim:
-      - 0
-      - 30000
-  xaxis:
-    scale: log
-  title: Transfers to CPU0
-../../figures/generated/minsky_pinned_gpu-cpu1.pdf:
-  series:
-    - file: m2_pinned.csv
-      col: a
-    - file: m2_pinned.csv
-      col: n
-    - file: m2_pinned.csv
-      col: o
-    - file: m2_pinned.csv
-      col: p
-    - file: m2_pinned.csv
-      col: q
-  yaxis:
-    label: Transfer Bandwidth (MB/s)
-  xaxis:
-    scale: log
-  title: Transfers to CPU1
 
 ../../figures/generated/minsky_pageable_cpu0-gpus.pdf:
   series:
@@ -388,4 +309,202 @@
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Minsky Remote Transfers on Identical Links (peer access disabled)  
+  title: Minsky Remote Transfers on Identical Links (peer access disabled)
+
+../../figures/generated/minsky_pinned_cpu0-local.pdf:
+  series:
+    - file: m2_pinned.csv
+      col: a
+    - label: GPU0 to CPU0
+      file: m2_pinned.csv
+      col: j
+    - label: GPU1 to CPU0
+      file: m2_pinned.csv
+      col: k
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Minsky Local transfers from Device to pinned CPU0
+
+../../figures/generated/minsky_wc_cpu0-local.pdf:
+  series:
+    - file: m2_wc.csv
+      col: a
+    - label: GPU0 to CPU0
+      file: m2_wc.csv
+      col: j
+    - label: GPU1 to CPU0
+      file: m2_wc.csv
+      col: k
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Minsky Local transfers from Device to Write-combining CPU0
+
+../../figures/generated/minsky_pageable_affinity.pdf:
+  series:
+    - file: m2_pageable.csv
+      col: a
+    - label: Local (CPU0 to GPU0)
+      file: m2_pageable.csv
+      col: b
+    - label: Remote (CPU0 to GPU2)
+      file: m2_pageable.csv
+      col: d
+    - label: Local (GPU0 to CPU0)
+      file: m2_pageable.csv
+      col: j
+    - label: Remote (GPU2 to CPU0)
+      file: m2_pageable.csv
+      col: l
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Effect of Affinity on Minsky Pageable CPU0-GPU Transfers
+
+../../figures/generated/hal_pageable_affinity.pdf:
+  series:
+    - file: hal_pageable.csv
+      col: a
+    - label: Local (CPU0 to GPU0)
+      file: hal_pageable.csv
+      col: b
+    - label: Remote (CPU0 to GPU2)
+      file: hal_pageable.csv
+      col: d
+    - label: Local (GPU0 to CPU0)
+      file: hal_pageable.csv
+      col: j
+    - label: Remote (GPU2 to CPU0)
+      file: hal_pageable.csv
+      col: l
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Effect of Affinity on AC922 Pageable CPU0-GPU Transfers
+
+../../figures/generated/minsky_pinned_affinity.pdf:
+  series:
+    - file: m2_pinned.csv
+      col: a
+    - label: Local (CPU0 to GPU0)
+      file: m2_pinned.csv
+      col: b
+    - label: Remote (CPU0 to GPU2)
+      file: m2_pinned.csv
+      col: d
+    - label: Local (GPU0 to CPU0)
+      file: m2_pinned.csv
+      col: j
+    - label: Remote (GPU2 to CPU0)
+      file: m2_pinned.csv
+      col: l
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Effect of Affinity on Minsky Pinned CPU0-GPU Transfers
+
+../../figures/generated/hal_pinned_affinity.pdf:
+  series:
+    - file: hal_pinned.csv
+      col: a
+    - label: Local (CPU0 to GPU0)
+      file: hal_pinned.csv
+      col: b
+    - label: Remote (CPU0 to GPU2)
+      file: hal_pinned.csv
+      col: d
+    - label: Local (GPU0 to CPU0)
+      file: hal_pinned.csv
+      col: j
+    - label: Remote (GPU2 to CPU0)
+      file: hal_pinned.csv
+      col: l
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Effect of Affinity on AC922 Pinned CPU0-GPU Transfers
+
+../../figures/generated/minsky_pageable_cpu0-gpus.pdf:
+  series:
+    - file: m2_pageable.csv
+      col: a
+    - file: m2_pageable.csv
+      col: b
+    - file: m2_pageable.csv
+      col: c
+    - file: m2_pageable.csv
+      col: d
+    - file: m2_pageable.csv
+      col: e
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 30000
+  xaxis:
+    scale: log
+  title: Transfers to CPU0
+
+../../figures/generated/minsky_pageable_cpu1-gpus.pdf:
+  series:
+    - file: m2_pageable.csv
+      col: a
+    - file: m2_pageable.csv
+      col: f
+    - file: m2_pageable.csv
+      col: g
+    - file: m2_pageable.csv
+      col: h
+    - file: m2_pageable.csv
+      col: i
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Transfers to CPU1
+
+../../figures/generated/minsky_pageable_gpus-cpu0.pdf:
+  series:
+    - file: m2_pageable.csv
+      col: a
+    - file: m2_pageable.csv
+      col: j
+    - file: m2_pageable.csv
+      col: k
+    - file: m2_pageable.csv
+      col: l
+    - file: m2_pageable.csv
+      col: m
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 30000
+  xaxis:
+    scale: log
+  title: Transfers to CPU0
+  
+../../figures/generated/minsky_pageable_gpus-cpu1.pdf:
+  series:
+    - file: m2_pageable.csv
+      col: a
+    - file: m2_pageable.csv
+      col: n
+    - file: m2_pageable.csv
+      col: o
+    - file: m2_pageable.csv
+      col: p
+    - file: m2_pageable.csv
+      col: q
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Transfers to CPU1

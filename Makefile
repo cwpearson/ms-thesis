@@ -1,4 +1,4 @@
-LATEX = pdflatex
+LATEX = pdflatex -halt-on-error
 BIBTEX = bibtex
 
 USR := $(shell id -u)
