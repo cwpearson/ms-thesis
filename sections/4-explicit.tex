@@ -100,7 +100,9 @@ For transfers from pageable host allocations to the GPU (Figure~\ref{fig:pageabl
     \label{fig:pageable-pinned-wc}
 \end{figure}
 
-\subsection{Effect of Direction and Affinity}
+\subsection{Anisotropy and Effect of Affinity on Performance}
+
+\todo{split into two sections: Anisotropy and affinity}
 
 There is a distinct performance difference due to affinity, or transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
 There is also a performance affect from direction, where performance of a transfer between a CPU and GPU depends on the direction of the transfer.
@@ -181,7 +183,7 @@ Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
 
 \begin{table}[ht]
     \centering
-    \caption[Matrix: Transfer rate affected by direction]{Does direction affect transfer rate?}
+    \caption[Summary of Host-Device Transfer Anisotropy]{Summary of Host-Device Transfer Anisotropy}
     \label{tab:explicit}
     \begin{tabular}{|c|c|c|c|}
     \hline
@@ -262,8 +264,18 @@ Table~\ref{tab:explicit-idental} summarizes scenarios where the transfer perform
 \section{GPU / GPU Transfers}
 \label{sec:explicit-gpu-gpu}
 
-Algorithm~\ref{alg:explicit} is used to evaluate the achievable transfer bandwidth between device allocations, with \texttt{cudaDeviceDisablePeerAccess} or \texttt{cudaDeviceEnablePeerAccess}.
-First, peer access is enabled or disabled depending on the desired experiment.
+Explicit GPU-GPU transfers are caused by the \texttt{cudaMemcpy} family of functions being invoked on pointers to device allocations created with \texttt{cudaMalloc}.
+Unlinke the different types of host allocations CPU-GPU transfers described in Section~\ref{sec:explicit-cpu-gpu}, this section only refers to a single kind of device allocation.
+Device allocations come with the concept of peer access, discussed in Section~\ref{sec:cuda-peer}.
+This section covers
+\begin{itemize}
+\item The effect of peer access on transfer bandwidth (Section~\ref{sec:explicit-peer-bandwidth})
+\item Cases of observed anisotropic transfer properties (Section~\ref{sec:explicit-peer-direction})
+\item Cases of differing performance on identical links (Section~\ref{sec:explicit-peer-identical})
+\end{itemize}
+
+Algorithm~\ref{alg:explicit} is used to evaluate the achievable GPU-GPU transfer bandwidth.
+First, peer access is enabled or disabled depending on the experimental configuration.
 Then, \texttt{cudaMalloc} is used to create allocations of $transfer\_size$ bytes pointed to by $srcPtr$ and $dstPtr$.
 Finally, the achievable bandwidth is measured using the wall time for $num\_iters$ iterations, and the minimum elapsed time is reported, to help remove jitter from the results.
 
@@ -306,6 +318,13 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
 \end{algorithm}
 
 \subsection{Transfer Rate and Peer Access}
+\label{sec:explicit-peer-bandwidth}
+
+Figure~\ref{fig:explicit-peer} shows the performance of a variety of GPU-GPU transfers with and without peer access.
+Peer access has a large effect on the bandwidth of local GPU-GPU transfers.
+In some cases, when peer access is disabled, local access performance varies across identical links.
+Enabling peer access can also reduce the bandwidth of remote accesses.
+Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access affects transfer performance.
 
 \begin{figure}[ht]
     \centering
@@ -318,7 +337,7 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
     \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/hal_peer_local.pdf}
         \caption{}
-        \label{fig:}
+        \label{fig:explicit-hal-peer-local}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.3\textwidth}
@@ -327,19 +346,20 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
         \label{fig:}
     \end{subfigure}
     \caption[\todo{short}]{
-        (a) shows
-        (b) shows
-        (c) shows
-        (d) shows
+        The effect of enabling peer access
+        (a) on Minsky for local GPU-GPU transfers,
+        (b) on AC922 for local GPU-GPU transfers, and
+        (c) on AC922 for remote GPU-GPU transfers.
+        Minsky does not support peer access for remote GPU-GPU transfers.
     }
-    \label{fig:}
+    \label{fig:explicit-peer}
 \end{figure}
 
 
 \begin{table}[ht]
     \centering
     \caption[Matrix: Transfer rate affected by peer access]{Is transfer rate affected by peer access?}
-    \label{tab:explicit}
+    \label{tab:explicit-peer-rate}
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}       & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
@@ -349,29 +369,50 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
 \end{table}
 
 
-\subsection{Transfer Rate and Direction}
+\subsection{Transfer Anisotropy with Peer Access Disabled}
+\label{sec:explicit-peer-direction}
+
+Anisotropy in GPU-GPU transfers is also observed on Minsky and AC922.
+This anisotropy is not consistent with anisotpropy observed on the intervening links.
+For example, consider Figure~\ref{fig:explicit-peer-anisotropy}a-c.
+Figure~\ref{minsky-explicit-nopeer-remote} shows anisotropy along the remote GPU0-GPU2 transfer.
+Figures~\ref{fig:minsky-explicit-path-gpu0-gpu2}~and~\ref{fig:minsky-explicit-path-gpu2-gpu0} show pinned transfer speeds along GPU0-CPU0-CPU1-GPU2 and GPU2-CPU1-CPU0-GPU0 paths.
+The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed bandwidth on the path components, and sometimes lower than the lowest path component.
+Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU transfers on Minsky and AC922.
 
 \begin{figure}[ht]
     \centering
     \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/minsky_nopeer_remote.pdf}
         \caption{}
-        \label{fig:}
+        \label{fig:minsky-explicit-nopeer-remote}
     \end{subfigure}
     ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_path_gpu0-gpu2.pdf}
+        \caption{}
+        \label{fig:minsky-explicit-path-gpu0-gpu2}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_path_gpu2-gpu0.pdf}
+        \caption{}
+        \label{fig:minsky-explicit-path-gpu2-gpu0}
+    \end{subfigure}
+    \\
     \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/hal_nopeer_remote.pdf}
         \caption{}
         \label{fig:}
     \end{subfigure}
     \caption[\todo{short}]{\todo{long}}
-    \label{fig:}
+    \label{fig:explicit-peer-anisotropy}
 \end{figure}
 
 \begin{table}[ht]
     \centering
     \caption[Matrix: Transfer rate affected by direction]{Is GPU-GPU transfer rate affected by direction?}
-    \label{tab:explicit}
+    \label{tab:explicit-peer-direction}
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}                           & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
@@ -382,9 +423,12 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
     \end{tabular}
 \end{table}
 
+\subsection{Transfer Rate on Identical Transfers}
+\label{sec:explicit-peer-identical}
 
-
-\subsection{Transfer Rate on Identical Links}
+Like CPU-GPU transfers, different performance is observed on identical GPU-GPU transfers when peer access is disabled.
+Figure~\ref{fig:explicit-nopeer-identical} show some example scenarios.
+Table~\ref{tab:explicit-identical} summarizes the cases where differing performance is observed.
 
 \begin{figure}[ht]
     \centering
@@ -412,7 +456,7 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
         \label{fig:}
     \end{subfigure}
     \caption[\todo{short}]{\todo{long}}
-    \label{fig:}
+    \label{fig:explicit-nopeer-identical}
 \end{figure}
 
 \begin{table}[ht]
