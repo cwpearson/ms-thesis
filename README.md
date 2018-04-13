@@ -11,6 +11,7 @@
 * [v0.1](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.1.pdf) given to Wen-Mei Hwu on 3/15/2018.
 * [v0.2](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.2.pdf) shown to Wen-Mei Hwu on 4/08/2018.
 * [v0.3](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.3.pdf) shown to CAB on 4/10/2018.
+* [v0.4](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.4.pdf) sent ch4 to Jinjun on 4/13/2018.
 
 
 ## References
