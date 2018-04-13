@@ -6,6 +6,7 @@ import matplotlib.pylab as plt
 import yaml
 import os.path as path
 import pprint
+from multiprocessing import Pool
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -48,23 +49,16 @@ def col_to_idx(s):
     return acc
 
 
-if len(sys.argv) < 2:
-    sys.exit(1)
 
-yaml_path = sys.argv[1]
+def generate_figure(jobspec):
 
-yaml_dir = path.dirname(yaml_path)
+    (yaml_dir, plot_path, plot_cfg, plot_num) = jobspec
 
-
-
-with open(yaml_path, 'rb') as f:
-    cfg = yaml.load(f)
-    print cfg
-
-for plot_path, plot_cfg in cfg.iteritems():
     if not path.isabs(plot_path):
         plot_path = path.join(yaml_dir, plot_path)
-    print plot_path, plot_cfg
+        print plot_path, plot_cfg
+
+
 
     # build data frame from specified columns
     data = pd.DataFrame()
@@ -86,6 +80,8 @@ for plot_path, plot_cfg in cfg.iteritems():
     # set column 0 as index 
     data = data.set_index(data.iloc[:, 0].name, drop=True)
     #print data
+
+    plt.figure(plot_num)
 
     # Generate and configure plot
     ax = data.plot(kind='line')
@@ -119,4 +115,27 @@ for plot_path, plot_cfg in cfg.iteritems():
 
     # Save plot
     print "saving to", plot_path
-    plt.savefig(plot_path, bbox_inches="tight", clip_on=False, transparent=True)
+    fig.savefig(plot_path, bbox_inches="tight", clip_on=False, transparent=True)
+
+if __name__ == '__main__':
+
+    num_workers = 1
+    p = Pool(num_workers)
+
+
+    if len(sys.argv) < 2:
+        sys.exit(1)
+
+    yaml_path = sys.argv[1]
+    yaml_dir = path.dirname(yaml_path)
+
+    with open(yaml_path, 'rb') as f:
+        cfg = yaml.load(f)
+        print cfg
+
+    jobs = []
+    for plot_path, plot_cfg in cfg.iteritems():
+        jobs += [(yaml_dir, plot_path, plot_cfg, len(jobs))]
+
+    p.map(generate_figure, jobs)
+        
