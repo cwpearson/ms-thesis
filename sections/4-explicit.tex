@@ -218,49 +218,54 @@ Figure~\ref{fig:minsky-wc} shows the behavior.
     \label{fig:minsky-wc}
 \end{figure}
 
-Minsky local wc is different from minsky pinned
-
 \subsection{Differences between Identical Transfers}
+
+Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows transfer performance on two different identical links: CPU0-GPU0 and CPU0-GPU1.
+Table~\ref{tab:explicit-idental} summarizes scenarios where the transfer performance differs on identical links.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.7\textwidth]{figures/generated/minsky_pageable_cpu1-gpu01.pdf}
-    \caption[\todo{short}]{\todo{long}}
+
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_cpu1-gpu01.pdf}
+        \caption{}
+        \label{fig:}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_gpu02-cpu01.pdf}
+        \caption{}
+        \label{fig:}
+    \end{subfigure}
+
+    \caption[\todo{short}]{
+        (a) shows transfer bandwidth from a pageable allocation on CPU1 to an allocation on GPU0 or GPU1.
+        (b) shows transfer bandwidth from an allocation on GPU0 or GPU2 to a pageable allocation CPU0 or CPU1.
+        Both of these scenarios are identical from a logical and hardware perspective, yet performance varies substantially.}
     \label{fig:minsky_pageable_cpu1-gpu01}
 \end{figure}
 
 \begin{table}[ht]
     \centering
     \caption[Matrix: Transfer rate vary on identical links]{Does transfer rate vary on identical links?}
-    \label{tab:explicit}
+    \label{tab:explicit-identical}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}                & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU        & $\times$   & $\times$ & \\ \hline
-    Pageable $\leftarrow$ GPU         & \checkmark & $\times$ & \\ \hline
-    Pinned $\rightarrow$ GPU          & $\times$   & $\times$ & \\ \hline
-    Pinned $\leftarrow$ GPU           & $\times$   & $\times$ & \\ \hline
+    \textbf{Transfer Kind}     & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
+    Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
+    Pinned $\rightarrow$ GPU   & $\times$                                                   & $\times$ & \\ \hline
+    Pinned $\leftarrow$ GPU    & $\times$                                                   & $\times$ & \\ \hline
     \end{tabular}
 \end{table}
-
-Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows the performance of \texttt{cudaMemcpy} moving data between pageable host allocations on CPU1 to GPU1 on Minsky.
 
 \section{GPU / GPU Transfers}
 \label{sec:explicit-gpu-gpu}
 
-Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for the logical endpoints and methods shown in Table~\ref{tab:explicit}.
-
-\begin{table}[ht]
-    \centering
-    \caption[\todo{short}]{\todo{long}}
-    \label{tab:explicit}
-    \begin{tabular}{|c|c|}
-    \hline
-    \textbf{Endpoints} & \textbf{Transfer Methods} \\ \hline 
-    Device Allocation & cudaMemcpy (peer access disabled) \\ \hline
-    Device Allocation & cudaMemcpy (peer access enabled) \\ \hline
-    \end{tabular}
-\end{table}
+Algorithm~\ref{alg:explicit} is used to evaluate the achievable transfer bandwidth between device allocations, with \texttt{cudaDeviceDisablePeerAccess} or \texttt{cudaDeviceEnablePeerAccess}.
+First, peer access is enabled or disabled depending on the desired experiment.
+Then, \texttt{cudaMalloc} is used to create allocations of $transfer\_size$ bytes pointed to by $srcPtr$ and $dstPtr$.
+Finally, the achievable bandwidth is measured using the wall time for $num\_iters$ iterations, and the minimum elapsed time is reported, to help remove jitter from the results.
 
 \begin{algorithm}
     \caption{Measuring explicit \texttt{cudaMemcpy} performance}
@@ -321,7 +326,12 @@ Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for th
         \caption{}
         \label{fig:}
     \end{subfigure}
-    \caption[\todo{short}]{\todo{long}}
+    \caption[\todo{short}]{
+        (a) shows
+        (b) shows
+        (c) shows
+        (d) shows
+    }
     \label{fig:}
 \end{figure}
 
