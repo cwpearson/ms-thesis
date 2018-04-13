@@ -387,7 +387,7 @@
     scale: log
   title: Effect of Affinity on AC922 Pageable CPU0-GPU Transfers
 
-../../figures/generated/minsky_pinned_affinity.pdf:
+../../figures/generated/minsky_pinned_affinity_cpu0.pdf:
   series:
     - file: m2_pinned.csv
       col: a
@@ -408,6 +408,28 @@
   xaxis:
     scale: log
   title: Effect of Affinity on Minsky Pinned CPU0-GPU Transfers
+
+../../figures/generated/minsky_pinned_affinity_cpu1.pdf:
+  series:
+    - file: m2_pinned.csv
+      col: a
+    - label: Local (CPU1 to GPU0)
+      file: m2_pinned.csv
+      col: f
+    - label: Remote (CPU1 to GPU2)
+      file: m2_pinned.csv
+      col: h
+    - label: Local (GPU0 to CPU1)
+      file: m2_pinned.csv
+      col: n
+    - label: Remote (GPU2 to CPU1)
+      file: m2_pinned.csv
+      col: p
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Effect of Affinity on Minsky Pinned CPU1-GPU Transfers
 
 ../../figures/generated/hal_pinned_affinity.pdf:
   series:

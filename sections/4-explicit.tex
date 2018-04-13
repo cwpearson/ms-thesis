@@ -122,7 +122,7 @@ Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
     \end{subfigure}
     \\
     \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity.pdf}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu0.pdf}
         \caption{}
         \label{fig:minsky_pinned_affinity}
     \end{subfigure}
@@ -156,6 +156,28 @@ Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
 \end{table}
 
 
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu0.pdf}
+        \caption{}
+        \label{fig:minsky_pinned_affinity}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu1.pdf}
+        \caption{}
+        \label{fig:minsky_pinned_affinity}
+    \end{subfigure}
+    \caption[\todo{short}]{
+        (a) shows pinned transfers between CPU0 and local or remote GPUs.
+        For local and remote transfers, the direction affects the bandwidth.
+        (b) shows pinned transfers between CPU1 and local or remote GPUs.
+        For remote transfers, the direction does not affect the bandwidth.
+
+    }
+    \label{fig:minsky-direction}
+\end{figure}
 
 \begin{table}[ht]
     \centering
@@ -164,10 +186,10 @@ Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}                         & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\leftrightarrow$ GPU (local)         & \checkmark     & \checkmark & \\ \hline
-    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark     & \checkmark & \\ \hline
-    Pinned $\leftrightarrow$ GPU (local)           & depends on CPU & $\times$   & \\ \hline
-    Pinned $\leftrightarrow$ GPU (remote)          & depends on CPU & \checkmark & \\ \hline
+    Pageable $\leftrightarrow$ GPU (local)         & \checkmark     (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
+    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark     (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
+    Pinned $\leftrightarrow$ GPU (local)           & \checkmark     (Fig.~\ref{fig:minsky-direction})         & for intermediate sizes (Fig.~\ref{fig:hal_pinned_affinity})  & \\ \hline
+    Pinned $\leftrightarrow$ GPU (remote)          & depends on CPU (Fig.~\ref{fig:minsky-direction})         & \checkmark             (Fig.~\ref{fig:hal_pinned_affinity})& \\ \hline
     \end{tabular}
 \end{table}
 
