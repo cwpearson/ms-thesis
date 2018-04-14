@@ -81,10 +81,11 @@ def generate_figure(jobspec):
     data = data.set_index(data.iloc[:, 0].name, drop=True)
     #print data
 
-    plt.figure(plot_num)
+    fig = plt.figure(plot_num)
+    ax = fig.add_subplot(111)
 
     # Generate and configure plot
-    ax = data.plot(kind='line')
+    ax = data.plot(kind='line', ax=ax)
 
     if "yaxis" in plot_cfg:
         axis_cfg = plot_cfg["yaxis"]
@@ -119,7 +120,7 @@ def generate_figure(jobspec):
 
 if __name__ == '__main__':
 
-    num_workers = 1
+    num_workers = 20
     p = Pool(num_workers)
 
 

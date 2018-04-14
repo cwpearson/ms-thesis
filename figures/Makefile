@@ -25,7 +25,7 @@ GEN_FILES += $(patsubst %.dot, $(GEN_DIR)/%.pdf, ${DOT_FILES})
 TARGETS += $(GEN_FILES)
 
 all: $(TARGETS)
-	python ../data/plot2/plot.py ../data/plot2/plots.yml
+	python ../data/plot2/plot.py ../data/plot2/plots.yml `nproc`
 
 $(GEN_DIR):
 	mkdir -p $(GEN_DIR)
