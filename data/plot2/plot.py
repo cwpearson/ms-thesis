@@ -120,15 +120,13 @@ def generate_figure(jobspec):
 
 if __name__ == '__main__':
 
-    num_workers = 20
-    p = Pool(num_workers)
-
-
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         sys.exit(1)
 
     yaml_path = sys.argv[1]
+    num_workers = int(sys.argv[2])
     yaml_dir = path.dirname(yaml_path)
+    p = Pool(num_workers)
 
     with open(yaml_path, 'rb') as f:
         cfg = yaml.load(f)
