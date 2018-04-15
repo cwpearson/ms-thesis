@@ -100,8 +100,7 @@ Enumeration is done in several phases.
 
 First, the Portable Hardware Locality~\cite{broquedis2010hwloc} (hwloc) library is used to enumerate the present CPU sockets.
 As the test systems only have two sockets, all discovered sockets are considered to be directly connected by an SMP bus for the appropriate system type.
-The sockets and SMP busses are added to $G_s$.
-\todo{more detail? list all information recorded?}
+The sockets and SMP buses are added to $G_s$.
 
 \textbf{Enumerate PCI devices:}
 
@@ -109,28 +108,21 @@ Next, hwloc is used to traverse the PCI device tree.
 All PCI devices are added to $G_s$ and connected with PCI links of the appropriate type.
 Most attached storage, networking, and computing components are assigned an address in the PCI system and are discoverable in this step.
 
-\todo{more detail? list all information recorded?}
-
 \textbf{Update GPUs to NVIDIA GPUs as appropriate:}
 
 Next, the NVIDIA Management Library~\cite{nvidia2017nvml} (NVML) is used to enumerate all NVIDIA GPUs.
 Those GPUs are matched by PCI address with existing PCI devices previously added to $G_s$, and NVML is used to discover whether NVLink is supported on each GPU and which other device that NVLink terminates at.
 THis information is not provided by hwloc.
 The edges associated with those NVLinks are added to $G_s$.
-\todo{more detail? list all information recorded?}
 
 
 \textbf{Enumerate Linux block devices:}
 
 Linux block devices are enumerated through \todo{more detail} and added to $G_s$.
-Where applicable, enough information about the device is stored within the vertex to be able to access the device later for characterization.
-\todo{more detail? list all information recorded?}
 
 \textbf{Enumerate Linux network devices:}
 
 Finally, network devices are enumerated through \todo{more detail} and added to $G_s$.
-Where applicable, enough information about the device is stored within the vertex to be able to access the device later for characterization.
-\todo{more detail? list all information recorded?}
 
 \subsection{Vertex Types}
 \label{sec:system-vertices}
@@ -148,13 +140,13 @@ These make up the vertices of $G_s$.
     \begin{tabular}{|c|c|c|}
     \hline
     \textbf{Hardware}       & \textbf{Data Endpoint} & \textbf{Description} \\ \hline
-    CPU Socket              &  \checkmark            &                \\ \hline
-    PCI Device              &  \checkmark            &                \\ \hline
-    PCIe Hostbridge         &                        &                \\ \hline
-    PCIe Bridge             &                        &                \\ \hline
-    CUDA GPU                & \checkmark             &                \\ \hline
-    Linux Block Device      & \checkmark             &                \\ \hline
-    Linux Network Interface & \checkmark             &                \\ \hline
+    CPU Socket              & \checkmark            &                \\ \hline
+    PCI Device              & \checkmark            &                \\ \hline
+    PCIe Hostbridge         &                       &                \\ \hline
+    PCIe Bridge             &                       &                \\ \hline
+    CUDA GPU                & \checkmark            &                \\ \hline
+    Linux Block Device      & \checkmark            &                \\ \hline
+    Linux Network Interface & \checkmark            &                \\ \hline
     \end{tabular}
 \end{table}
 
