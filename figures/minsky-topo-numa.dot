@@ -19,5 +19,5 @@ graph G {
     mem0 -- cpu0;
     mem1 -- cpu1;
 
-    cluster_numa1 -- cluster_numa0;
+    mem0 -- mem1 [ltail=cluster_numa1,lhead=cluster_numa0];
 }

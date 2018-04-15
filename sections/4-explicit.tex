@@ -1,35 +1,35 @@
 \chapter{Explicit Memory Performance}
 \label{ch:explicit}
 
-This chapter is broken into two sections, describing CPU-GPU transfers (Section~\ref{sec:explicit-cpu-gpu}) and GPU-GPU transfers (Section~\ref{sec:explicit-gpu-gpu}).
+\todo{combine summary tables into 1 big table}
+
+This chapter is broken into two sections, describing explicit CPU-GPU transfers (Section~\ref{sec:explicit-cpu-gpu}) and GPU-GPU transfers (Section~\ref{sec:explicit-gpu-gpu}), both using \texttt{cudaMemcpy}.
 It highlights results that show surprising behaviors of CUDA data transfers.
 Full results can be found in Appendix~\ref{ch:data}.
 
-\begin{table}[]
-    \centering
-    \caption[\texttt{hwcomm CUDA} characterization workloads]{
-        \texttt{hwcomm CUDA} characterization workloads.
-        These workloads all move a fixed amount of data from the source device to the destination device.
-        Depending on the source and destination device, different methods of moving data are available through CUDA.
-    }
-    \label{tab:cuda workloads}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Source Allocation} & \textbf{Destination Allocation} & \textbf{Transfer Method} & \textbf{Further Reading} \\ \hline 
-    GPU                 & GPU          & cudaMemcpy, peer-enabled  & \ref{sec:gpu-gpu-peer} \\ \hline
-    GPU                 & GPU          & cudaMemcpy, peer-disabled & \ref{sec:gpu-gpu-peer} \\ \hline
-    GPU                 & GPU          & direct, from dst          & \ref{sec:gpu-gpu-direct} \\ \hline
-    GPU                 & CPU Pageable & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
-    GPU                 & CPU Pinned   & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
-    CPU Pageable        & GPU          & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
-    CPU Pinned          & GPU          & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
-    CPU Write Combining & GPU          & cudaMemcpy                & \ref{sec:wc-gpu} \\ \hline
-    CPU Mapped          & GPU          & direct                    & \ref{sec:cpu-gpu-direct} \\ \hline
-    \end{tabular}
-\end{table}
+\section{CPU / CPU Transfers}
+\label{sec:explicit-cpu-cpu}
+
+The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generated using OpenMP~\cite{openmp2013}.
+This workload creates multiple threads reading remote data in an attempt to saturate the socket memory controllers and SMP bus.
+Algorithm~\ref{alg:h2h} describes the approach.
+
+
+\todo{single- and multi-threaded bandwidth}
 
 \section{CPU / GPU Transfers}
 \label{sec:explicit-cpu-gpu}
+
+Explicit CPU-GPU transfers are caused by the \texttt{cudaMemcpy} family of functions being invoked on one pointer to a host allocation and one pointer to a device allocation.
+The host allocation may be pageable (created by \texttt{malloc} or \texttt{new}), or be created by \texttt{cudaMallocHost} or \texttt{cudaHostAlloc}.
+The device allocation is created by \texttt{cudaMalloc}.
+This section covers
+\begin{itemize}
+\item Comparing bandwidth achievable from pinned, pageable, and write-combining host allocations (Section~\ref{sec:explicit-pageable-pinned-wc})
+\item The effect of device affinity on transfer performance (Section~\ref{sec:explicit-cpu-gpu-affinity})
+\item Cases of observed anisotropic transfer properties (Section~\ref{sec:explicit-cpu-gpu-anisotropy})
+\item Cases of differing performance on identical links (Section~\ref{sec:explicit-cpu-gpu-identical})
+\end{itemize}
 
 Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for the logical endpoints and methods shown in Table~\ref{tab:explicit-cpu-gpu}.
 The same algorithm can be used for these cases, because the same \texttt{cudaMemcpy} CUDA API call to transfer data can be used on a pointer pointing to any of the allocation types.
@@ -73,6 +73,7 @@ This helps remove any jitter from the results.
         \For{$i \gets 1 \textrm{ to } num\_iters$}
             \State $start \gets$ walltime()
             \State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
+            \State \texttt{cudaDeviceSynchronize()}
             \State $end \gets$ walltime()
             \State $elapsed \gets$ min($elapsed$, $end-start$)
         \EndFor
@@ -84,6 +85,7 @@ This helps remove any jitter from the results.
 \end{algorithm}
 
 \subsection{Comparison of Pageable, Pinned, and Write-Combining Host Allocations}
+\label{sec:explicit-pageable-pinned-wc}
 
 To contextualize other results presented in this chapter, Figure~\ref{fig:pageable-pinned-wc} shows the transfer performance from pageable, pinned, and write-combined allocations on CPU0 to device allocations on GPU0.
 These performance curves exhibit features common throughout this chapter:
@@ -93,7 +95,11 @@ These performance curves exhibit features common throughout this chapter:
 \item The performance may vary smoothly across intermediate transfer sizes, or exhibit more complicated behavior.
 \end{itemize}
 
-For transfers from pageable host allocations to the GPU (Figure~\ref{fig:pageable-cpu0-gpu0}), the observed performance is substantially lower than the hardware specifications of the system suggest, and furthermore, the topologically-similar Minsky and AC922 machines do not have similar shaped curves.
+For transfers from pageable host allocations to GPU0, (Figure~\ref{fig:pageable-cpu0-gpu0}), the achievable bandwidth can be substantially lower than the advertised hardware specifications suggest.
+The achieved 30 GB/s transfer bandwidth on S822LC is 75\% of the theoretical 40 GB/s transfer provided by the NVLink 1.0 interconnect between CPU0 and GPU0 (Section~\ref{sec:minsky}).
+On AC922, howoever, the 30 GB/s achieved bandwidth is substantially lower than the 75 GB/s advertised by the NVLink 2.0.
+Furthermore, the topologically-similar S822LC and AC922 machines do not have similar shaped curves.
+On S822LC and AC922, write-combined host allocations do not affect transfer performance.
 
 \begin{figure}[ht]
     \centering
@@ -119,17 +125,16 @@ For transfers from pageable host allocations to the GPU (Figure~\ref{fig:pageabl
         (a) pageable allocations,
         (b) pinned allocations, and
         (c) write-combining allocations.
+        For pageable transfers, bandwidth may be much lower 
     }
     \label{fig:pageable-pinned-wc}
 \end{figure}
 
-\subsection{Anisotropy and Effect of Affinity on Performance}
-
-\todo{split into two sections: Anisotropy and affinity}
+\subsection{Affinity}
+\label{sec:explicit-cpu-gpu-affinity}
 
 There is a distinct performance difference due to affinity, or transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
-There is also a performance affect from direction, where performance of a transfer between a CPU and GPU depends on the direction of the transfer.
-Figure~\ref{fig:cpu-gpu-affinity-direction} highlights some cases that are impacted by affinity or direction.
+Figure~\ref{fig:cpu-gpu-affinity-direction} shows some cases where the device physical affinity affects the performance of the logical communication path.
 Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
 
 \begin{figure}[ht]
@@ -157,96 +162,59 @@ Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
         \caption{}
         \label{fig:hal_pinned_affinity}
     \end{subfigure}
-    \caption[\todo{short}]{Effect of Direction and Affinity on data transfers.
-    (a) shows transfers involving pageable allocations on CPU0, to device allocations on GPU0 and GPU2 in both directions. The direction of the transfer has a large performance impact, with transfers between 2-24 MB being the fastest. Affinity plays a small role.
-    (b) is the same, except for AC922. Again, direction is a stronger effect than affinity.
-    (c) and (d) are the same as (a) and (b), except with pinned transfers. 
-    For AC922, affinity has a stronger effect, and for Minsky, both affinity and direction impact performance.
+    \caption[\todo{short}]{
+    Example effect of affinity-affected and anisotropic logical communication bandwidth
+    (a) shows transfers involving pageable allocations on CPU0, to device allocations on GPU0 and GPU2 in both directions on S822LC.
+    The transfers are highly anisotropic, with GPU-to-CPU transfers being nearly 50\% of the speed.
+    Affinity also has a small effect of around 5\% for CPU-to-GPU transfers and 20\% for GPU-to-CPU transfers.
+    (b) is the same scenario on AC922.
+    Again, transfers are highly anisotropic. GPU-to-CPU communication is also strongly affected by affinity.
+    (c) and (d) are the same as (a) and (b), except with pinned transfers.
+    On S822LC, bandwidth is affected both by affinity and direction, though the effect is not as strong as with pageable stransfers.
+    For AC922, affinity has a much stronger effect, though anisotropy is still present for remote transfers.
     }
     \label{fig:cpu-gpu-affinity-direction}
 \end{figure}
 
 \begin{table}[ht]
     \centering
-    \caption[Matrix: Transfer rate affected by affinity]{Does affinity affect transfer rate?}
+    \caption[Affinity and Logical Communication Bandwidth]{Effect of device affinity on logical communication bandwidth}
     \label{tab:cpu-gpu-affinity}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind} & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU        & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pageable $\leftarrow$ GPU         & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pinned $\rightarrow$ GPU          & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
-    Pinned $\leftarrow$ GPU           & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
+    \textbf{Transfer Kind}     & \textbf{Minsky}                                      & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
+    Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
+    Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
+    Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
     \end{tabular}
 \end{table}
 
+\subsection{Anisotropy}
+\label{sec:explicit-cpu-gpu-anisotpropy}
 
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu0.pdf}
-        \caption{}
-        \label{fig:minsky_pinned_affinity}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu1.pdf}
-        \caption{}
-        \label{fig:minsky_pinned_affinity}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        (a) shows pinned transfers between CPU0 and local or remote GPUs.
-        For local and remote transfers, the direction affects the bandwidth.
-        (b) shows pinned transfers between CPU1 and local or remote GPUs.
-        For remote transfers, the direction does not affect the bandwidth.
-
-    }
-    \label{fig:minsky-direction}
-\end{figure}
+Figure~\ref{fig:cpu-gpu-affinity-direction} also shows some cases where the direction of a logical transfer affects the performance.
+Table~\ref{tab:explicit-anisotropy} summarizes the effects.
 
 \begin{table}[ht]
     \centering
     \caption[Summary of Host-Device Transfer Anisotropy]{Summary of Host-Device Transfer Anisotropy}
-    \label{tab:explicit}
+    \label{tab:explicit-anisotropy}
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}                         & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\leftrightarrow$ GPU (local)         & \checkmark     (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark     (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pinned $\leftrightarrow$ GPU (local)           & \checkmark     (Fig.~\ref{fig:minsky-direction})         & for intermediate sizes (Fig.~\ref{fig:hal_pinned_affinity})  & \\ \hline
-    Pinned $\leftrightarrow$ GPU (remote)          & depends on CPU (Fig.~\ref{fig:minsky-direction})         & \checkmark             (Fig.~\ref{fig:hal_pinned_affinity})& \\ \hline
+    Pageable $\leftrightarrow$ GPU (local)         & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
+    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
+    Pinned $\leftrightarrow$ GPU (local)           & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & for intermediate sizes (Fig.~\ref{fig:hal_pinned_affinity}) & \\ \hline
+    Pinned $\leftrightarrow$ GPU (remote)          & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark             (Fig.~\ref{fig:hal_pinned_affinity}) & \\ \hline
     \end{tabular}
 \end{table}
 
-\subsection{Effect of Write-Combining}
-
-On the Minsky machine, whether or not the allocation is write-combining influences the performance of transfers involving CPU0.
-Figure~\ref{fig:minsky-wc} shows the behavior.
-
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_cpu0-local.pdf}
-        \caption{}
-        \label{fig:minsky_pinned_cpu0-local}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_wc_cpu0-local.pdf}
-        \caption{}
-        \label{fig:minsky_wc_cpu0-local}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        (a) and (b) compare observed bandwidth when transferring from GPU0 or GPU1 to a pinned or write-combined allocation on CPU0.
-        This difference in performance is not observed for transfers involving CPU1.
-    }
-    \label{fig:minsky-wc}
-\end{figure}
-
 \subsection{Differences between Identical Transfers}
+\label{sec:explicit-cpu-gpu-identical}
 
 Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows transfer performance on two different identical links: CPU0-GPU0 and CPU0-GPU1.
-Table~\ref{tab:explicit-idental} summarizes scenarios where the transfer performance differs on identical links.
+Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer performance differs on identical links.
 
 \begin{figure}[ht]
     \centering
@@ -272,13 +240,13 @@ Table~\ref{tab:explicit-idental} summarizes scenarios where the transfer perform
 
 \begin{table}[ht]
     \centering
-    \caption[Matrix: Transfer rate vary on identical links]{Does transfer rate vary on identical links?}
+    \caption[Matrix: Transfer rate vary on identical links]{Scenarios where bandwidth is observed to differ on identical links}
     \label{tab:explicit-identical}
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}     & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
-    Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
+    Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
+    Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
     Pinned $\rightarrow$ GPU   & $\times$                                                   & $\times$ & \\ \hline
     Pinned $\leftarrow$ GPU    & $\times$                                                   & $\times$ & \\ \hline
     \end{tabular}
@@ -398,7 +366,7 @@ Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access af
 Anisotropy in GPU-GPU transfers is also observed on Minsky and AC922.
 This anisotropy is not consistent with anisotpropy observed on the intervening links.
 For example, consider Figure~\ref{fig:explicit-peer-anisotropy}a-c.
-Figure~\ref{minsky-explicit-nopeer-remote} shows anisotropy along the remote GPU0-GPU2 transfer.
+Figure~\ref{fig:minsky-explicit-nopeer-remote} shows anisotropy along the remote GPU0-GPU2 transfer.
 Figures~\ref{fig:minsky-explicit-path-gpu0-gpu2}~and~\ref{fig:minsky-explicit-path-gpu2-gpu0} show pinned transfer speeds along GPU0-CPU0-CPU1-GPU2 and GPU2-CPU1-CPU0-GPU0 paths.
 The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed bandwidth on the path components, and sometimes lower than the lowest path component.
 Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU transfers on Minsky and AC922.
@@ -428,13 +396,19 @@ Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU 
         \caption{}
         \label{fig:}
     \end{subfigure}
-    \caption[\todo{short}]{\todo{long}}
+    \caption[\todo{short}]{
+        Examples of GPU-GPU transfer anisotropy that present when peer access is disabled.
+        (a) shows anisotropy on transfers between GPU0 and GPU2.
+        With peer access disabled, that transfer passes along the path from GPU0 to CPU0, CPU0 to CPU1, and CPU1 to GPU2 (both directions shown in (b) and (c)).
+        Although (b) and (c) are the same, the anisotropy still exists in the aggregated logical link.
+        (d) shows anisotropy on AC922.
+    }
     \label{fig:explicit-peer-anisotropy}
 \end{figure}
 
 \begin{table}[ht]
     \centering
-    \caption[Matrix: Transfer rate affected by direction]{Is GPU-GPU transfer rate affected by direction?}
+    \caption[GPU-GPU Transfer Anisotropy]{GPU-GPU Transfer Anisotropy}
     \label{tab:explicit-peer-direction}
     \begin{tabular}{|c|c|c|c|}
     \hline
@@ -496,33 +470,3 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
     \end{tabular}
 \end{table}
 
-\subsubsection{OpenMP Socket to Socket Bandwidth}
-
-The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generated using OpenMP~\cite{openmp2013}.
-This workload creates multiple threads reading remote data in an attempt to saturate the socket memory controllers and SMP bus.
-Algorithm~\ref{alg:h2h} describes the approach.
-
-% \begin{algorithm}[ht]
-%     \SetAlgoLined
-%     \KwResult{bandwidth vs. transfer size between CPU sockets $src$ and $dst$}
-%     numThreads $\gets$ 10\;
-%     \todo{Choice of elemSize}\;
-%     \For{poolSize $\gets$ 128 to sweepFinish} {
-%         bind process to $src$\;
-%         bind memory allocation to $src$\;
-%         \For{tid $\gets$ 0 := numThreads}{
-%             regions[tid] $\gets$ alloc(poolSize)\;
-%         }
-%         bind process to $dst$\;
-%         start OpenMP parallel region\;
-%         start $\gets$ wall\_time()\;
-%         \texttt{sum\_array(region[omp\_get\_thread\_num(), elemSize])}\;
-%         stop $\gets$ wall\_time()\;
-%         bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-%     }
-%     \caption{Synthetic workload for testing SMP bus.}
-%     \label{alg:h2h}
-% \end{algorithm}
-
-\texttt{sum\_array()} is a function used to ensure that every data element is accessed, and the compiler does not optimize out the otherwise unused remote data read.
-\texttt{sum\_array()} adds the elements in the region using loads and accumulates of a desired size.

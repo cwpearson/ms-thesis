@@ -115,9 +115,6 @@ Those GPUs are matched by PCI address with existing PCI devices previously added
 THis information is not provided by hwloc.
 The edges associated with those NVLinks are added to $G_s$.
 
-\textbf{Enumerate OS Devices:}
-
-hwloc is used to discover OS Devices, including Linux block devices and network devices.
 
 \subsection{Vertex Types}
 \label{sec:system-vertices}
@@ -168,5 +165,5 @@ In $G_s$, the vertices are connected by the discoverable edge types shown in Tab
     \end{tabularx}
 \end{table}
 
-
-
+In the future, the topology of this hardware graph can be paired with the information gathered during system communication characterization, described in more detail in Sections~\ref{ch:explicit}~and~\ref{ch:managed}.
+The topology of this graph will be used to choose which performance model should be applied to each logical communication path characterization.

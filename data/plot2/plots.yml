@@ -14,9 +14,9 @@
       - 0
       - 70000
   xaxis:
-    label: xlabel
+    label: Transfer Size (MB)
     scale: log
-  title: the title
+  title: Pageable CPU0 allocation to GPU0 allocation
 ../../figures/generated/pinned_cpu0-gpu0.pdf:
   series:
     - file: m2_pinned.csv
@@ -33,9 +33,9 @@
       - 0
       - 70000
   xaxis:
-    label: xlabel
+    label: Transfer Size (MB)
     scale: log
-  title: the title
+  title: Pinned CPU0 allocation to GPU0 allocation
 ../../figures/generated/wc_cpu0-gpu0.pdf:
   series:
     - file: m2_wc.csv
@@ -52,9 +52,9 @@
       - 0
       - 70000
   xaxis:
-    label: xlabel
+    label: Transfer Size (MB)
     scale: log
-  title: the title
+  title: Write-Combining CPU0 allocation to GPU0 allocation
 
 ../../figures/generated/minsky_pageable_cpu0-gpus.pdf:
   series:
