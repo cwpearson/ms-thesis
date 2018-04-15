@@ -115,14 +115,9 @@ Those GPUs are matched by PCI address with existing PCI devices previously added
 THis information is not provided by hwloc.
 The edges associated with those NVLinks are added to $G_s$.
 
+\textbf{Enumerate OS Devices:}
 
-\textbf{Enumerate Linux block devices:}
-
-Linux block devices are enumerated through \todo{more detail} and added to $G_s$.
-
-\textbf{Enumerate Linux network devices:}
-
-Finally, network devices are enumerated through \todo{more detail} and added to $G_s$.
+hwloc is used to discover OS Devices, including Linux block devices and network devices.
 
 \subsection{Vertex Types}
 \label{sec:system-vertices}
