@@ -567,25 +567,5 @@ Table~\ref{tab:minsky} summarizes the hardware configuration.
 \end{figure}
 
 
-\section{Parking Lot}
 
-\subsection{Atomics}
-
-\subsubsection{Atomic Operations prior to CC 6.0}
-
-Beginning with CC 1.1 and continuing through CC 2.0, CUDA introduced an increasingly complete set of atomic operations, culminating in support for common 32-bit and 64-bit operations on integers and floating-point types in global and shared memory (\cite{nvidia2008cuda20} C.1)
-All of these atomic operations were atomic with respect only to the executing GPU.
-
-\subsubsection{Atomic Operations with CC 6.0+}
-
-Compute Capability 6.0 brings two new kinds of atomics operations: system atomics (\texttt{atomic\*\_system}) and block atomics (\texttt{atomic\*\_block}) (\cite{nvidia2017cuda80}, B.12).
-System atomics are atomic with respect to all CPUs and GPUs in the system.
-Block atomics are atomic only with respect to other threads in the thread block.
-
-
-\todo{cudaMemcpy and managed memory (J2.2.1)?}
-
-\todo{Texture memory?}
-%\subsubsection{Texture memory and CUDNN}
-%\todo{3.2.11}
 

@@ -3,38 +3,45 @@
 
 Chapter~\ref{ch:introduction} introduced the objective of characterizing the communication performance of heterogeneous systems.
 Section~\ref{sec:sys-abstraction} described how applications interact with an abstraction presented by the system hardware, operating system, and software.
-This chapter describes a top-down and bottom-up approach to characterizing system performance. 
-Chapters~\ref{ch:explicit}~and~\ref{ch:unified} describe results obtained from the top-down approach in more detail.
+This chapter describes initial efforts towards a bottom-up approach to characterizing communication system performance that attempts to expose the communication capabilities exposed by the hardware.
+Chapters~\ref{ch:explicit}~and~\ref{ch:unified} describe results obtained from a top-down approach, where communication abilities exposed to the application are characterized.
 
 \section{Physical and Logical Communication Paths}
 
-Consider the three different views of the IBM ``Minsky'' machine shown in Figure~\ref{fig:minsky-hardware-logical} (Section~\ref{sec:minsky} describes the machine in more detail).
-Figure~\ref{fig:minsky-topo-hardware}    shows an annotated topographical view of the hardware.
-Figure~\ref{fig:minsky-topo-cuda-simple} represents the equal connectivity of the components presented through the CUDA API.
-Figure~\ref{fig:minsky-topo-cuda-detail} shows more detailed communication capabilities between allocations on those components.
+Consider the four different views of the IBM ``Minsky'' machine shown in Figure~\ref{fig:minsky-hardware-logical} (Section~\ref{sec:minsky} describes the machine in more detail).
+Figure~\ref{fig:minsky-topo-hardware} shows an annotated topographical view of the hardware.
+Figure~\ref{fig:minsky-topo-cuda} represents the connectivity of the components through the CUDA API.
+Figure~\ref{fig:minsky-topo-numa} represents the Linux NUMA view of the system.
+Figure~\ref{fig:minsky-topo-logical} shows more detailed communication capabilities between allocations on those components.
 
 \begin{figure}[ht]
     \centering
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/minsky-topo-hardware.pdf}
-        \caption{Minky Hardware Topology. Comonents have different distances and link bandwidths.}
+        \caption{}
         \label{fig:minsky-topo-hardware}
     \end{subfigure}
     ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda.pdf}
+        \caption{}
+        \label{fig:minsky-topo-cuda}
+    \end{subfigure}
+    \\
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda-simple.pdf}
-        \caption{Minsky CUDA Topology. 
-                 There is no concept of multiple CPUs, and the API may be used to directly move data between any two devices.}
-        \label{fig:minsky-topo-cuda-simple}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-numa.pdf}
+        \caption{}
+        \label{fig:minsky-topo-numa}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-cuda-detail.pdf}
-        \caption{Minsky Detailed CUDA Topology.
-                Combining the two previous graphs yields distinctly-performing logical communication paths.}
-        \label{fig:minsky-topo-cuda-detail}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-logical.pdf}
+        \caption{}
+        \label{fig:minsky-topo-logical}
     \end{subfigure}
-    \caption[\todo{short}]{\todo{long}}
+    \caption[\todo{short}]{
+        Connectivity and components on Minsky at (a) the hardware level, (b) through the CUDA API, (c) through NUMA, and (d) when CUDA and numa are considered together.
+    }
     \label{fig:minsky-hardware-logical}
 \end{figure}
 
@@ -55,24 +62,17 @@ With full knowledge of link properties it is possible to derive an accurate mode
 Instead of deriving a model of link performance from the ``first principles'' of link properties, this work attempts to generate an empirical model of performance of data movement in the system.
 
 Though data movement between many different system components is possible, this work focuses on CPU-CPU and CPU-GPU data transfers.
-Section~\ref{sec:system-model} describes an overview of the system model.
-Section~\ref{sec:topology-exploration} describes a method for discovering data sources, sinks, and communication paths in a system.
-Section~\ref{sec:link-char} describes the approach to characterize communication links.
+Section~\ref{sec:hardware-model} describes an overview of the system model.
+Section~\ref{sec:hardware-enumeration} describes a method for discovering data sources, sinks, and communication paths in a system.
 
-\section{System Model}
-\label{sec:system-model}
+\section{Hardware Model}
+\label{sec:hardware-model}
 
-The hardware system is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing communication endpoints, or data routing elements.
+The hardware is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing communication endpoints, or data routing elements.
 Sections~\ref{sec:system-vertices} and \ref{sec:system-edges} describe the specific system components explored.
 Associated with each edge is a performance model function $M: C \rightarrow P$ that maps communication $C$ to an achievable performance $P$.
-
-The communication $C$ has the following parameters:
-\begin{itemize}
-    \item The communication API or method used (e.g., \texttt{fread()}, CUDA unified memory page transfer).
-    \item The size of the communication.
-\end{itemize}
-
-% The link utilization $U$ a set of extant communication patterns already sharing the link, separate from the communication of interest $C$.
+For example, a simple model $M$ would have $C$ parameterized by transfer size, and produce $P$ by considering link latency and bandwidth.
+A more complicated model might also consider contention on the link.
 
 Each vertex in $V$ is a data routing element.
 These vertices are able to receive and re-transmit data on any of their links.
@@ -80,8 +80,7 @@ A PCIe hub \todo{cite PCIe discussion} is an example of a pure data-routing vert
 Optionally, the vertex may serve as a communication endpoint; a source or a sink for data.
 Processing elements and data storage elements serve as communication endpoints.
 
-
-\texttt{hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration and characterization.
+\texttt{hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration.
 This tool can be executed on a target system to generate $G_s$ for that system.
 Presently, the tool has only been tested on Linux operating systems.
 
@@ -91,7 +90,7 @@ Presently, the tool has only been tested on Linux operating systems.
 % SECTION
 %
 \section{\texttt{hwcomm} Topology Enumeration}
-\label{sec:topology-exploration}
+\label{sec:hardware-enumeration}
 
 The first step in generating $G_s$ is to discovere the topology.
 hwcomm builds an in-memory representation of $G_s$, with sufficient information to later access the device during characterization.
@@ -184,199 +183,3 @@ In $G_s$, the vertices are connected by the discoverable edge types shown in Tab
 
 
 
-%
-% SECTION
-%
-\section{Link Characterization}
-\label{sec:link-char}
-
-After the system graph $G_s$ has been generated, the next task is to characterize the communication capabilities of the system.
-The goal of this characterization is to determine the rate at which data of a particular size can be moved between devices.
-Ideally, this characterization would occur on a per-link basis along each available path between two communicating devices.
-In practice, the communication between many devices is mediated by APIs exposed by the operating system or vendor library.
-These APIs abstract away some complexity from the data movement.
-
-\begin{figure}
-    \centering
-    \begin{tikzpicture}[
-        cpunode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
-        gpunode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        blocknode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
-        ]
-        %Nodes
-        \node[cpunode]   (s0)                  {Socket0};
-        \node[blocknode] (b0)    [below=of s0] {Disk0};
-        \node[cpunode]   (s1)    [right=of s0] {Socket1};
-        \node[gpunode]   (g0)    [below=of s1] {GPU0};
-
-        %Lines
-        \path[-] (s0.east)  edge node [above] {SMP}    (s1.west);
-        \path[-] (s0.south) edge node [left]  {PCIe0}  (b0.north);
-        \path[-] (s1.south) edge node [right] {PCIe1}  (g0.north);
-    \end{tikzpicture}
-    \caption[A simple example topology]{\todo{clean this up}\todo{long caption}}
-    \label{fig:simple-topology}
-\end{figure}
-
-For example, consider the simple example system topology in Figure~\ref{fig:simple-topology}.
-If a CPU thread running on CPU1 calls \texttt{fread()} to move a block of data from Disk0 to the memory associated with CPU1, the OS will transparently move that data along the PCIe0 and SMP0 links.
-Since this is the capability is exposed to applications, it is useful to characterize it as well, not just the intermediate PCIe0 and SMP links.
-
-An overview of the characterization algorithm is shown in Algorithm~\ref{alg:link-char}.
-
-% \begin{algorithm}[ht]
-%     \SetAlgoLined
-%     \KwResult{Characterization of all links between all vertices in $G_s$ }
-%      Build $G_s$ as described in Section~\ref{sec:topology-exploration}\;
-%      \For{$v_1$ in $V$}{
-%          \For{$v_2$ in $V$}{
-%              \If{$v_1 \ne v_2$}{
-%                 Chars $\gets$ SupportedCharacterizers($v_1$,$v_2$)\;
-%                 \For{c in Chars} {
-%                     c($v_1$, $v_2$)\;
-%                 }
-%              }
-%          }
-%      }
-%      \caption{Link characterization.}
-%      \label{alg:link-char}
-% \end{algorithm}
-
-For each pair of vertices, \todo{hwcomm} determines whether direct communication between those vertices is supported by the operating system or vendor libraries.
-For vertices with a path of more than one link between them (e.g. Disk0 to Socket1 in Figure~\ref{fig:simple-topology}) those individual links will be characterized separately.
-For vertices with multiple paths between them, the characterized path will be implicitly chosen by the applied characterization method.
-There may be multiple different communication modes between two verticies.
-hwcomm implements multiple workloads to characterize those modes.
-
-\begin{table}[]
-    \centering
-    \caption[\texttt{hwcomm CUDA} characterization workloads]{
-        \texttt{hwcomm CUDA} characterization workloads.
-        These workloads all move a fixed amount of data from the source device to the destination device.
-        Depending on the source and destination device, different methods of moving data are available through CUDA.
-    }
-    \label{tab:cuda workloads}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Source Allocation} & \textbf{Destination Allocation} & \textbf{Transfer Method} & \textbf{Further Reading} \\ \hline 
-    GPU                 & GPU          & cudaMemcpy, peer-enabled  & \ref{sec:gpu-gpu-peer} \\ \hline
-    GPU                 & GPU          & cudaMemcpy, peer-disabled & \ref{sec:gpu-gpu-peer} \\ \hline
-    GPU                 & GPU          & direct, from dst          & \ref{sec:gpu-gpu-direct} \\ \hline
-    GPU                 & CPU Pageable & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
-    GPU                 & CPU Pinned   & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
-    CPU Pageable        & GPU          & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
-    CPU Pinned          & GPU          & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
-    CPU Write Combining & GPU          & cudaMemcpy                & \ref{sec:wc-gpu} \\ \hline
-    CPU Mapped          & GPU          & direct                    & \ref{sec:cpu-gpu-direct} \\ \hline
-    \end{tabular}
-\end{table}
-
-\subsection{GPU to GPU with cudaMemcpyPeer}
-\label{sec:gpu-gpu-peer}
-
-Both peer enabled and disabled.
-
-\outline{ \\
-    description \\
-    required cuda / system support \\
-    when is preferable \\
-}
-
-
-
-
-
-\subsubsection{OpenMP Socket to Socket Bandwidth}
-
-The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generated using OpenMP~\cite{openmp2013}.
-This workload creates multiple threads reading remote data in an attempt to saturate the socket memory controllers and SMP bus.
-Algorithm~\ref{alg:h2h} describes the approach.
-
-% \begin{algorithm}[ht]
-%     \SetAlgoLined
-%     \KwResult{bandwidth vs. transfer size between CPU sockets $src$ and $dst$}
-%     numThreads $\gets$ 10\;
-%     \todo{Choice of elemSize}\;
-%     \For{poolSize $\gets$ 128 to sweepFinish} {
-%         bind process to $src$\;
-%         bind memory allocation to $src$\;
-%         \For{tid $\gets$ 0 := numThreads}{
-%             regions[tid] $\gets$ alloc(poolSize)\;
-%         }
-%         bind process to $dst$\;
-%         start OpenMP parallel region\;
-%         start $\gets$ wall\_time()\;
-%         \texttt{sum\_array(region[omp\_get\_thread\_num(), elemSize])}\;
-%         stop $\gets$ wall\_time()\;
-%         bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
-%     }
-%     \caption{Synthetic workload for testing SMP bus.}
-%     \label{alg:h2h}
-% \end{algorithm}
-
-\texttt{sum\_array()} is a function used to ensure that every data element is accessed, and the compiler does not optimize out the otherwise unused remote data read.
-\texttt{sum\_array()} adds the elements in the region using loads and accumulates of a desired size.
-
-
-\section{System Characterization Case Studies}
-
-
-
-\section{Write-Combined Memory}
-
-CPU bandwidth writing to wc memory
-
-GPU bandwidth copying back to wc memory
-
-
-\section{Observations}
-
-Misnky2
-\begin{itemize}
-\item GPU-GPU coherence bandwidth depends on local/remote
-\item GPU-GPU prefetch bandwidth depends on local/remote
-\item CPU-GPU um bandwidth has crossover
-\item GPU-CPU um bandwidth has crossover
-\end{itemize}
-
-Impact1
-\begin{itemize}
-    \item Pageable copy bandwidth faster than pinned
-    \item WC bandwidth small for small transfers
-\end{itemize}
-
-
-\section{Extensions}
-\subsection{cudaMemAdviseSetReadMostly}
-\begin{itemize}
-    \item CPU-GPU coherence bandwidth (r/w, x access patterns)
-    \item GPU-GPU coherence bandwidth (r/w, x access patterns)
-    \item estimate invalidation cost (CPU-GPU, GPU->GPU)
-\end{itemize}
-
-\subsection{System Atomics}
-\begin{itemize}
-    \item Latency and throughput for PCIe PASCAL / NVLink1 Pascal 
-    \item Latency and throughput for PCIe Volta / NVLink2 Volta
-\end{itemize}
-
-\subsection{Multi-GPU Sync}
-\begin{itemize}
-    \item CUDA 9.1 / Power9 / NVLink2 / Volta
-\end{itemize}
-
-
-\section{Parking Lot}
-\subsection{Volta access counters for triggering migration}
-\begin{itemize}
-    \item local CPU->GPU
-    \item remote CPU->GPU
-    \item local GPU->GPU
-    \item remote GPU->GPU
-\end{itemize}
-
-
-\section{Atomics and Unified Memory}
-\begin{itemize}
-    \item effect oof cudaMemAdviseSetAccessedBy on imbalanced GPU/GPU atomics contention
-\end{itemize}

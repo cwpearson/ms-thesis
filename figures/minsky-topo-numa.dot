@@ -1,0 +1,23 @@
+graph G {
+
+    //ratio=fill;
+    //ranksep=1.5;
+    nodesep=0.25;
+
+    subgraph cluster_numa0 { label="NUMA Node 0";
+        mem0;
+        cpu0;
+        graph[style=dotted];
+    }
+
+    subgraph cluster_numa1 { label="NUMA Node 1";
+        mem1;
+        cpu1;
+        graph[style=dotted];
+    }
+
+    mem0 -- cpu0;
+    mem1 -- cpu1;
+
+    cluster_numa1 -- cluster_numa0;
+}

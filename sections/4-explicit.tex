@@ -5,6 +5,29 @@ This chapter is broken into two sections, describing CPU-GPU transfers (Section~
 It highlights results that show surprising behaviors of CUDA data transfers.
 Full results can be found in Appendix~\ref{ch:data}.
 
+\begin{table}[]
+    \centering
+    \caption[\texttt{hwcomm CUDA} characterization workloads]{
+        \texttt{hwcomm CUDA} characterization workloads.
+        These workloads all move a fixed amount of data from the source device to the destination device.
+        Depending on the source and destination device, different methods of moving data are available through CUDA.
+    }
+    \label{tab:cuda workloads}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Source Allocation} & \textbf{Destination Allocation} & \textbf{Transfer Method} & \textbf{Further Reading} \\ \hline 
+    GPU                 & GPU          & cudaMemcpy, peer-enabled  & \ref{sec:gpu-gpu-peer} \\ \hline
+    GPU                 & GPU          & cudaMemcpy, peer-disabled & \ref{sec:gpu-gpu-peer} \\ \hline
+    GPU                 & GPU          & direct, from dst          & \ref{sec:gpu-gpu-direct} \\ \hline
+    GPU                 & CPU Pageable & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
+    GPU                 & CPU Pinned   & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
+    CPU Pageable        & GPU          & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
+    CPU Pinned          & GPU          & cudaMemcpy                & \ref{sec:gpu-cpu} \\ \hline
+    CPU Write Combining & GPU          & cudaMemcpy                & \ref{sec:wc-gpu} \\ \hline
+    CPU Mapped          & GPU          & direct                    & \ref{sec:cpu-gpu-direct} \\ \hline
+    \end{tabular}
+\end{table}
+
 \section{CPU / GPU Transfers}
 \label{sec:explicit-cpu-gpu}
 
@@ -472,3 +495,34 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
     GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark      & \checkmark     & \\ \hline
     \end{tabular}
 \end{table}
+
+\subsubsection{OpenMP Socket to Socket Bandwidth}
+
+The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generated using OpenMP~\cite{openmp2013}.
+This workload creates multiple threads reading remote data in an attempt to saturate the socket memory controllers and SMP bus.
+Algorithm~\ref{alg:h2h} describes the approach.
+
+% \begin{algorithm}[ht]
+%     \SetAlgoLined
+%     \KwResult{bandwidth vs. transfer size between CPU sockets $src$ and $dst$}
+%     numThreads $\gets$ 10\;
+%     \todo{Choice of elemSize}\;
+%     \For{poolSize $\gets$ 128 to sweepFinish} {
+%         bind process to $src$\;
+%         bind memory allocation to $src$\;
+%         \For{tid $\gets$ 0 := numThreads}{
+%             regions[tid] $\gets$ alloc(poolSize)\;
+%         }
+%         bind process to $dst$\;
+%         start OpenMP parallel region\;
+%         start $\gets$ wall\_time()\;
+%         \texttt{sum\_array(region[omp\_get\_thread\_num(), elemSize])}\;
+%         stop $\gets$ wall\_time()\;
+%         bandwidth $\gets$ $\frac{copySize}{stop - start}$\;
+%     }
+%     \caption{Synthetic workload for testing SMP bus.}
+%     \label{alg:h2h}
+% \end{algorithm}
+
+\texttt{sum\_array()} is a function used to ensure that every data element is accessed, and the compiler does not optimize out the otherwise unused remote data read.
+\texttt{sum\_array()} adds the elements in the region using loads and accumulates of a desired size.

@@ -24,7 +24,7 @@
     ],
     "latex-workshop.latex.tools": [{
         "name": "make",
-        "command": "make",
-        "args": []
+        "command": "nice",
+        "args": ["-n20", "make"]
       }]
 }
