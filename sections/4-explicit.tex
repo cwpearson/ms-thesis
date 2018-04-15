@@ -3,8 +3,9 @@
 
 \todo{combine summary tables into 1 big table}
 
-This chapter is broken into two sections, describing explicit CPU-GPU transfers (Section~\ref{sec:explicit-cpu-gpu}) and GPU-GPU transfers (Section~\ref{sec:explicit-gpu-gpu}), both using \texttt{cudaMemcpy}.
-It highlights results that show surprising behaviors of CUDA data transfers.
+This chapter is broken into three sections, describing explicit CPU-GPU transfers (Section~\ref{sec:explicit-cpu-gpu}) and GPU-GPU transfers (Section~\ref{sec:explicit-gpu-gpu}), both using \texttt{cudaMemcpy}.
+It highlights cases where the observed logical communication performance deviates significantly from the symmetries present in the CUDA API, numactl API, and hardware.
+Those deviances take the form of different performance on identical links, anisotropic link performance, or performance affected by device affinity.
 Full results can be found in Appendix~\ref{ch:data}.
 
 \section{CPU / CPU Transfers}
@@ -182,7 +183,7 @@ Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
     \label{tab:cpu-gpu-affinity}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}     & \textbf{Minsky}                                      & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    \textbf{Transfer Kind}     & \textbf{S822LC}                                      & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
     Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
     Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
@@ -202,7 +203,7 @@ Table~\ref{tab:explicit-anisotropy} summarizes the effects.
     \label{tab:explicit-anisotropy}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}                         & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    \textbf{Transfer Kind}                         & \textbf{S822LC}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     Pageable $\leftrightarrow$ GPU (local)         & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
     Pageable $\leftrightarrow$ GPU (remote)        & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
     Pinned $\leftrightarrow$ GPU (local)           & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & for intermediate sizes (Fig.~\ref{fig:hal_pinned_affinity}) & \\ \hline
@@ -244,7 +245,7 @@ Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer perfo
     \label{tab:explicit-identical}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}     & \textbf{Minsky}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    \textbf{Transfer Kind}     & \textbf{S822LC}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
     Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
     Pinned $\rightarrow$ GPU   & $\times$                                                   & $\times$ & \\ \hline
@@ -338,10 +339,10 @@ Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access af
     \end{subfigure}
     \caption[\todo{short}]{
         The effect of enabling peer access
-        (a) on Minsky for local GPU-GPU transfers,
+        (a) on S822LC for local GPU-GPU transfers,
         (b) on AC922 for local GPU-GPU transfers, and
         (c) on AC922 for remote GPU-GPU transfers.
-        Minsky does not support peer access for remote GPU-GPU transfers.
+        S822LC does not support peer access for remote GPU-GPU transfers.
     }
     \label{fig:explicit-peer}
 \end{figure}
@@ -353,7 +354,7 @@ Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access af
     \label{tab:explicit-peer-rate}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}       & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    \textbf{Transfer Kind}       & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     GPU $\rightarrow$ Local GPU  & \checkmark      & \checkmark     & \\ \hline
     GPU $\rightarrow$ Remote GPU & N/A             & \checkmark     & \\ \hline
     \end{tabular}
@@ -363,13 +364,13 @@ Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access af
 \subsection{Transfer Anisotropy with Peer Access Disabled}
 \label{sec:explicit-peer-direction}
 
-Anisotropy in GPU-GPU transfers is also observed on Minsky and AC922.
+Anisotropy in GPU-GPU transfers is also observed on S822LC and AC922.
 This anisotropy is not consistent with anisotpropy observed on the intervening links.
 For example, consider Figure~\ref{fig:explicit-peer-anisotropy}a-c.
 Figure~\ref{fig:minsky-explicit-nopeer-remote} shows anisotropy along the remote GPU0-GPU2 transfer.
 Figures~\ref{fig:minsky-explicit-path-gpu0-gpu2}~and~\ref{fig:minsky-explicit-path-gpu2-gpu0} show pinned transfer speeds along GPU0-CPU0-CPU1-GPU2 and GPU2-CPU1-CPU0-GPU0 paths.
 The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed bandwidth on the path components, and sometimes lower than the lowest path component.
-Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU transfers on Minsky and AC922.
+Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU transfers on S822LC and AC922.
 
 \begin{figure}[ht]
     \centering
@@ -412,7 +413,7 @@ Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU 
     \label{tab:explicit-peer-direction}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}                           & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    \textbf{Transfer Kind}                           & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$        & $\times$       & \\ \hline
     GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A             & $\times$       & \\ \hline
     GPU $\leftrightarrow$ Local GPU  (peer disabled) & $\times$        & $\times$       & \\ \hline
@@ -452,7 +453,11 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
         \caption{}
         \label{fig:}
     \end{subfigure}
-    \caption[\todo{short}]{\todo{long}}
+    \caption[\todo{short}]{
+        Scenarios where identical logical transfers show different performance when peer access is disabled.
+        (a) and (b) show the bevahior on AC922 for local and remote transfers.
+        (c) and (d) show the same for S822LC.
+    }
     \label{fig:explicit-nopeer-identical}
 \end{figure}
 
@@ -462,7 +467,7 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
     \label{tab:explicit}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}                           & \textbf{Minsky} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    \textbf{Transfer Kind}                           & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$        & $\times$       & \\ \hline
     GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A             & $\times$       & \\ \hline
     GPU $\leftrightarrow$ Local GPU  (peer disabled) & \checkmark      & \checkmark     & \\ \hline
