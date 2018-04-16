@@ -32,26 +32,15 @@ This section covers
 \item Cases of differing performance on identical links (Section~\ref{sec:explicit-cpu-gpu-identical})
 \end{itemize}
 
-Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth for the logical endpoints and methods shown in Table~\ref{tab:explicit-cpu-gpu}.
+Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth when \texttt{cudaMemcpy} is used to transfer data between a GPU allocation and a pageable, pinned, or write-combining host allocation. 
 The same algorithm can be used for these cases, because the same \texttt{cudaMemcpy} CUDA API call to transfer data can be used on a pointer pointing to any of the allocation types.
 Depending on the source and destination types $src$ and $dst$, and the desired host allocation type, the corresponding CUDA or numactl APIs are called to bind later activities to the desired GPU or CPU.
 Then, the CUDA and system allocators are invoked to produce $devPtr$ (a pointer to the device allocation) and $srcPtr$ (a pointer to the CPU allocation).
 Then, \texttt{cudaMemcpy} is invoked $num\_iters$ times, and the fastest result is reported.
 This helps remove any jitter from the results.
 
-\begin{table}[ht]
-    \centering
-    \caption[\todo{short}]{\todo{long}}
-    \label{tab:explicit-cpu-gpu}
-    \begin{tabular}{|c|c|}
-    \hline
-    \textbf{Source} & \textbf{Transfer Methods} \\ \hline 
-    \makecell{Host Pinned Allocation \\ Host Pageable Allocation \\ Host Write-Combining Allocation \\ Device Allocation} & cudaMemcpy \\ \hline
-    \end{tabular}
-\end{table}
-
 \begin{algorithm}
-    \caption{Measuring explicit \texttt{cudaMemcpy} performance}
+    \caption{Algorithm to measure bandwidth achieved using \texttt{cudaMemcpy}}
     \label{alg:explicit}
     \begin{algorithmic}[1]
     \Statex
@@ -192,7 +181,7 @@ Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
 \end{table}
 
 \subsection{Anisotropy}
-\label{sec:explicit-cpu-gpu-anisotpropy}
+\label{sec:explicit-cpu-gpu-anisotropy}
 
 Figure~\ref{fig:cpu-gpu-affinity-direction} also shows some cases where the direction of a logical transfer affects the performance.
 Table~\ref{tab:explicit-anisotropy} summarizes the effects.

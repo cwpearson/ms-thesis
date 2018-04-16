@@ -49,17 +49,7 @@ def col_to_idx(s):
     return acc
 
 
-
-def generate_figure(jobspec):
-
-    (yaml_dir, plot_path, plot_cfg, plot_num) = jobspec
-
-    if not path.isabs(plot_path):
-        plot_path = path.join(yaml_dir, plot_path)
-        print plot_path, plot_cfg
-
-
-
+def generator_old(fig, yaml_dir, plot_cfg):
     # build data frame from specified columns
     data = pd.DataFrame()
     for s in plot_cfg["series"]:
@@ -81,7 +71,7 @@ def generate_figure(jobspec):
     data = data.set_index(data.iloc[:, 0].name, drop=True)
     #print data
 
-    fig = plt.figure(plot_num)
+
     ax = fig.add_subplot(111)
 
     # Generate and configure plot
@@ -114,9 +104,63 @@ def generate_figure(jobspec):
         print "setting title", title
         ax.set_title(title)
 
+    return fig
+
+
+
+def generator_df(fig, yaml_dir, plot_cfg):
+    file_path = plot_cfg["file"]
+    if not path.isabs(file_path):
+        file_path = path.join(yaml_dir, file_path)
+
+    df = pd.read_csv(file_path)
+
+    df = df.loc[df["src"] == 'CPU0']
+    df = df.loc[df["dst"] == 'CPU8']
+    df = df.loc[df["transfer_size"] > 2 ** 25]
+
+    print df
+
+    ax = fig.add_subplot(111)
+
+    for key, grp in df.groupby(["threads"]):
+        max_per_threads = grp.groupby("transfer_size").max()
+        max_per_threads.plot(ax=ax, y="bandwidth", linestyle="--", label=str(key) + " threads")
+
+    # Find max overall bandwidth by transfer_size
+    by_count = df.groupby(["transfer_size"])
+    max_bw = by_count.max()
+
+    ax = max_bw.plot(ax=ax, kind="line", y="bandwidth", label="max observed")
+
+    ax.set_xscale("log")
+    ax.set_ylim(bottom=0)
+    plt.legend()
+
+    return fig
+
+
+
+def generate_figure(jobspec):
+
+    (yaml_dir, plot_path, plot_cfg, plot_num) = jobspec
+
+    if not path.isabs(plot_path):
+        plot_path = path.join(yaml_dir, plot_path)
+        print plot_path, plot_cfg
+
+    fig = plt.figure(plot_num)
+
+    if "generator" in plot_cfg:
+        if plot_cfg["generator"] == "df":
+            fig = generator_df(fig, yaml_dir, plot_cfg)
+    else:
+        fig = generator_old(fig, yaml_dir, plot_cfg)
+
     # Save plot
     print "saving to", plot_path
     fig.savefig(plot_path, bbox_inches="tight", clip_on=False, transparent=True)
+
 
 if __name__ == '__main__':
 
