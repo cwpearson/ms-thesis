@@ -1,4 +1,4 @@
-#! env python
+#! /usr/bin/env python
 
 import sys
 import pandas as pd
@@ -6,7 +6,6 @@ import matplotlib.pylab as plt
 import yaml
 import os.path as path
 import pprint
-from multiprocessing import Pool
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -107,8 +106,23 @@ def generator_old(fig, yaml_dir, plot_cfg):
     return fig
 
 
+def handle_keep(df, colStr, valStr, opStr):
+    if not opStr:
+        opStr = "="
+
+    if opStr == "=":
+        df = df.loc[df[colStr] == valStr]
+    elif opStr == ">":
+        df = df.loc[df[colStr] > valStr]
+    else:
+        assert False
+
+    return df
+    
+
 
 def generator_df(fig, yaml_dir, plot_cfg):
+    
     file_path = plot_cfg["file"]
     if not path.isabs(file_path):
         file_path = path.join(yaml_dir, file_path)
@@ -141,44 +155,39 @@ def generator_df(fig, yaml_dir, plot_cfg):
 
 
 
-def generate_figure(jobspec):
+def generate_figure(plot_cfg, root_dir):
 
-    (yaml_dir, plot_path, plot_cfg, plot_num) = jobspec
-
-    if not path.isabs(plot_path):
-        plot_path = path.join(yaml_dir, plot_path)
-        print plot_path, plot_cfg
-
-    fig = plt.figure(plot_num)
+    fig = plt.figure()
 
     if "generator" in plot_cfg:
         if plot_cfg["generator"] == "df":
-            fig = generator_df(fig, yaml_dir, plot_cfg)
+            fig = generator_df(fig, root_dir, plot_cfg)
     else:
-        fig = generator_old(fig, yaml_dir, plot_cfg)
+        fig = generator_old(fig, root_dir, plot_cfg)
 
-    # Save plot
-    print "saving to", plot_path
-    fig.savefig(plot_path, bbox_inches="tight", clip_on=False, transparent=True)
+    return fig
 
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) == 3:
+        output_path = sys.argv[1]
+        yaml_path = sys.argv[2]
+    else:
         sys.exit(1)
 
-    yaml_path = sys.argv[1]
-    num_workers = int(sys.argv[2])
-    yaml_dir = path.dirname(yaml_path)
-    p = Pool(num_workers)
+    root_dir = path.dirname(yaml_path)
 
+    # load the config
     with open(yaml_path, 'rb') as f:
         cfg = yaml.load(f)
-        print cfg
 
-    jobs = []
-    for plot_path, plot_cfg in cfg.iteritems():
-        jobs += [(yaml_dir, plot_path, plot_cfg, len(jobs))]
+    # look up the config for the specific output file
+    output_name = path.basename(output_path)
+    plot_cfg = cfg[output_name]
 
-    p.map(generate_figure, jobs)
-        
+    fig = generate_figure(plot_cfg, root_dir)
+
+    # Save plot
+    print "saving to", output_path
+    fig.savefig(output_path, bbox_inches="tight", clip_on=False, transparent=True)

@@ -1,4 +1,4 @@
-../../figures/generated/pageable_cpu0-gpu0.pdf:
+pageable_cpu0-gpu0.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -17,7 +17,7 @@
     label: Transfer Size (MB)
     scale: log
   title: Pageable CPU0 allocation to GPU0 allocation
-../../figures/generated/pinned_cpu0-gpu0.pdf:
+pinned_cpu0-gpu0.pdf:
   series:
     - file: m2_pinned.csv
       col: a
@@ -36,7 +36,7 @@
     label: Transfer Size (MB)
     scale: log
   title: Pinned CPU0 allocation to GPU0 allocation
-../../figures/generated/wc_cpu0-gpu0.pdf:
+wc_cpu0-gpu0.pdf:
   series:
     - file: m2_wc.csv
       col: a
@@ -56,7 +56,7 @@
     scale: log
   title: Write-Combining CPU0 allocation to GPU0 allocation
 
-../../figures/generated/minsky_pageable_cpu0-gpus.pdf:
+minsky_pageable_cpu0-gpus.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -78,7 +78,7 @@
     scale: log
   title: Transfers from CPU0
 
-../../figures/generated/minsky_pageable_cpu1-gpus.pdf:
+minsky_pageable_cpu1-gpus.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -100,7 +100,7 @@
     scale: log
   title: Transfers from CPU1
 
-../../figures/generated/minsky_pageable_cpu1-gpu01.pdf:
+minsky_pageable_cpu1-gpu01.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -116,7 +116,7 @@
     scale: log
   title: Minsky Pageable Transfers from CPU1
 
-../../figures/generated/minsky_memcpy_local.pdf:
+minsky_memcpy_local.pdf:
   series:
     - file: m2_memcpy-nopeer.csv
       col: a
@@ -135,7 +135,7 @@
     scale: log
   title: Minsky GPU0-GPU1 Transfers, GPU0 to GPU1
 
-../../figures/generated/hal_peer_local.pdf:
+hal_peer_local.pdf:
   series:
     - file: hal_memcpy-nopeer.csv
       col: a
@@ -172,7 +172,7 @@
     scale: log
   title: AC922 GPU-GPU Local Transfers
 
-../../figures/generated/hal_peer_remote.pdf:
+hal_peer_remote.pdf:
   series:
     - file: hal_memcpy-nopeer.csv
       col: a
@@ -209,7 +209,7 @@
     scale: log
   title: AC922 GPU-GPU Remote Transfers
 
-../../figures/generated/minsky_nopeer_remote.pdf:
+minsky_nopeer_remote.pdf:
   series:
     - file: m2_memcpy-nopeer.csv
       col: a
@@ -228,7 +228,7 @@
     scale: log
   title: Minsky Transfers between GPU0 and GPU2 (peer access disabled)
 
-../../figures/generated/minsky_path_gpu2-gpu0.pdf:
+minsky_path_gpu2-gpu0.pdf:
   series:
     - file: m2_memcpy-nopeer.csv
       col: a
@@ -247,7 +247,7 @@
     scale: log
   title: Minsky Path bandwidths from GPU2 to GPU0 (pinned xfer numbers)
 
-../../figures/generated/minsky_path_gpu0-gpu2.pdf:
+minsky_path_gpu0-gpu2.pdf:
   series:
     - file: m2_memcpy-nopeer.csv
       col: a
@@ -266,7 +266,7 @@
     scale: log
   title: Minsky Path bandwidths from GPU0 to GPU2 (pinned xfer numbers)
 
-../../figures/generated/hal_nopeer_remote.pdf:
+hal_nopeer_remote.pdf:
   series:
     - file: hal_memcpy-nopeer.csv
       col: a
@@ -285,7 +285,7 @@
     scale: log
   title: AC922 Transfers between GPU0 and GPU2 (peer access disabled)
 
-../../figures/generated/hal_nopeer_identical-local.pdf:
+hal_nopeer_identical-local.pdf:
   series:
     - file: hal_memcpy-nopeer.csv
       col: a
@@ -301,7 +301,7 @@
     scale: log
   title: AC922 Local Transfers on Identical Links (peer access disabled)
 
-../../figures/generated/hal_nopeer_identical-remote.pdf:
+hal_nopeer_identical-remote.pdf:
   series:
     - file: hal_memcpy-nopeer.csv
       col: a
@@ -317,7 +317,7 @@
     scale: log
   title: AC922 Remote Transfers on Identical Links (peer access disabled)
 
-../../figures/generated/minsky_nopeer_identical-local.pdf:
+minsky_nopeer_identical-local.pdf:
   series:
     - file: m2_memcpy-nopeer.csv
       col: a
@@ -333,7 +333,7 @@
     scale: log
   title: Minsky Local Transfers on Identical Links (peer access disabled)
 
-../../figures/generated/minsky_nopeer_identical-remote.pdf:
+minsky_nopeer_identical-remote.pdf:
   series:
     - file: m2_memcpy-nopeer.csv
       col: a
@@ -349,7 +349,7 @@
     scale: log
   title: Minsky Remote Transfers on Identical Links (peer access disabled)
 
-../../figures/generated/minsky_pinned_cpu0-local.pdf:
+minsky_pinned_cpu0-local.pdf:
   series:
     - file: m2_pinned.csv
       col: a
@@ -365,7 +365,7 @@
     scale: log
   title: Minsky Local transfers from Device to pinned CPU0
 
-../../figures/generated/minsky_wc_cpu0-local.pdf:
+minsky_wc_cpu0-local.pdf:
   series:
     - file: m2_wc.csv
       col: a
@@ -381,7 +381,7 @@
     scale: log
   title: Minsky Local transfers from Device to Write-combining CPU0
 
-../../figures/generated/minsky_pageable_affinity.pdf:
+minsky_pageable_affinity.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -403,7 +403,7 @@
     scale: log
   title: Effect of Affinity on Minsky Pageable CPU0-GPU Transfers
 
-../../figures/generated/hal_pageable_affinity.pdf:
+hal_pageable_affinity.pdf:
   series:
     - file: hal_pageable.csv
       col: a
@@ -425,7 +425,7 @@
     scale: log
   title: Effect of Affinity on AC922 Pageable CPU0-GPU Transfers
 
-../../figures/generated/minsky_pinned_affinity_cpu0.pdf:
+minsky_pinned_affinity_cpu0.pdf:
   series:
     - file: m2_pinned.csv
       col: a
@@ -447,7 +447,7 @@
     scale: log
   title: Effect of Affinity on Minsky Pinned CPU0-GPU Transfers
 
-../../figures/generated/minsky_pinned_affinity_cpu1.pdf:
+minsky_pinned_affinity_cpu1.pdf:
   series:
     - file: m2_pinned.csv
       col: a
@@ -469,7 +469,7 @@
     scale: log
   title: Effect of Affinity on Minsky Pinned CPU1-GPU Transfers
 
-../../figures/generated/hal_pinned_affinity.pdf:
+hal_pinned_affinity.pdf:
   series:
     - file: hal_pinned.csv
       col: a
@@ -491,7 +491,7 @@
     scale: log
   title: Effect of Affinity on AC922 Pinned CPU0-GPU Transfers
 
-../../figures/generated/minsky_pageable_cpu0-gpus.pdf:
+minsky_pageable_cpu0-gpus.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -512,7 +512,7 @@
     scale: log
   title: Transfers to CPU0
 
-../../figures/generated/minsky_pageable_cpu1-gpus.pdf:
+minsky_pageable_cpu1-gpus.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -530,7 +530,7 @@
     scale: log
   title: Transfers to CPU1
 
-../../figures/generated/minsky_pageable_gpus-cpu0.pdf:
+minsky_pageable_gpus-cpu0.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -551,7 +551,7 @@
     scale: log
   title: Transfers to CPU0
   
-../../figures/generated/minsky_pageable_gpus-cpu1.pdf:
+minsky_pageable_gpus-cpu1.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -569,7 +569,7 @@
     scale: log
   title: Transfers to CPU1
 
-../../figures/generated/minsky_pageable_gpu02-cpu01.pdf:
+minsky_pageable_gpu02-cpu01.pdf:
   series:
     - file: m2_pageable.csv
       col: a
@@ -584,3 +584,28 @@
   xaxis:
     scale: log
   title: Identical Pageable Transfers GPU0-GPU0 and GPU2-GPU1
+
+# minsky_pageable_gpu02-cpu01.pdf:
+#   generator: df
+#   file: hal_std-memcpy-df_src.csv
+#   reduce-over:
+#     - "transfer_size"
+#     - "threads"
+#     - "src"
+#     - "dst"
+#   keep:
+#     - col: src
+#       val: CPU0
+#     - col: dst
+#       val: CPU8
+#     - col: "transfer_size"
+#       val: 32000000
+#       op: gt # greater than
+#   yaxis:
+#     scale: 0.000001
+#     label: Transfer Bandwidth (MB/s)
+#   xaxis:
+#     scale: 0.000001
+#     type: log
+#     label: Transfer Size (MB/s)
+#   title: CPU0 to CPU8 Bandwidth
