@@ -170,9 +170,9 @@ These performance curves exhibit features common throughout this chapter:
 \end{itemize}
 
 For transfers from pageable host allocations to GPU0, (Figure~\ref{fig:pageable-cpu0-gpu0}), the achievable bandwidth can be substantially lower than the advertised hardware specifications suggest.
-The achieved 30 GB/s transfer bandwidth on S822LC is 75\% of the theoretical 40 GB/s transfer provided by the NVLink 1.0 interconnect between CPU0 and GPU0 (Section~\ref{sec:minsky}).
-On AC922, howoever, the 30 GB/s achieved bandwidth is substantially lower than the 75 GB/s advertised by the NVLink 2.0.
-In these cases, there is an internal
+The peak achieved 20 GB/s transfer bandwidth on S822LC is 55\% of the theoretical 40 GB/s transfer provided by the NVLink 1.0 interconnect between CPU0 and GPU0 (Section~\ref{sec:minsky}).
+Similarly, on AC922, the 30 GB/s achieved bandwidth is substantially lower than the 75 GB/s advertised by the NVLink 2.0.
+In these cases, there is an internal application-to-driver memory copy that is limiting the overall transfer performance.
 Furthermore, the topologically-similar S822LC and AC922 machines do not have similar shaped curves.
 On S822LC and AC922, marking pinned allocations as write-combining does not have an effect on performance.
 
@@ -214,14 +214,10 @@ The overall performance of the transfer is lower than the CPU's internal DRAM ba
 There is a distinct performance difference due to affinity, or transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
 Figure~\ref{fig:cpu-gpu-affinity-direction} shows some cases where the device physical affinity affects the performance of the logical communication path.
 Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
-Figure~\ref{fig:minsky_pageable_affinity} shows that both local and remote transfers involing pageable memory on S822LC are highly anisotropic, with GPU-to-CPU transfers being nearly 50\% of the speed.
-Affinity also has a small effect of around 5\% for CPU-to-GPU transfers and 20\% for GPU-to-CPU transfers.
-Figure~\ref{fig:hal_pageable_affinity} shows that AC922 pageable transfers are also highly anisotropic. 
-Furthermore, GPU-to-CPU communication is also strongly affected by affinity, with GPU0-to-CPU0 transfers performing faster at intermediate sizes than CPU0-to-GPU0 transfers.
-Figure~\ref{fig:minsky_pinned_affinity} show on S822LC, pinned bandwidth is affected both by affinity and direction, though the effect is not as strong as with pageable stransfers.
-Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affinity has a much stronger effect, though anisotropy is still present for remote transfers.
-
-
+Figures~\ref{fig:minsky_pageable_affinity} and \ref{fig:hal_pageable_affinity} show that affinity has a negligable effect on transfer performance for pagable transfers.
+These transfers are likely limited by the speed of the system memory copy from pageable to pinned buffer.
+Figure~\ref{fig:minsky_pinned_affinity} shows on S822LC, pinned bandwidth is affected both by affinity with local transfers at least $5$ GB/s faster than remote transfers at large sizes.
+Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affinity has a much stronger effect.
 
 \begin{figure}[ht]
     \centering
@@ -261,13 +257,13 @@ Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affini
 
 \begin{table}[ht]
     \centering
-    \caption[Affinity and Logical Communication Bandwidth]{Effect of device affinity on logical communication bandwidth}
+    \caption[Affinity and Logical Communication Bandwidth]{Effect of Device Affinity on Logical Transfer Bandiwdth}
     \label{tab:cpu-gpu-affinity}
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}     & \textbf{S822LC}                                      & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
+    Pageable $\rightarrow$ GPU & $\times$ (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
+    Pageable $\leftarrow$ GPU  & for intermediate sizes (Fig.~\ref{fig:minsky_pageable_affinity}) & for intermediate sizes (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
     Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
     Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
     \end{tabular}
@@ -276,8 +272,11 @@ Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affini
 \subsection{Anisotropy}
 \label{sec:explicit-cpu-gpu-anisotropy}
 
-Figure~\ref{fig:cpu-gpu-affinity-direction} also shows some cases where the direction of a logical transfer affects the performance.
+Figure~\ref{fig:cpu-gpu-affinity-direction} also highlights that direction of transfer can affect performance.
 Table~\ref{tab:explicit-anisotropy} summarizes the effects.
+Particularly for the pageable transfers shown in Figures~\ref{fig:minsky_pageable_affinity} and \ref{fig:hal_pageable_affinity}, corresponding transfers are shown to be highly anisotropic.
+In the pinned transfers on S822LC (Fig.~\ref{fig:minsky_pinned_affinity}), all transfers show some degree of anisotropy, with a larger effect over remote transfers.
+For AC922, (Fig.~\ref{fig:hal_pinned_affinity}), local transfers show anisotropy only for intermediate transfer sizes, and remote transfers do generally.
 
 \begin{table}[ht]
     \centering
@@ -300,27 +299,12 @@ Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows transfer performance on two di
 Both of the scenarios presented involve identical hardware and logical links.
 Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer performance differs on identical links.
 
-\todo{Confirm these results on another S822LC.}
-
 \begin{figure}[ht]
     \centering
-
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_cpu1-gpu01.pdf}
-        \caption{}
-        \label{fig:}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_gpu02-cpu01.pdf}
-        \caption{}
-        \label{fig:}
-    \end{subfigure}
-
+        \includegraphics[width=0.45\textwidth]{figures/generated/minsky_pageable_cpu1-gpu01.pdf}
     \caption[\todo{short}]{
-        Transfer bandwidth vs size for
-        (a) a pageable allocation on CPU1 to an allocation on GPU0 or GPU1.
-        (b) an allocation on GPU0 or GPU2 to a pageable allocation CPU0 or CPU1.}
+        Transfer bandwidth vs size for a pageable allocation on CPU1 to an allocation on GPU0 or GPU1.
+    }
     \label{fig:minsky_pageable_cpu1-gpu01}
 \end{figure}
 
@@ -332,9 +316,9 @@ Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer perfo
     \hline
     \textbf{Transfer Kind}     & \textbf{S822LC}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
-    Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
-    Pinned $\rightarrow$ GPU   & $\times$                                                   & $\times$ & \\ \hline
-    Pinned $\leftarrow$ GPU    & $\times$                                                   & $\times$ & \\ \hline
+    Pageable $\leftarrow$ GPU  & $\times$ & $\times$ & \\ \hline
+    Pinned $\rightarrow$ GPU   & $\times$ & $\times$ & \\ \hline
+    Pinned $\leftarrow$ GPU    & $\times$ & $\times$ & \\ \hline
     \end{tabular}
 \end{table}
 
