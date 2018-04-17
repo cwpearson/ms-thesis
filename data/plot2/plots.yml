@@ -114,7 +114,7 @@ minsky_pageable_cpu1-gpu01.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Minsky Pageable Transfers from CPU1
+  title: S822LC Pageable Transfers from CPU1
 
 minsky_memcpy_local.pdf:
   series:
@@ -133,7 +133,7 @@ minsky_memcpy_local.pdf:
       - 70000
   xaxis:
     scale: log
-  title: Minsky GPU0-GPU1 Transfers, GPU0 to GPU1
+  title: S822LC GPU0-GPU1 Transfers, GPU0 to GPU1
 
 hal_peer_local.pdf:
   series:
@@ -226,7 +226,7 @@ minsky_nopeer_remote.pdf:
       - 50000
   xaxis:
     scale: log
-  title: Minsky Transfers between GPU0 and GPU2 (peer access disabled)
+  title: S822LC Transfers between GPU0 and GPU2 (peer access disabled)
 
 minsky_path_gpu2-gpu0.pdf:
   series:
@@ -245,7 +245,7 @@ minsky_path_gpu2-gpu0.pdf:
       - 50000
   xaxis:
     scale: log
-  title: Minsky Path bandwidths from GPU2 to GPU0 (pinned xfer numbers)
+  title: S822LC Path bandwidths from GPU2 to GPU0 (pinned xfer numbers)
 
 minsky_path_gpu0-gpu2.pdf:
   series:
@@ -264,7 +264,7 @@ minsky_path_gpu0-gpu2.pdf:
       - 50000
   xaxis:
     scale: log
-  title: Minsky Path bandwidths from GPU0 to GPU2 (pinned xfer numbers)
+  title: S822LC Path bandwidths from GPU0 to GPU2 (pinned xfer numbers)
 
 hal_nopeer_remote.pdf:
   series:
@@ -331,7 +331,7 @@ minsky_nopeer_identical-local.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Minsky Local Transfers on Identical Links (peer access disabled)
+  title: S822LC Local Transfers on Identical Links (peer access disabled)
 
 minsky_nopeer_identical-remote.pdf:
   series:
@@ -347,7 +347,7 @@ minsky_nopeer_identical-remote.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Minsky Remote Transfers on Identical Links (peer access disabled)
+  title: S822LC Remote Transfers on Identical Links (peer access disabled)
 
 minsky_pinned_cpu0-local.pdf:
   series:
@@ -363,7 +363,7 @@ minsky_pinned_cpu0-local.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Minsky Local transfers from Device to pinned CPU0
+  title: S822LC Local transfers from Device to pinned CPU0
 
 minsky_wc_cpu0-local.pdf:
   series:
@@ -379,7 +379,7 @@ minsky_wc_cpu0-local.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Minsky Local transfers from Device to Write-combining CPU0
+  title: S822LC Local transfers from Device to Write-combining CPU0
 
 minsky_pageable_affinity.pdf:
   series:
@@ -401,7 +401,7 @@ minsky_pageable_affinity.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Effect of Affinity on Minsky Pageable CPU0-GPU Transfers
+  title: Effect of Affinity on S822LC Pageable CPU0-GPU Transfers
 
 hal_pageable_affinity.pdf:
   series:
@@ -445,7 +445,7 @@ minsky_pinned_affinity_cpu0.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Effect of Affinity on Minsky Pinned CPU0-GPU Transfers
+  title: Effect of Affinity on S822LC Pinned CPU0-GPU Transfers
 
 minsky_pinned_affinity_cpu1.pdf:
   series:
@@ -467,7 +467,7 @@ minsky_pinned_affinity_cpu1.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Effect of Affinity on Minsky Pinned CPU1-GPU Transfers
+  title: Effect of Affinity on S822LC Pinned CPU1-GPU Transfers
 
 hal_pinned_affinity.pdf:
   series:
