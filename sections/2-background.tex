@@ -217,14 +217,14 @@ Overuse of page-locked memory on the host will degrade overall application perfo
 	\centering
 	\caption[CUDA Pinned Memory-Management APIs]{\todo{long caption}}
 	\label{tab:cuda-pinned-apis}
-	\begin{tabular}{|c|c|c|}
+	\begin{tabularx}{\textwidth}{|M{1.5in}|Y|M{0.9in}|}
 		\hline
-		\textbf{API}                & \textbf{Description}                    & \textbf{Introduced} \\ \hline
+		\textbf{API}                & \textbf{Description}                    & \textbf{CUDA Version Introduced} \\ \hline
 		\texttt{cudaMallocHost()}   & allocate page-locked memory on the host & 1.0~\cite{nvidia2007cuda10} \\ \hline
 		\texttt{cudaFreeHost()}     & free page-locked memory on the host     & 1.0~\cite{nvidia2007cuda10} \\ \hline
 		\texttt{cudaHostAlloc()}    & cudaMallocHost with additional options  & 3.0~\cite{nvidia2010cuda30} \\ \hline
 		\texttt{cudaHostRegister()} & Page-lock a range of host memory        & 4.0~\cite{nvidia2011cudac40} \\ \hline
-	\end{tabular}
+	\end{tabularx}
 \end{table}
 
 \texttt{cudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable}, \texttt{cudaHostAllocMapped}, and \texttt{cudaHostAllocWriteCombined} flags.
@@ -306,15 +306,14 @@ A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 	\centering
 	\caption[CUDA Unified Memory-Management APIs]{\todo{long caption}}
 	\label{tab:cuda-um-apis}
-	\begin{tabular}{|c|c|}
+	\begin{tabularx}{\textwidth}{|c|Y|}
 		\hline
 		\textbf{API}                                              & \textbf{Description}                        \\ \hline
 		\texttt{\_\_managed\_\_}                                  & Defines a global variable in managed memory \\ \hline
 		\texttt{cudaMallocManaged()}                              & allocate a unified memory region.           \\ \hline
-		\texttt{cudaGetDeviceProperties()} \todo{what's the flag} &                                             \\ \hline
 		\texttt{cudaStreamAttachMemAsync()}                       & Attach a managed allocation to a stream, instead of globally. \\ \hline
 		\texttt{cudaMemAdvise()}                                  & Hint to CUDA about how memory will be used \\ \hline
-	\end{tabular}
+	\end{tabularx}
 \end{table}
 
 The underlying data is only present in one location on the system, and in principle, unified memory allocations are automatically migrated towards their most recent use.
