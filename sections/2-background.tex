@@ -423,6 +423,25 @@ For example, when CUDA unified memory is used, some of the link bandwidth may be
 Section~\ref{sec:results} shows how different uses of the CUDA API can achieve different performance on the same phyiscal hardware.
 
 
+\section{Linux Non-Uniform Memory Access}
+\label{sec:numa}
+
+Linux includes a system for exposing non-uniform memory access architectures (NUMA) to applications.
+In NUMA systems, memory is devided into multiple \textit{nodes}\cite{numa2012}.
+Processors and devices have the same access characteristics when accessing memory in a particular node.
+Nodes have \textit{affinity} to processors and devices, indicating the processors and devices which can access that node with the best performance.
+Applications can leverage the numactl\cite{wickman2015numactl} library to affect their own NUMA execution policy.
+This policy controls on which CPUs processes may execute, and on which NUMA nodes memory is allocated.
+numactl is used in this work to ensure that data is allocated and programs execute on specific CPUs as needed.
+
+\section{OpenMP}
+\label{sec:openmp}
+
+OpenMP is a shared-memory processing system that uses compiler directives and library functions to allow applications to implement shared-memory parallel processing techniques.
+\todo{cite}
+\todo{more details}
+This work uses OpenMP to create multiple threads to generate data traffic and characterize link performance between CPUs. 
+
 \section{Profiling Tooling}
 \label{sec:profiling}
 
@@ -443,15 +462,11 @@ If a function definition is present in a pre-loaded shared object, it will overr
 When combined with dlsym()~\cite{kerrisk2017dlysm}, it can be used to inject code into the entry of library calls in dynamically-linked binaries.
 Chapter~\ref{ch:app-char} describes how \todo{hwcomm-apptracer} uses LD\_PRELOAD to record special information about cuBLAS and cuDNN calls.
 
-\section{Linux Non-Uniform Memory Access}
-\label{sec:numa}
 
-Linux includes a system for exposing non-uniform memory access architectures (NUMA) to applications.
-In NUMA systems, memory is devided into multiple \textit{nodes}\cite{numa2012}.
-Processors and devices have the same access characteristics when accessing memory in a particular node.
-Nodes have \textit{affinity} to processors and devices, indicating the processors and devices which can access that node with the best performance.
-Applications can leverage the numactl\cite{wickman2015numactl} library to affect their own NUMA execution policy.
-This policy controls on which CPUs processes may execute, and on which NUMA nodes memory is allocated.
+
+
+
+
 
 \section{System Descriptions}
 \label{ref:system-description}
@@ -461,15 +476,13 @@ All systems feature multiple GPUs and multiple socketed CPUs.
 Their key differences are in CPU architecture (64-lit little-endian PowerPC for S822LC and AC922', x86-64 for DGX-1), number of GPUs (4 for the IBM machines, 8 for NVIDIA), and GPU connection topology (NVLink 1.0 for S822LC, NVLink 2.0 for AC922, and hybrid PCIe 3.0 / NVLink 1.0 for DGX-1).
 
 \subsection{IBM S822LC for High Performance Computing ``Minsky''}
-\label{sec:minsky-description}
+\label{sec:s822lc}
 
 \todo{where to discuss NUMA for each system?}
 
 \begin{table}[]
     \centering
-    \caption[Minsky hardware summary.]{
-        Brief summary of Minsky hardware.
-        }
+    \caption[IBM S822LC Architecture Summary]{IBM S822LC Architecture Summary.}
     \label{tab:minsky}
     \begin{tabular}{|c|c|}
     \hline
@@ -494,25 +507,25 @@ Figure \ref{fig:topo-minsky-simple} shows a simplified view\footnote{Figure \ref
 \begin{figure}
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/minsky-hardware.pdf}
-    \caption[Minsky Hardware]{\todo{Minsky}}
+    \caption[IBM S822LC Architecture Schematic]{IBM S822LC Architecture Schematic}
     \label{fig:topo-minsky-simple}
 \end{figure}
 
 
 \subsection{NVIDIA DGX-1}
-\label{sec:dgx1-description}
+\label{sec:dgx1}
 
 \begin{table}[]
     \centering
-    \caption[NVIDIA DGX-1 hardware summary.]{Summary of NVIDIA DGX-1 Hardware}
+    \caption[NVIDIA DGX-1 Architecture Summary]{NVIDIA DGX-1 Architecture Summary}
     \label{tab:dgx1}
     \begin{tabular}{|c|c|}
     \hline
     \textbf{} & \textbf{Specification}                                          \\ \hline
-    CPU           & \makecell{2x Intel Xeon E5-2698 v4 \\ 40C / 80T \\ 2.2 GHz} \\ \hline
-    System Memory & 512 GB DDR4                                                 \\ \hline
-	GPU           & 4 NVIDIA P100                                               \\ \hline
-	CPU/GPU Interconnect  & NVLink 1.0 / PCIe 3.0                                       \\ \hline
+    \textbf{CPU}                  & \makecell{2x Intel Xeon E5-2698 v4 \\ 40C / 80T \\ 2.2 GHz} \\ \hline
+    \textbf{System Memory}        & 512 GB DDR4                                                 \\ \hline
+	\textbf{GPU}                  & 4 NVIDIA P100                                               \\ \hline
+	\textbf{CPU/GPU Interconnect} & NVLink 1.0 / PCIe 3.0                                       \\ \hline
     \end{tabular}
 \end{table}
 
@@ -530,13 +543,13 @@ Figure \ref{fig:topo-dgx-simple} shows a simplified view\footnote{Figure ~\ref{f
 \begin{figure}
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/dgx1-hardware.pdf}
-    \caption[DGX-1 Hardware]{\todo{DGX-1}}
+    \caption[NVIDIA DGX-1 Architecture Schematic]{NVIDIA DGX-1 Architecture Schematic}
     \label{fig:topo-dgx-simple}
 \end{figure}
 
 
 \subsection{IBM AC922}
-\label{sec:hal-description}
+\label{sec:ac922}
 
 The IBM AC922 machine features two POWER9 CPUs and four NVIDIA V100 GPUs\cite{caldeira2018ac922}.
 Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory. for a total of 160 threads and 1TB of memory.
@@ -547,16 +560,14 @@ Table~\ref{tab:minsky} summarizes the hardware configuration.
 
 \begin{table}[]
     \centering
-    \caption[Power9 hardware summary.]{
-        Brief summary of Power9 hardware.
-        }
+    \caption[IBM AC922 Architecture Summary]{IBM AC922 Architecture Schematic}
     \label{tab:hal}
     \begin{tabular}{|c|c|}
     \hline
     \textbf{} & \textbf{Specification}                              \\ \hline
-    CPU           & \makecell{2x IBM Power9 \\ 40C 160T \\ 3.0 GHz  }  \\ \hline
-    System Memory & 1TB DDR4                                   \\ \hline
-	GPU           & 4 NVIDIA V100                                   \\ \hline
+    CPU                   & \makecell{2x IBM Power9 \\ 40C 160T \\ 3.0 GHz  }  \\ \hline
+    System Memory         & 1TB DDR4                                   \\ \hline
+	GPU                   & 4 NVIDIA V100                                   \\ \hline
 	CPU/GPU Interconnect  & NVLink 2.0                                      \\ \hline
     \end{tabular}
 \end{table}
@@ -564,7 +575,7 @@ Table~\ref{tab:minsky} summarizes the hardware configuration.
 \begin{figure}
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/hal-hardware.pdf}
-    \caption[Power9 Hardware]{\todo{Power9}}
+    \caption[IBM AC922 Architecture Schematic]{IBM AC922 Architecture Schematic}
     \label{fig:topo-dgx-simple}
 \end{figure}
 
