@@ -112,9 +112,10 @@ def handle_keep(df, colStr, valStr, opStr):
 
     if opStr == "=":
         df = df.loc[df[colStr] == valStr]
-    elif opStr == ">":
+    elif opStr == "gt":
         df = df.loc[df[colStr] > valStr]
     else:
+        print "opStr was", opStr
         assert False
 
     return df
@@ -129,23 +130,41 @@ def generator_df(fig, yaml_dir, plot_cfg):
 
     df = pd.read_csv(file_path)
 
-    df = df.loc[df["src"] == 'CPU0']
-    df = df.loc[df["dst"] == 'CPU8']
-    df = df.loc[df["transfer_size"] > 2 ** 25]
+    groups = plot_cfg["reduce-over"]
+    print "reducing by", groups
+    means = df.groupby(groups).mean()
+    maxes = df.groupby(groups).max()
+    errors = df.groupby(groups).std()
+
+    means = means.rename(columns={"bandwidth":"bandwidth (mean)"})
+    maxes = maxes.rename(columns={"bandwidth":"bandwidth (max)"})
+    errors = errors.rename(columns={"bandwidth":"bandwidth (std)"})
+
+    df = pd.concat([maxes, errors], axis=1)
+    df = df.reset_index()
 
     print df
+
+    for keep in plot_cfg["keep"]:
+        colStr = keep["col"]
+        valStr = keep["val"]
+        opStr = keep["op"]
+        df = handle_keep(df, colStr, valStr, opStr)
+
 
     ax = fig.add_subplot(111)
 
     for key, grp in df.groupby(["threads"]):
         max_per_threads = grp.groupby("transfer_size").max()
-        max_per_threads.plot(ax=ax, y="bandwidth", linestyle="--", label=str(key) + " threads")
+        max_per_threads.plot(ax=ax, y="bandwidth (max)", linestyle="--", label=str(key) + " threads")
 
     # Find max overall bandwidth by transfer_size
     by_count = df.groupby(["transfer_size"])
     max_bw = by_count.max()
 
-    ax = max_bw.plot(ax=ax, kind="line", y="bandwidth", label="max observed")
+    print max_bw
+
+    ax = max_bw.plot(ax=ax, kind="line", y="bandwidth (max)", label="max observed")
 
     ax.set_xscale("log")
     ax.set_ylim(bottom=0)

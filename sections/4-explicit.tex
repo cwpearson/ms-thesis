@@ -11,12 +11,69 @@ Full results can be found in Appendix~\ref{ch:data}.
 \section{CPU / CPU Transfers}
 \label{sec:explicit-cpu-cpu}
 
-The symmetric multi-processing links between CPU sockets are characterized by a synthetic workload generated using OpenMP~\cite{openmp2013}.
-This workload creates multiple threads reading remote data in an attempt to saturate the socket memory controllers and SMP bus.
-Algorithm~\ref{alg:h2h} describes the approach.
+Although not an operation used in CUDA applications, this section begins by examining CPU-CPU transfer performance by using multiple threads to read remote data in an attempt to saturate the SMP bus and memory controllers.
+This attempts to simulate the maximum possible performance that the CUDA API could achieve while sending data between sockets for CPU-to-GPU transfers.
+Algorithm~\ref{alg:explicit-cpu-cpu} describes the approach.
 
 
-\todo{single- and multi-threaded bandwidth}
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-dst.pdf}
+        \caption{}
+        \label{fig:s822lc-cpu0-cpu1}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-src.pdf}
+        \caption{}
+        \label{fig:s822lc-cpu0-cpu1}
+    \end{subfigure}
+    \caption[\todo{short}]{
+        CPU0 to CPU1 transfer bandwidth.
+        (a) shows multi-threaded reads from CPU1 of an allocation on CPU0's NUMA Node.
+        (b) shows multi-threaded writes from CPU0 to an allocation on CPU1's NUMA Node
+    }
+    \label{fig:cpu0-cpu1}
+\end{figure}
+
+
+\begin{algorithm}
+    \caption{Algorithm to measure bandwidth achieved using \texttt{cudaMemcpy}}
+    \label{alg:explicit-cpu-cpu}
+    \begin{algorithmic}[1]
+    \Statex
+    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$}
+        \If{$src$ is GPU}
+            \State \texttt{cudaSetDevice($src$}
+        \Else \Comment{$src$ is CPU}
+            \State \texttt{numa\_bind($src$}
+        \EndIf
+        \If{$dst$ is GPU}
+        \State \texttt{cudaSetDevice($dst$)}
+        \Else \Comment{$dst$ is CPU}
+        \State \texttt{numa\_bind($dst$)}
+        \EndIf
+
+        \State $devPtr \gets$ \texttt{cudaMalloc($transfer\_size$)} \Comment{device allocation}
+        \State $srcPtr \gets$ \texttt{malloc($transfer\_size$)} \Comment{or cudaHostAlloc()}
+
+        \State $elapsed \gets infinity$ \Comment{minimum of $num\_iters$ observations}
+        \For{$i \gets 1 \textrm{ to } num\_iters$}
+            \State $start \gets$ walltime()
+            \State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
+            \State \texttt{cudaDeviceSynchronize()}
+            \State $end \gets$ walltime()
+            \State $elapsed \gets$ min($elapsed$, $end-start$)
+        \EndFor
+
+        \Return $elapsed$
+    \EndFunction
+
+    \end{algorithmic}
+\end{algorithm}
+
+
 
 \section{CPU / GPU Transfers}
 \label{sec:explicit-cpu-gpu}

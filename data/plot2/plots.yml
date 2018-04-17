@@ -585,27 +585,58 @@ minsky_pageable_gpu02-cpu01.pdf:
     scale: log
   title: Identical Pageable Transfers GPU0-GPU0 and GPU2-GPU1
 
-# minsky_pageable_gpu02-cpu01.pdf:
-#   generator: df
-#   file: hal_std-memcpy-df_src.csv
-#   reduce-over:
-#     - "transfer_size"
-#     - "threads"
-#     - "src"
-#     - "dst"
-#   keep:
-#     - col: src
-#       val: CPU0
-#     - col: dst
-#       val: CPU8
-#     - col: "transfer_size"
-#       val: 32000000
-#       op: gt # greater than
-#   yaxis:
-#     scale: 0.000001
-#     label: Transfer Bandwidth (MB/s)
-#   xaxis:
-#     scale: 0.000001
-#     type: log
-#     label: Transfer Size (MB/s)
-#   title: CPU0 to CPU8 Bandwidth
+s822lc_cpu0-cpu1-dst.pdf:
+  generator: df
+  file: m2_dst-rd-src.csv
+  reduce-over:
+    - "transfer_size"
+    - "threads"
+    - "src"
+    - "dst"
+  keep:
+    - col: src
+      val: CPU0
+      op: "="
+    - col: dst
+      val: CPU1
+      op: "="
+    - col: "transfer_size"
+      # val: 32000000
+      val: 0
+      op: gt # greater than
+  yaxis:
+    scale: 0.000001
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: 0.000001
+    type: log
+    label: Transfer Size (MB/s)
+  title: CPU1 from CPU0 Bandwidth
+
+s822lc_cpu0-cpu1-src.pdf:
+  generator: df
+  file: m2_src-wr-dst.csv
+  reduce-over:
+    - "transfer_size"
+    - "threads"
+    - "src"
+    - "dst"
+  keep:
+    - col: src
+      val: CPU0
+      op: "="
+    - col: dst
+      val: CPU1
+      op: "="
+    - col: "transfer_size"
+      # val: 32000000
+      val: 0
+      op: gt # greater than
+  yaxis:
+    scale: 0.000001
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: 0.000001
+    type: log
+    label: Transfer Size (MB/s)
+  title: CPU0 to CPU1 andwidth

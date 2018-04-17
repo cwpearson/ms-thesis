@@ -53,14 +53,14 @@ PLOT2_TARGETS = \
 ../data/plot2/minsky_pageable_cpu1-gpus.pdf \
 ../data/plot2/minsky_pageable_gpus-cpu0.pdf \
 ../data/plot2/minsky_pageable_gpus-cpu1.pdf \
-../data/plot2/minsky_pageable_gpu02-cpu01.pdf
+../data/plot2/minsky_pageable_gpu02-cpu01.pdf \
+../data/plot2/s822lc_cpu0-cpu1-src.pdf \
+../data/plot2/s822lc_cpu0-cpu1-dst.pdf
 
-../data/plot2/%.pdf: ../data/plot2/plots.yml
-	../data/plot2/plot.py $@ $<
+PLOT2_CSVS = $(wildcard ../data/plot2/*.csv)
+
 
 all: $(TARGETS) plot2
-
-
 
 $(GEN_DIR):
 	mkdir -p $(GEN_DIR)
@@ -78,12 +78,12 @@ $(GEN_DIR)/%.pdf: $(REGPLOT_DIR)/%.csv $(GEN_DIR) $(REGPLOT_DIR)/plot.py
 	python $(REGPLOT_DIR)/plot.py $< $@
 
 
-
-
+../data/plot2/%.pdf: ../data/plot2/plots.yml $(PLOT2_CSVS)
+	../data/plot2/plot.py $@ $<
 
 .PHONY: plot2
 plot2: $(PLOT2_TARGETS)
-		mv ../data/plot2/*.pdf generated/.
+		cp ../data/plot2/*.pdf generated/.
 
 clean:
-	rm -f $(TARGETS) $(GEN_DIR)/*.pdf
+	rm -f $(TARGETS) $(GEN_DIR)/*.pdf ../data/plot2/*.pdf
