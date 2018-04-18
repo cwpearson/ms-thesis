@@ -551,6 +551,7 @@ These transfers are logically and physically identical: they have the same direc
 Surprisingly, the achieved bandwidth varies by nearly a factor of two.
 Figure~\ref{fig:explicit-nopeer-identical-ac922-remote} shows similar behavior for remote transfers, though with a smaller magnitude of effect.
 Figures~\ref{fig:explicit-nopeer-identical-s822lc-local} and ~\ref{fig:explicit-nopeer-identical-s822lc-remote} show the same for S822LC.
+Figure~\ref{fig:explicit-nopeer-identical-dgx} shows how GPU0-GPU1, GPU2-GPU3, GPU4-GPU5, and GPU6-GPU7 transfers are slower than all other local transfers (GPU0-GPU2, for example).
 Table~\ref{tab:explicit-identical} summarizes the cases where differing performance is observed.
 
 \begin{figure}[ht]
@@ -588,7 +589,7 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
         Transfer bandwidth vs transfer size for AC922 and S822LC.
         (a) and (b) show differeing transfer bandwidth on logically-identical local and remote transfers for AC922.
         (c) and (d) show the same for S822LC.
-        (e) shows a case on DGX-1 for GPU0-GPU1 transfers.
+        (e) shows the same for DGX-1.
     }
     \label{fig:explicit-nopeer-identical}
 \end{figure}
@@ -600,10 +601,10 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}                           & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$        & $\times$       & \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A             & $\times$       & \\ \hline
-    GPU $\leftrightarrow$ Local GPU  (peer disabled) & \checkmark      & \checkmark     & \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark      & \checkmark     & \\ \hline
+    GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$        & $\times$       & $\times$   \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A             & $\times$       & N/A        \\ \hline
+    GPU $\leftrightarrow$ Local GPU  (peer disabled) & \checkmark      & \checkmark     & \checkmark \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark      & \checkmark     & $\times$   \\ \hline
     \end{tabular}
 \end{table}
 
