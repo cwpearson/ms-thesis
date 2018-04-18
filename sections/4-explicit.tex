@@ -313,6 +313,7 @@ Table~\ref{tab:explicit-anisotropy} summarizes the effects.
 Particularly for the pageable transfers shown in Figures~\ref{fig:minsky_pageable_affinity} and \ref{fig:hal_pageable_affinity}, corresponding transfers are shown to be highly anisotropic.
 In the pinned transfers on S822LC (Fig.~\ref{fig:minsky_pinned_affinity}), all transfers show some degree of anisotropy, with a larger effect over remote transfers.
 For AC922, (Fig.~\ref{fig:hal_pinned_affinity}), local transfers show anisotropy only for intermediate transfer sizes, and remote transfers do generally.
+For DGX-1, pinned transfers all show 2 GB/s of anisotropy (Fig.~\ref{fig:dgx_pinned_affinity}), while the degree of anisotropy in pageable allocations depends on the affinity (Fig.~\ref{fig:dgx_pageable_affinity}).
 
 \begin{table}[ht]
     \centering
@@ -321,19 +322,20 @@ For AC922, (Fig.~\ref{fig:hal_pinned_affinity}), local transfers show anisotropy
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}                         & \textbf{S822LC}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\leftrightarrow$ GPU (local)         & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pinned $\leftrightarrow$ GPU (local)           & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & for intermediate sizes (Fig.~\ref{fig:hal_pinned_affinity}) & \\ \hline
-    Pinned $\leftrightarrow$ GPU (remote)          & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark             (Fig.~\ref{fig:hal_pinned_affinity}) & \\ \hline
+    Pageable $\leftrightarrow$ GPU (local)         & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity})\\ \hline
+    Pinned $\leftrightarrow$ GPU (local)           & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & for intermediate sizes (Fig.~\ref{fig:hal_pinned_affinity}) & (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
+    Pinned $\leftrightarrow$ GPU (remote)          & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark             (Fig.~\ref{fig:hal_pinned_affinity}) & (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
     \end{tabular}
 \end{table}
 
 \subsection{Differences between Identical Transfers}
 \label{sec:explicit-cpu-gpu-identical}
 
-Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows transfer performance on two different identical links: CPU0-GPU0 and CPU0-GPU1.
-Both of the scenarios presented involve identical hardware and logical links.
+Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows transfer performance on two different identical links: CPU1-GPU0 and CPU1-GPU1.
+Both of the scenarios presented involve identical hardware and logical links, yet there is a 10\% bandwidth different at intermediate sizes.
 Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer performance differs on identical links.
+S822LC is the only system where this behavior is observed for CPU-GPU transfers.
 
 \begin{figure}[ht]
     \centering
@@ -351,10 +353,10 @@ Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer perfo
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}     & \textbf{S822LC}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & \\ \hline
-    Pageable $\leftarrow$ GPU  & $\times$ & $\times$ & \\ \hline
-    Pinned $\rightarrow$ GPU   & $\times$ & $\times$ & \\ \hline
-    Pinned $\leftarrow$ GPU    & $\times$ & $\times$ & \\ \hline
+    Pageable $\rightarrow$ GPU & fot intermediate sizes (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & $\times$ \\ \hline
+    Pageable $\leftarrow$ GPU  & $\times$ & $\times$ & $\times$ \\ \hline
+    Pinned $\rightarrow$ GPU   & $\times$ & $\times$ & $\times$ \\ \hline
+    Pinned $\leftarrow$ GPU    & $\times$ & $\times$ & $\times$ \\ \hline
     \end{tabular}
 \end{table}
 
