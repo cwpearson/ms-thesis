@@ -202,6 +202,7 @@ Unified virtual addressing (Section~\ref{sec:uva}) and unified memory (Section ~
 
 
 \subsubsection{Page-Locked Memory}
+\label{sec:pinned-memory}
 
 The GPU uses direct memory access (DMA) to copy data to and from the host.
 When \texttt{cudaMemcpy} is invoked, the CPU instructs the GPU to copy a region of host memory to the device memory (or vis-versa), without the CPU being involved.

@@ -28,6 +28,9 @@ PLOT2_TARGETS = \
 ../data/plot2/pageable_cpu0-gpu0.pdf \
 ../data/plot2/pinned_cpu0-gpu0.pdf \
 ../data/plot2/wc_cpu0-gpu0.pdf \
+../data/plot2/minsky_pageable_affinity.pdf \
+../data/plot2/hal_pageable_affinity.pdf \
+../data/plot2/dgx_pageable_affinity.pdf \
 ../data/plot2/minsky_pageable_cpu0-gpus.pdf \
 ../data/plot2/minsky_pageable_cpu1-gpus.pdf \
 ../data/plot2/minsky_pageable_cpu1-gpu01.pdf \
@@ -44,18 +47,18 @@ PLOT2_TARGETS = \
 ../data/plot2/minsky_nopeer_identical-remote.pdf \
 ../data/plot2/minsky_pinned_cpu0-local.pdf \
 ../data/plot2/minsky_wc_cpu0-local.pdf \
-../data/plot2/minsky_pageable_affinity.pdf \
-../data/plot2/hal_pageable_affinity.pdf \
 ../data/plot2/minsky_pinned_affinity_cpu0.pdf \
 ../data/plot2/minsky_pinned_affinity_cpu1.pdf \
 ../data/plot2/hal_pinned_affinity.pdf \
+../data/plot2/dgx_pinned_affinity.pdf \
 ../data/plot2/minsky_pageable_cpu0-gpus.pdf \
 ../data/plot2/minsky_pageable_cpu1-gpus.pdf \
 ../data/plot2/minsky_pageable_gpus-cpu0.pdf \
 ../data/plot2/minsky_pageable_gpus-cpu1.pdf \
 ../data/plot2/minsky_pageable_gpu02-cpu01.pdf \
 ../data/plot2/s822lc_cpu0-cpu1-src.pdf \
-../data/plot2/s822lc_cpu0-cpu1-dst.pdf
+../data/plot2/s822lc_cpu0-cpu1-dst.pdf \
+../data/plot2/page-to-pin.pdf
 
 PLOT2_CSVS = $(wildcard ../data/plot2/*.csv)
 

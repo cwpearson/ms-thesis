@@ -122,6 +122,10 @@ Depending on the source and destination types $src$ and $dst$, and the desired h
 Then, the CUDA and system allocators are invoked to produce $devPtr$ (a pointer to the device allocation) and $srcPtr$ (a pointer to the CPU allocation).
 Then, \texttt{cudaMemcpy} is invoked $num\_iters$ times, and the fastest result is reported.
 This helps remove any jitter from the results.
+Time is recorded by wrapping \texttt{cudaMemcpy} in a call to the operating system clock.
+Consequently, the reported time includes the actual transfers, as well as any overhead for invoking the transfer.
+For pageable transfers, a \texttt{cudaDeviceSynchronize} is also included in the time, as cudaMemcpy may return before the device DMA is finished.
+
 
 \begin{algorithm}
     \caption{Algorithm to measure bandwidth achieved using \texttt{cudaMemcpy}}
@@ -169,18 +173,42 @@ These performance curves exhibit features common throughout this chapter:
 \item The performance may vary smoothly across intermediate transfer sizes, or exhibit more complicated behavior.
 \end{itemize}
 
-For transfers from pageable host allocations to GPU0, (Figure~\ref{fig:pageable-cpu0-gpu0}), the achievable bandwidth can be substantially lower than the advertised hardware specifications suggest.
-The peak achieved 20 GB/s transfer bandwidth on S822LC is 55\% of the theoretical 40 GB/s transfer provided by the NVLink 1.0 interconnect between CPU0 and GPU0 (Section~\ref{sec:minsky}).
-Similarly, on AC922, the 30 GB/s achieved bandwidth is substantially lower than the 75 GB/s advertised by the NVLink 2.0.
-In these cases, there is an internal application-to-driver memory copy that is limiting the overall transfer performance.
-Furthermore, the topologically-similar S822LC and AC922 machines do not have similar shaped curves.
-On S822LC and AC922, marking pinned allocations as write-combining does not have an effect on performance.
+The curves for transfers from a pinned allocation on CPU0 to GPU0 shown in Figure~\ref{fig:pinned-cpu-gpu0} share a similar shape: the transfer bandwidth is low for small sizes, and eventually saturates once transfers become large enough.
+For small transfer sizes, the elapsed time is dominated by overhead from invoking the transfer (and the device synchronization for the pageable transfer).
+This causes the upward slope as transfer size increases.
+For larger transfers, the time is dominated by the actual cost of moving the data, and the performance saturates.
+Both S822LC and AC922 achieve \mytilde 75\% of the theoretical performance allowed by the relevant interconnects, and DGX-1 achieves around 50\%.
 
-The low performance of pageable relative to pinned transfers suggests that the copy from application memory to driver-managed pinned memory before the GPU DMA is limiting the overall performance of pageable memory transfers.
-The overall performance of the transfer is lower than the CPU's internal DRAM bandwidth
+
+In contrast, Figure~\ref{fig:pageable-cpu0-gpu0} shows transfers from pageable host allocations to GPU0.
+The achievable bandwidth for large transfer sizes on S822LC and AC922 is reduced to approximately 50\% of the theoretical bandwidth provided by the link: $20$ GB/s for S822LC vs $40$ GB/s on for two-lane NVLink 1.0, $30$ GB/s on AC922 vs $75$ GB/s for three-lane NVLink 2.0.
+DGX-1 remains around the same performance level at $10$ GB/s vs $20$ GB/s for one-lane NVLink 1.0 on DGX-1.
+
+Section~\ref{sec:pinned-memory} describes how \texttt{cudaMemcpy} actually causes two copies for pageable allocations: one from the pageable allocation application to a pinned buffer, and a second DMA from the pinned buffer to the GPU.
+When pinned memory transfers are faster than pageable memory, we can infer that the CPU memory copy from pageable allocation to pinned buffer is limiting the performance.
+Figure~\ref{fig:explicit-pageable-cpu} shows the performance achieved by using \texttt{cudaMemcpy} to only do a copy from a pageable allocation to a pinned allocation.
+
+\todo{any conclusions to draw?}
 
 \begin{figure}[ht]
     \centering
+    \includegraphics[width=\textwidth]{figures/generated/page-to-pin.pdf}
+    \caption[\todo{short}]{\todo{long}}
+    \label{fig:explicit-pageable-cpu}
+\end{figure}
+
+Furthermore, the topologically-similar S822LC and AC922 machines do not have similar shaped curves.
+Figure~\ref{fig:wc-cpu0-gpu0} shows that write-combining allocations do not affect CPU-to-GPU performance on the tested systems.
+
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/pinned_cpu0-gpu0.pdf}
+        \caption{}
+        \label{fig:pinned-cpu0-gpu0}
+    \end{subfigure}
+    ~
     \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/pageable_cpu0-gpu0.pdf}
         \caption{}
@@ -188,22 +216,16 @@ The overall performance of the transfer is lower than the CPU's internal DRAM ba
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/pinned_cpu0-gpu0.pdf}
-        \caption{}
-        \label{fig:}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/wc_cpu0-gpu0.pdf}
         \caption{}
-        \label{fig:}
+        \label{fig:wc-cpu0-gpu0}
     \end{subfigure}
     \caption[\todo{short}]{
         \texttt{cudaMemcpy} bandwidth vs transfer size for CPU0 to GPU0 transfers from 
         (a) pageable allocations,
         (b) pinned allocations, and
         (c) write-combining allocations.
-        Results for S822LC and AC922 systems are shown.
+        Results for S822LC, AC922, and DGX-1 systems are shown.
     }
     \label{fig:pageable-pinned-wc}
 \end{figure}
@@ -211,44 +233,58 @@ The overall performance of the transfer is lower than the CPU's internal DRAM ba
 \subsection{Affinity}
 \label{sec:explicit-cpu-gpu-affinity}
 
-There is a distinct performance difference due to affinity, or transfers between components within a triad (CPU0-GPU0-GPU1 or CPU1-GPU2-GPU3) and components across triads.
+There is a distinct performance difference due to affinity, or transfers between directly-connected components, and components that must traverse multiple hardware links.
 Figure~\ref{fig:cpu-gpu-affinity-direction} shows some cases where the device physical affinity affects the performance of the logical communication path.
 Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
-Figures~\ref{fig:minsky_pageable_affinity} and \ref{fig:hal_pageable_affinity} show that affinity has a negligable effect on transfer performance for pagable transfers.
-These transfers are likely limited by the speed of the system memory copy from pageable to pinned buffer.
+Figures~\ref{fig:minsky_pageable_affinity} and \ref{fig:hal_pageable_affinity} show that affinity has a negligable effect on bandwidth for pagable transfers on the IBM machines.
+Figure~\ref{fig:dgx_pageable_affinity} shows that GPU-to-CPU pageable transfers on DGX are affected by affinity.
 Figure~\ref{fig:minsky_pinned_affinity} shows on S822LC, pinned bandwidth is affected both by affinity with local transfers at least $5$ GB/s faster than remote transfers at large sizes.
 Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affinity has a much stronger effect.
+Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned transfers for DGX-1.
 
 \begin{figure}[ht]
     \centering
-    \begin{subfigure}[b]{0.45\textwidth}
+    \begin{subfigure}[b]{0.31\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_affinity.pdf}
         \caption{}
         \label{fig:minsky_pageable_affinity}
     \end{subfigure}
     ~
-    \begin{subfigure}[b]{0.45\textwidth}
+    \begin{subfigure}[b]{0.31\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/hal_pageable_affinity.pdf}
         \caption{}
         \label{fig:hal_pageable_affinity}
     \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/dgx_pageable_affinity.pdf}
+        \caption{}
+        \label{fig:dgx_pageable_affinity}
+    \end{subfigure}
     \\
-    \begin{subfigure}[b]{0.45\textwidth}
+    \begin{subfigure}[b]{0.31\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu0.pdf}
         \caption{}
         \label{fig:minsky_pinned_affinity}
     \end{subfigure}
     ~
-    \begin{subfigure}[b]{0.45\textwidth}
+    \begin{subfigure}[b]{0.31\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/hal_pinned_affinity.pdf}
         \caption{}
         \label{fig:hal_pinned_affinity}
     \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/dgx_pinned_affinity.pdf}
+        \caption{}
+        \label{fig:dgx_pinned_affinity}
+
+    \end{subfigure}
     \caption[\todo{short}]{
-    Transfer bandwidth vs transfer size for local (CPU0 to GPU0) and remote (CPU0 to GPU2) transfers from pageable and pinned host allocations on S822LC and AC922.
-    (a) shows transfers involving pageable allocations on CPU0, to device allocations on GPU0 and GPU2 in both directions on S822LC.
-    (b) is the same scenario on AC922.
-    (c) and (d) are the same as (a) and (b), except with pinned transfers.
+    Transfer bandwidth vs transfer size for local and remote transfers from pageable and pinned host allocations on S822LC, AC922, and DGX-1.
+    (a-c) show transfers from pageable allocations to GPUs.
+    (d-f) show transfers from pinned allocations to GPUs.
+    (a) and (d) are for S822LC, (b) and (e) for AC922, and (c) and (f) for DGX-1.
     }
     \label{fig:cpu-gpu-affinity-direction}
 \end{figure}
@@ -261,11 +297,11 @@ Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affini
     \label{tab:cpu-gpu-affinity}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind}     & \textbf{S822LC}                                      & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU & $\times$ (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pageable $\leftarrow$ GPU  & for intermediate sizes (Fig.~\ref{fig:minsky_pageable_affinity}) & for intermediate sizes (Fig.~\ref{fig:hal_pageable_affinity}) & \\ \hline
-    Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
-    Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \\ \hline
+    \textbf{Transfer Kind}     & \textbf{S822LC}                                    & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    Pageable $\rightarrow$ GPU & $\times$ (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & $\times$ (Fig.~\ref{fig:dgx_pageable_affinity})\\ \hline
+    Pageable $\leftarrow$ GPU  & for intermediate sizes (Fig.~\ref{fig:minsky_pageable_affinity}) & for intermediate sizes (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+    Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity}) & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$  (Fig.~\ref{fig:dgx_pinned_affinity})\\ \hline
+    Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity}) & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$ (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
     \end{tabular}
 \end{table}
 

@@ -6,8 +6,11 @@ pageable_cpu0-gpu0.pdf:
       col: b
       label: S822LC
     - file: hal_pageable.csv
-      col: c
+      col: b
       label: AC922
+    - file: dgx_pageable.csv
+      col: b
+      label: DGX-1
   yaxis:
     label: Transfer Bandwidth (MB/s)
     lim:
@@ -25,8 +28,11 @@ pinned_cpu0-gpu0.pdf:
       col: b
       label: S822LC
     - file: hal_pinned.csv
-      col: c
+      col: b
       label: AC922
+    - file: dgx_pinned.csv
+      col: b
+      label: DGX-1
   yaxis:
     label: Transfer Bandwidth (MB/s)
     lim:
@@ -44,8 +50,11 @@ wc_cpu0-gpu0.pdf:
       col: b
       label: S822LC
     - file: hal_wc.csv
-      col: c
+      col: b
       label: AC922
+    - file: dgx_wc.csv
+      col: b
+      label: DGX-1
   yaxis:
     label: Transfer Bandwidth (MB/s)
     lim:
@@ -55,6 +64,20 @@ wc_cpu0-gpu0.pdf:
     label: Transfer Size (MB)
     scale: log
   title: Write-Combining CPU0 allocation to GPU0 allocation
+
+page-to-pin.pdf:
+  series:
+    - file: m2_page-to-pin.csv
+      col: a
+    - file: m2_page-to-pin.csv
+      col: b
+      label: S822LC
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    label: Transfer Size (MB)
+    scale: log
+  title: Transfer from a Pageable Allocation to Pinned Allocation on CPU0
 
 minsky_pageable_cpu0-gpus.pdf:
   series:
@@ -425,6 +448,28 @@ hal_pageable_affinity.pdf:
     scale: log
   title: Effect of Affinity on AC922 Pageable CPU0-GPU Transfers
 
+dgx_pageable_affinity.pdf:
+  series:
+    - file: dgx_pageable.csv
+      col: a
+    - label: Local (CPU0 to GPU0)
+      file: dgx_pageable.csv
+      col: b
+    - label: Remote (CPU0 to GPU5)
+      file: dgx_pageable.csv
+      col: g
+    - label: Local (GPU0 to CPU0)
+      file: dgx_pageable.csv
+      col: r
+    - label: Remote (GPU5 to CPU0)
+      file: dgx_pageable.csv
+      col: w
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: Effect of Affinity on DGX-1 Pageable CPU0-GPU Transfers
+
 minsky_pinned_affinity_cpu0.pdf:
   series:
     - file: m2_pinned.csv
@@ -467,7 +512,7 @@ minsky_pinned_affinity_cpu1.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Effect of Affinity on S822LC Pinned CPU1-GPU Transfers
+  title: S822LC Pinned CPU1-GPU Transfers
 
 hal_pinned_affinity.pdf:
   series:
@@ -489,7 +534,29 @@ hal_pinned_affinity.pdf:
     label: Transfer Bandwidth (MB/s)
   xaxis:
     scale: log
-  title: Effect of Affinity on AC922 Pinned CPU0-GPU Transfers
+  title: AC922 Pinned CPU0-GPU Transfers
+
+dgx_pinned_affinity.pdf:
+  series:
+    - file: dgx_pinned.csv
+      col: a
+    - label: Local (CPU0 to GPU0)
+      file: dgx_pinned.csv
+      col: b
+    - label: Remote (CPU0 to GPU5)
+      file: dgx_pinned.csv
+      col: g
+    - label: Local (GPU0 to CPU0)
+      file: dgx_pinned.csv
+      col: r
+    - label: Remote (GPU5 to CPU0)
+      file: dgx_pinned.csv
+      col: w
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: DGX-1 Pinned CPU0-GPU Transfers  
 
 minsky_pageable_cpu0-gpus.pdf:
   series:
