@@ -10,12 +10,12 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 
-
 def key_exists(element, *keys):
     if type(element) is not dict:
         raise AttributeError('keys_exists() expects dict as first argument.')
     if len(keys) == 0:
-        raise AttributeError('keys_exists() expects at least two arguments, one given.')
+        raise AttributeError(
+            'keys_exists() expects at least two arguments, one given.')
 
     _element = element
     for key in keys:
@@ -24,6 +24,7 @@ def key_exists(element, *keys):
         except KeyError as e:
             return False
     return True
+
 
 def get(element, *keys):
     _element = element
@@ -37,14 +38,15 @@ def col_to_idx(s):
         return s
 
     acc = 0
-    for place in range(len(s)):
-        c = s[place - len(s)]
-        if place == len(s) - 1:
-            int_val = ord(c.lower()) - 98
+    for idx in range(len(s)):
+        place = len(s) - 1 - idx
+        c = s[idx]
+        if place == 1:
+            int_val = ord(c.lower()) - 96
         else:
             int_val = ord(c.lower()) - 97
 
-        acc += int_val + (26 ** place)
+        acc += int_val * (26 ** place)
     return acc
 
 
@@ -66,10 +68,9 @@ def generator_old(fig, yaml_dir, plot_cfg):
         else:
             label = col.name
         data.loc[:, label] = col
-    # set column 0 as index 
+    # set column 0 as index
     data = data.set_index(data.iloc[:, 0].name, drop=True)
-    #print data
-
+    # print data
 
     ax = fig.add_subplot(111)
 
@@ -119,11 +120,10 @@ def handle_keep(df, colStr, valStr, opStr):
         assert False
 
     return df
-    
 
 
 def generator_df(fig, yaml_dir, plot_cfg):
-    
+
     file_path = plot_cfg["file"]
     if not path.isabs(file_path):
         file_path = path.join(yaml_dir, file_path)
@@ -136,9 +136,9 @@ def generator_df(fig, yaml_dir, plot_cfg):
     maxes = df.groupby(groups).max()
     errors = df.groupby(groups).std()
 
-    means = means.rename(columns={"bandwidth":"bandwidth (mean)"})
-    maxes = maxes.rename(columns={"bandwidth":"bandwidth (max)"})
-    errors = errors.rename(columns={"bandwidth":"bandwidth (std)"})
+    means = means.rename(columns={"bandwidth": "bandwidth (mean)"})
+    maxes = maxes.rename(columns={"bandwidth": "bandwidth (max)"})
+    errors = errors.rename(columns={"bandwidth": "bandwidth (std)"})
 
     df = pd.concat([maxes, errors], axis=1)
     df = df.reset_index()
@@ -151,12 +151,12 @@ def generator_df(fig, yaml_dir, plot_cfg):
         opStr = keep["op"]
         df = handle_keep(df, colStr, valStr, opStr)
 
-
     ax = fig.add_subplot(111)
 
     for key, grp in df.groupby(["threads"]):
         max_per_threads = grp.groupby("transfer_size").max()
-        max_per_threads.plot(ax=ax, y="bandwidth (max)", linestyle="--", label=str(key) + " threads")
+        max_per_threads.plot(ax=ax, y="bandwidth (max)",
+                             linestyle="--", label=str(key) + " threads")
 
     # Find max overall bandwidth by transfer_size
     by_count = df.groupby(["transfer_size"])
@@ -164,14 +164,14 @@ def generator_df(fig, yaml_dir, plot_cfg):
 
     print max_bw
 
-    ax = max_bw.plot(ax=ax, kind="line", y="bandwidth (max)", label="max observed")
+    ax = max_bw.plot(ax=ax, kind="line", y="bandwidth (max)",
+                     label="max observed")
 
     ax.set_xscale("log")
     ax.set_ylim(bottom=0)
     plt.legend()
 
     return fig
-
 
 
 def generate_figure(plot_cfg, root_dir):
@@ -209,4 +209,5 @@ if __name__ == '__main__':
 
     # Save plot
     print "saving to", output_path
-    fig.savefig(output_path, bbox_inches="tight", clip_on=False, transparent=True)
+    fig.savefig(output_path, bbox_inches="tight",
+                clip_on=False, transparent=True)

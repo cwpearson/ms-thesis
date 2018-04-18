@@ -263,6 +263,8 @@ Furthermore, all mapped allocations are autmatically portable between GPUs, not 
 \subsubsection{Peer Access and UVA}
 \label{sec:cuda-peer}
 
+\todo{How this affects cudaMemcpyPeer (with peer access, DMA durectly between devs. otherwise copy though host)}
+
 Peer access was introduced with CUDA 4.0.
 \texttt{cudaDeviceEnablePeerAccess()} allows CC 2.0+ devices to address memory in another device's address space~(\cite{nvidia2011cudac40}, 3.2.6.4).
 For example, if GPU1 loads through a pointer to data on GPU0, the data will be directly fetched from GPU0 memory, at the cost of one PCIe transasction and one globably memory load, and be cached in the L2 of GPU0.

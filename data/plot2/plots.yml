@@ -232,6 +232,43 @@ hal_peer_remote.pdf:
     scale: log
   title: AC922 GPU-GPU Remote Transfers
 
+dgx_peer_nopeer_local.pdf:
+  series:
+    - file: dgx_memcpy-nopeer.csv
+      col: a
+    - label: GPU0 to GPU1 (peer)
+      file: dgx_memcpy-peer.csv
+      col: f
+    - label: GPU0 to GPU2 (peer)
+      file: dgx_memcpy-peer.csv
+      col: j
+    - label: GPU0 to GPU3 (peer)
+      file: dgx_memcpy-peer.csv
+      col: n
+    - label: GPU0 to GPU4 (peer)
+      file: dgx_memcpy-peer.csv
+      col: r
+    - label: GPU0 to GPU1 (no peer)
+      file: dgx_memcpy-nopeer.csv
+      col: i
+    - label: GPU0 to GPU2 (no peer)
+      file: dgx_memcpy-nopeer.csv
+      col: p
+    - label: GPU0 to GPU3 (no peer)
+      file: dgx_memcpy-nopeer.csv
+      col: w
+    - label: GPU0 to GPU4 (no peer)
+      file: dgx_memcpy-nopeer.csv
+      col: ad
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+    lim:
+      - 0
+      - 20000
+  xaxis:
+    scale: log
+  title: DGX-1 GPU-GPU Local Transfers
+
 minsky_nopeer_remote.pdf:
   series:
     - file: m2_memcpy-nopeer.csv
@@ -371,6 +408,31 @@ minsky_nopeer_identical-remote.pdf:
   xaxis:
     scale: log
   title: S822LC Remote Transfers on Identical Links (peer access disabled)
+
+dgx_nopeer_identical.pdf:
+  series:
+    - file: dgx_memcpy-nopeer.csv
+      col: a
+    - label: GPU0 to GPU1
+      file: dgx_memcpy-nopeer.csv
+      col: i
+    - label: GPU2 to GPU3
+      file: dgx_memcpy-nopeer.csv
+      col: y
+    - label: GPU4 to GPU5
+      file: dgx_memcpy-nopeer.csv
+      col: ao
+    - label: GPU6 to GPU7
+      file: dgx_memcpy-nopeer.csv
+      col: be
+    - label: GPU0 to GPU2
+      file: dgx_memcpy-nopeer.csv
+      col: p
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: S822LC Local Transfers on Identical Links (peer access disabled)
 
 minsky_pinned_cpu0-local.pdf:
   series:

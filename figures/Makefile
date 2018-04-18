@@ -58,7 +58,9 @@ PLOT2_TARGETS = \
 ../data/plot2/minsky_pageable_gpu02-cpu01.pdf \
 ../data/plot2/s822lc_cpu0-cpu1-src.pdf \
 ../data/plot2/s822lc_cpu0-cpu1-dst.pdf \
-../data/plot2/page-to-pin.pdf
+../data/plot2/page-to-pin.pdf \
+../data/plot2/dgx_peer_nopeer_local.pdf \
+../data/plot2/dgx_nopeer_identical.pdf
 
 PLOT2_CSVS = $(wildcard ../data/plot2/*.csv)
 
