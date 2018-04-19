@@ -1,0 +1,19 @@
+pinned_cpu0-gpu0.pdf:
+series:
+  - file: m2_pinned.csv
+    col: a
+  - file: m2_pinned.csv
+    col: b
+    label: S822LC
+  - file: hal_pinned.csv
+    col: c
+    label: AC922
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 70000
+xaxis:
+  label: Transfer Size (MB)
+  scale: log
+title: Pinned CPU0 allocation to GPU0 allocation

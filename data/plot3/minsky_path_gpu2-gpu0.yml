@@ -1,0 +1,17 @@
+series:
+  - file: m2_memcpy-nopeer.csv
+    col: a
+  - label: GPU2 to CPU1 (pinned)
+    file: m2_pinned.csv
+    col: p
+  - label: CPU0 to GPU0 (pinned)
+    file: m2_pinned.csv
+    col: b
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 50000
+xaxis:
+  scale: log
+title: S822LC Path bandwidths from GPU2 to GPU0 (pinned xfer numbers)

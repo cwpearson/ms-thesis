@@ -1,0 +1,14 @@
+  series:
+    - file: hal_memcpy-nopeer.csv
+      col: a
+    - label: GPU1 to GPU2
+      file: hal_memcpy-nopeer.csv
+      col: f
+    - label: GPU0 to GPU3
+      file: hal_memcpy-nopeer.csv
+      col: k
+  yaxis:
+    label: Transfer Bandwidth (MB/s)
+  xaxis:
+    scale: log
+  title: AC922 Remote Transfers on Identical Links (peer access disabled)

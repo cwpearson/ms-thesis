@@ -10,7 +10,6 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 
-
 def key_exists(element, *keys):
     if type(element) is not dict:
         raise AttributeError('keys_exists() expects dict as first argument.')
@@ -201,11 +200,7 @@ if __name__ == '__main__':
     with open(yaml_path, 'rb') as f:
         cfg = yaml.load(f)
 
-    # look up the config for the specific output file
-    output_name = path.basename(output_path)
-    plot_cfg = cfg[output_name]
-
-    fig = generate_figure(plot_cfg, root_dir)
+    fig = generate_figure(cfg, root_dir)
 
     # Save plot
     print "saving to", output_path

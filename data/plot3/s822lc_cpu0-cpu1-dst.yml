@@ -1,0 +1,26 @@
+generator: df
+file: m2_dst-rd-src.csv
+reduce-over:
+  - "transfer_size"
+  - "threads"
+  - "src"
+  - "dst"
+keep:
+  - col: src
+    val: CPU0
+    op: "="
+  - col: dst
+    val: CPU1
+    op: "="
+  - col: "transfer_size"
+    # val: 32000000
+    val: 0
+    op: gt # greater than
+yaxis:
+  scale: 0.000001
+  label: Transfer Bandwidth (MB/s)
+xaxis:
+  scale: 0.000001
+  type: log
+  label: Transfer Size (MB/s)
+title: CPU1 from CPU0 Bandwidth

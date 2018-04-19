@@ -1,0 +1,17 @@
+series:
+  - file: m2_memcpy-nopeer.csv
+    col: a
+  - label: GPU0 to GPU2
+    file: m2_memcpy-nopeer.csv
+    col: h
+  - label: GPU2 to GPU0
+    file: m2_memcpy-nopeer.csv
+    col: c
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 50000
+xaxis:
+  scale: log
+title: S822LC Transfers between GPU0 and GPU2 (peer access disabled)

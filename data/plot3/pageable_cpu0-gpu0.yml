@@ -1,0 +1,18 @@
+series:
+  - file: m2_pageable.csv
+    col: a
+  - file: m2_pageable.csv
+    col: b
+    label: S822LC
+  - file: hal_pageable.csv
+    col: c
+    label: AC922
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 70000
+xaxis:
+  label: Transfer Size (MB)
+  scale: log
+title: Pageable CPU0 allocation to GPU0 allocation

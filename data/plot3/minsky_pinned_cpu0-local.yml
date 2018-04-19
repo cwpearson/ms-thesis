@@ -1,0 +1,14 @@
+series:
+  - file: m2_pinned.csv
+    col: a
+  - label: GPU0 to CPU0
+    file: m2_pinned.csv
+    col: j
+  - label: GPU1 to CPU0
+    file: m2_pinned.csv
+    col: k
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+xaxis:
+  scale: log
+title: S822LC Local transfers from Device to pinned CPU0

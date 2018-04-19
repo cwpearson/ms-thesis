@@ -1,0 +1,20 @@
+series:
+  - file: m2_pageable.csv
+    col: a
+  - label: Local (CPU0 to GPU0)
+    file: m2_pageable.csv
+    col: b
+  - label: Remote (CPU0 to GPU2)
+    file: m2_pageable.csv
+    col: d
+  - label: Local (GPU0 to CPU0)
+    file: m2_pageable.csv
+    col: j
+  - label: Remote (GPU2 to CPU0)
+    file: m2_pageable.csv
+    col: l
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+xaxis:
+  scale: log
+title: Effect of Affinity on S822LC Pageable CPU0-GPU Transfers

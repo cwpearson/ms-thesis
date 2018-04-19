@@ -1,0 +1,14 @@
+series:
+  - file: m2_pageable.csv
+    col: a
+  - label: CPU1 to GPU0
+    file: m2_pageable.csv
+    col: f
+  - label: CPU1 to GPU1
+    file: m2_pageable.csv
+    col: g
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+xaxis:
+  scale: log
+title: S822LC Pageable Transfers from CPU1

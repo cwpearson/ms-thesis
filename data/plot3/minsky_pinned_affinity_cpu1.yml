@@ -1,0 +1,20 @@
+series:
+  - file: m2_pinned.csv
+    col: a
+  - label: Local (CPU1 to GPU0)
+    file: m2_pinned.csv
+    col: f
+  - label: Remote (CPU1 to GPU2)
+    file: m2_pinned.csv
+    col: h
+  - label: Local (GPU0 to CPU1)
+    file: m2_pinned.csv
+    col: n
+  - label: Remote (GPU2 to CPU1)
+    file: m2_pinned.csv
+    col: p
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+xaxis:
+  scale: log
+title: Effect of Affinity on S822LC Pinned CPU1-GPU Transfers
