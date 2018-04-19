@@ -221,6 +221,87 @@ Figure~\ref{fig:um-cpu0-gpu0} shows transfer bandwidth vs transfer size between 
     \label{fig:um-cpu0-gpu0}
 \end{figure}
 
+\subsection{Coherence Affinity}
+
+Device affinity can affect the observed coherence transfer bandwidth.
+Table~\ref{tab:um-coherence-affinity} shows some cases where affinity affects transfer bandwidth, with Figure~\ref{fig:um-coherence-affinity} showing the corresponding results.
+On S822LC and AC922, GPU-GPU coherence traffic is affected by affinity, with local transfers exhibiting nearly double the bandwidth for intermediate transfer sizes.
+On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
+
+\todo{any speculation about why?}
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_coherence_affinity_gpu0-gpu.pdf}
+        \caption{}
+        \label{fig:um-coherence-s822lc-affinity-gpu-gpu}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/hal_coherence_affinity_gpu0-cpu.pdf}
+        \caption{}
+        \label{fig:um-coherence-ac922-affinity-gpu-cpu}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/hal_coherence_affinity_gpu0-gpu.pdf}
+        \caption{}
+        \label{fig:um-coherence-ac922-affinity-gpu-gpu}
+    \end{subfigure}
+    ~
+    \caption[\todo{short}]{}
+    \label{fig:um-coherence-affinity}
+\end{figure}
+
+\begin{table}[ht]
+    \centering
+    \caption[\todo{short}]{Effect of Device Affinity on Coherence Bandwidth}
+    \label{tab:um-coherence-affinity}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    CPU $\rightarrow$     GPU & $\times$                                                         & $\times$                                                        & (Fig.~\ref{}) \\ \hline
+    CPU $\leftarrow$      GPU & $\times$                                                         & \checkmark (Fig.~\ref{fig:um-coherence-ac922-affinity-gpu-cpu}) & (Fig.~\ref{}) \\ \hline
+    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-affinity-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-affinity-gpu-gpu}) & (Fig.~\ref{}) \\ \hline
+    \end{tabular}
+\end{table}
+
+
+\subsection{Prefetch Affinity}
+
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_prefetch_affinity_cpu0-gpu.pdf}
+        \caption{}
+        \label{fig:um-prefetch-s822lc-affinity-cpu-gpu}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_prefetch_affinity_gpu0-gpu.pdf}
+        \caption{}
+        \label{fig:um-prefetch-s822lc-affinity-gpu-gpu}
+    \end{subfigure}
+    ~
+    \caption[\todo{short}]{}
+    \label{fig:um-prefetch-affinity}
+\end{figure}
+
+\begin{table}[ht]
+    \centering
+    \caption[\todo{short}]{Effect of Device Affinity on Prefetch Bandwidth}
+    \label{tab:um-prefetch-affinity}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    CPU $\rightarrow$     GPU \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-affinity-cpu-gpu}) & & & \\ \hline
+    CPU $\leftarrow$      GPU $\times$                                                        & & & \\ \hline
+    GPU $\leftrightarrow$ GPU \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-affinity-gpu-gpu}) & & & \\ \hline
+    \end{tabular}
+\end{table}
+
 \section{GPU / GPU Transfers}
 \label{sec:um-gpu-gpu}
 

@@ -1,0 +1,17 @@
+series:
+  - file: m2_coherence-bw.csv
+    col: a
+  - label: GPU0 to GPU1
+    file: m2_coherence-bw.csv
+    col: b
+  - label: GPU0 to GPU2
+    file: m2_coherence-bw.csv
+    col: c
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 50000
+xaxis:
+  scale: log
+title: S822LC Coherence Bandwidth (GPU0 to GPUs)
