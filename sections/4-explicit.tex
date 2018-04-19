@@ -299,7 +299,7 @@ Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned tra
     \hline
     \textbf{Transfer Kind}     & \textbf{S822LC}                                    & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
     Pageable $\rightarrow$ GPU & $\times$ (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & $\times$ (Fig.~\ref{fig:dgx_pageable_affinity})\\ \hline
-    Pageable $\leftarrow$ GPU  & for intermediate sizes (Fig.~\ref{fig:minsky_pageable_affinity}) & for intermediate sizes (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+    Pageable $\leftarrow$ GPU  & \makecell{ for intermediate \\ sizes (Fig.~\ref{fig:minsky_pageable_affinity}) } & \makecell{ for intermediate \\ sizes (Fig.~\ref{fig:hal_pageable_affinity}) } & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
     Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity}) & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$  (Fig.~\ref{fig:dgx_pinned_affinity})\\ \hline
     Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity}) & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$ (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
     \end{tabular}
@@ -322,10 +322,10 @@ For DGX-1, pinned transfers all show 2 GB/s of anisotropy (Fig.~\ref{fig:dgx_pin
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}                         & \textbf{S822LC}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\leftrightarrow$ GPU (local)         & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
-    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity})\\ \hline
-    Pinned $\leftrightarrow$ GPU (local)           & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & for intermediate sizes (Fig.~\ref{fig:hal_pinned_affinity}) & (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
-    Pinned $\leftrightarrow$ GPU (remote)          & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark             (Fig.~\ref{fig:hal_pinned_affinity}) & (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
+    Pageable $\leftrightarrow$ GPU (local)         & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity})                          & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity})                          & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity})\\ \hline
+    Pinned $\leftrightarrow$ GPU (local)           & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \makecell{for intermediate \\ sizes (Fig.~\ref{fig:hal_pinned_affinity}) } & \checkmark (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
+    Pinned $\leftrightarrow$ GPU (remote)          & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})                            & \checkmark (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
     \end{tabular}
 \end{table}
 
