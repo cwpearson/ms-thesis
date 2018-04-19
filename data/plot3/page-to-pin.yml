@@ -1,0 +1,12 @@
+series:
+  - file: m2_page-to-pin.csv
+    col: a
+  - file: m2_page-to-pin.csv
+    col: b
+    label: S822LC
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+xaxis:
+  label: Transfer Size (MB)
+  scale: log
+title: Transfer from a Pageable Allocation to Pinned Allocation on CPU0

@@ -1,4 +1,3 @@
-pinned_cpu0-gpu0.pdf:
 series:
   - file: m2_pinned.csv
     col: a
@@ -6,8 +5,11 @@ series:
     col: b
     label: S822LC
   - file: hal_pinned.csv
-    col: c
+    col: b
     label: AC922
+  - file: dgx_pinned.csv
+    col: b
+    label: DGX-1
 yaxis:
   label: Transfer Bandwidth (MB/s)
   lim:
