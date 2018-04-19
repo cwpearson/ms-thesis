@@ -515,7 +515,7 @@ Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU 
     \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/hal_nopeer_remote.pdf}
         \caption{}
-        \label{fig:}
+        \label{fig:explicit-ac922-nopeer-remote}
     \end{subfigure}
     \caption[\todo{short}]{
         Transfer bandwidth vs transfer size when peer access is disabled.
@@ -537,7 +537,7 @@ Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU 
     GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$        & $\times$       & $\times$ \\ \hline
     GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A             & $\times$       & N/A      \\ \hline
     GPU $\leftrightarrow$ Local GPU  (peer disabled) & $\times$        & $\times$       & $\times$ \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark      & \checkmark     & $\times$ \\ \hline
+    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark (Fig.~\ref{fig:minsky-explicit-nopeer-remote})  & \checkmark (Fig.~\ref{fig:explicit-ac922-nopeer-remote})    & $\times$ \\ \hline
     \end{tabular}
 \end{table}
 
@@ -601,10 +601,10 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}                           & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$        & $\times$       & $\times$   \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A             & $\times$       & N/A        \\ \hline
-    GPU $\leftrightarrow$ Local GPU  (peer disabled) & \checkmark      & \checkmark     & \checkmark \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark      & \checkmark     & $\times$   \\ \hline
+    \makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer enabled)  } & $\times$                                                            & $\times$                                                           & $\times$                                                  \\ \hline
+    \makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer enabled)  } & N/A                                                                 & $\times$                                                           & N/A                                                       \\ \hline
+    \makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-local})  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-ac922-local})  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-dgx}) \\ \hline
+    \makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-remote}) & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-ac922-remote}) & $\times$                                                  \\ \hline
     \end{tabular}
 \end{table}
 
