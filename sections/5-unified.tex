@@ -202,13 +202,13 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth,draft]{figures/generated/dgx_prefetch_cpu-gpu.pdf}
         \caption{}
-        \label{}
+        \label{fig:um-prefetch-dgx-cpu-gpu}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_cpu-gpu.pdf}
         \caption{}
-        \label{}
+        \label{fig:um-coherence-dgx-cpu-gpu}
     \end{subfigure}
     \caption[\todo{short}]{
         CPU-GPU Coherence and Prefetch Bandwidth
@@ -219,13 +219,18 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 
 
 \subsection{Coherence vs Prefetch Bandwidth}
-This section investigates the performance of CPU-GPU transfers in the unified memory system.
-Figure~\ref{fig:um-cpu-gpu} shows transfer bandwidth vs transfer size between CPU0 and GPU0 on the three systems.
+The following figures compare prefetch and coherence bandwidth for CPU/GPU transfers;
+\begin{itemize}
+    \item Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-coherence-s822lc-cpu-gpu} on S822LC,
+    \item Figures \ref{fig:um-prefetch-ac922-cpu-gpu} and \ref{fig:um-coherence-ac922-cpu-gpu}   on AC922,
+    \item Figures \ref{fig:um-prefetch-dgx-cpu-gpu} and \ref{fig:um-coherence-dgx-cpu-gpu}       on DGX,
+\end{itemize}
+
 
 \subsection{Coherence Affinity}
 
 Device affinity can affect the observed coherence transfer bandwidth.
-Table~\ref{tab:um-coherence-affinity} shows some cases where affinity affects transfer bandwidth, with Figure~\ref{fig:um-coherence-affinity} showing the corresponding results.
+Table~\ref{tab:um-coherence-affinity} shows some cases where affinity affects transfer bandwidth.
 On S822LC and AC922, GPU-GPU coherence traffic is affected by affinity, with local transfers exhibiting nearly double the bandwidth for intermediate transfer sizes.
 On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
 
@@ -238,9 +243,9 @@ On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    CPU $\rightarrow$     GPU & $\times$                                                & $\times$                                               & (Fig.~\ref{}) \\ \hline
-    CPU $\leftarrow$      GPU & $\times$                                                & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{}) \\ \hline
-    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{}) \\ \hline
+    CPU $\rightarrow$     GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+    CPU $\leftarrow$      GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
     \end{tabular}
 \end{table}
 
@@ -248,9 +253,9 @@ On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
 \subsection{Prefetch Affinity}
 
 Device affinity can affect the observed prefetch bandwidth.
-Table~\ref{tab:um-prefetch-affinity} shows some cases where affinity affects prefetch transfer bandwidth, with Figure~\ref{fig:um-prefetch-affinity} showing the corresponding results.
-Figures \ref{fig:um-prefetch-s822lc-affinity-gpu-gpu} and \ref{fig:um-prefetch-ac922-affinity-gpu-gpu} show that GPU-GPU affinity has a very large effect for prefetch bandwidth, with local GPUs having double or more the prefetch performance of remote GPUs.
-Figures \ref{fig:um-prefetch-s822lc-affinity-cpu-gpu} and \ref{fig:um-prefetch-ac922-affinity-cpu-gpu} show that CPU to GPU transfers are also affected, to a lesser degree.
+Table~\ref{tab:um-prefetch-affinity} shows some cases where affinity affects prefetch transfer bandwidth.
+Figures \ref{fig:um-prefetch-s822lc-gpu-gpu} and \ref{fig:um-prefetch-ac922-gpu-gpu} show that GPU-GPU affinity has a very large effect for prefetch bandwidth, with local GPUs having double or more the prefetch performance of remote GPUs.
+Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-gpu} show that CPU to GPU transfers are also affected, to a lesser degree.
 
 \todo{speculation why?}
 
@@ -260,14 +265,30 @@ Figures \ref{fig:um-prefetch-s822lc-affinity-cpu-gpu} and \ref{fig:um-prefetch-a
     \label{tab:um-prefetch-affinity}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    CPU $\rightarrow$     GPU \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & & \\ \hline
-    CPU $\leftarrow$      GPU $\times$                                                        & $\times$ & & \\ \hline
-    GPU $\leftrightarrow$ GPU \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & & \\ \hline
+    \textbf{Transfer Kind}    & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    CPU $\rightarrow$     GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
+    CPU $\leftarrow$      GPU & $\times$   (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
+    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu}) \\ \hline
     \end{tabular}
 \end{table}
 
-\section{Coherence Direction}
+\section{Coherence Anisotropy}
+
+\begin{table}[ht]
+    \centering
+    \caption[\todo{short}]{Observed Coherence Bandiwdth Anisotopy}
+    \label{tab:um-prefetch-affinity}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+    CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+    CPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+    GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+    GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+    \end{tabular}
+\end{table}
+
+
 
 \section{GPU / GPU Transfers}
 \label{sec:um-gpu-gpu}
@@ -301,13 +322,13 @@ Figures \ref{fig:um-prefetch-s822lc-affinity-cpu-gpu} and \ref{fig:um-prefetch-a
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth,draft]{figures/generated/dgx_prefetch_gpu-gpu.pdf}
         \caption{}
-        \label{}
+        \label{fig:um-prefetch-dgx-gpu-gpu}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_gpu-gpu.pdf}
         \caption{}
-        \label{}
+        \label{fig:um-coherence-dgx-gpu-gpu}
     \end{subfigure}
     \caption[\todo{short}]{
         GPU-GPU Coherence and Prefetch Bandwidth
