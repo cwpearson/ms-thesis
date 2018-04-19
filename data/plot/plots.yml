@@ -42,24 +42,6 @@ plots:
         color: "gray"
         style: "--"
         lw: 2
-  hal_um-bw_cpu0-gpu0.csv:
-    series:
-      0: 
-        color: "black"
-        lw: 2
-      1: 
-        color: "gray"
-        lw: 2
-  hal_um-bw_gpu0-cpu0.csv:
-    series:
-      0: 
-        color: "black"
-        lw: 2
-      1: 
-        color: "gray"
-        lw: 2
-  m2_um-bw_cpu0-gpu0.csv:
-    title: "S822LC Unified Memory Bandwidth"
   m2_um-bw_coherence_gpu-local-remote.csv:
     title: "S822LC Unified Memory Coherence Bandwidth"
     series:
@@ -95,14 +77,6 @@ plots:
         style: "--"
         lw: 2
   m2_um-bw_cpu0-gpu0.csv:
-    series:
-      0: 
-        color: "black"
-        lw: 2
-      1: 
-        color: "gray"
-        lw: 2
-  m2_um-bw_gpu0-cpu0.csv:
     series:
       0: 
         color: "black"

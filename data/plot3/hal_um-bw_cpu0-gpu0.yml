@@ -1,0 +1,17 @@
+series:
+  - file: hal_prefetch-bw.csv
+    col: a
+  - label: Coherence
+    file: hal_coherence-bw.csv
+    col: v
+  - label: Prefetch
+    file: hal_prefetch-bw.csv
+    col: b
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 70000
+xaxis:
+  scale: log
+title: AC922 Coherence vs. Prefetch Bandwidth (CPU0 to GPU0)

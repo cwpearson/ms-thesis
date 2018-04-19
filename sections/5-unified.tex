@@ -21,18 +21,64 @@ This forces the unified memory system to migrate each page to the destination.
 \texttt{cudaDeviceSynchronize} is used to ensure the GPU kernel is finished.
 The time for the CPU workload or GPU workload and synchronization is recorded, and the minimum time over $numIters$ is returned.
 
+\begin{lstlisting}[language=c++, caption=CPU Write Function, label=lst:cpu-write]
+    template <typename data_type>
+    void cpu_write(data_type *ptr, const size_t count, const size_t stride)
+    {
+    
+      const size_t numElems = count / sizeof(data_type);
+      const size_t elemsPerStride = stride / sizeof(data_type);
+    
+    #pragma omp parallel for schedule(static)
+      for (size_t i = 0; i < numElems; i += elemsPerStride)
+      {
+        ptr[i] = i * 31ul + 7ul;
+      }
+    }
+\end{lstlisting}
+
+\begin{lstlisting}[language=c++, caption=GPU Write Function, label=lst:cpu-write]
+    template <typename data_type, bool NOOP = false>
+    __global__ void gpu_write(data_type *ptr, const size_t count, const size_t stride)
+    {
+      if (NOOP)
+      {
+        return;
+      }
+    
+      // global ID
+      const size_t gx = blockIdx.x * blockDim.x + threadIdx.x;
+      // lane ID 0-31
+      const size_t lx = gx & 31;
+      // warp ID
+      size_t wx = gx / 32;
+      // number of warps in the grid
+      const size_t numWarps = (gridDim.x * blockDim.x + 32 - 1) / 32;
+      // number of strides in N bytes
+      const size_t numStrides = count / stride;
+      const size_t numData = count / sizeof(data_type);
+      // number of data_types in each
+      const size_t dataPerStride = stride / sizeof(data_type);
+    
+      if (0 == lx)
+      {
+    
+        for (; wx < numStrides; wx += numWarps)
+        {
+          const size_t id = wx * dataPerStride;
+          if (id < numData)
+          {
+            ptr[id] = id * 31ul + 7ul;
+          }
+        }
+      }
+    }
+\end{lstlisting}
+
 \begin{algorithm}
-    \caption{Algorithm to measure CPU-CPU Bandwidth}
+    \caption{CPU-GPU Coherence Bandwidth}
     \label{alg:um-coherence-bw}
     \begin{algorithmic}[1]
-    \Statex
-    \Function{cpu\_write}{$ptr$, $count$, $stride$}
-        \State \Return 
-    \EndFunction
-    \Statex
-    \Function{gpu\_write}{$ptr$, $count$, $stride$}
-        \State \Return 
-    \EndFunction
     \Statex
     \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
 
@@ -75,11 +121,60 @@ The time for the CPU workload or GPU workload and synchronization is recorded, a
     \end{algorithmic}
 \end{algorithm}
 
+Algorithm~\ref{alg:um-coherence-bw} describes the approach to measure prefetch bandwidth between two devices participating in the unified memory system.
+First, if $src$ is a CPU, the application thread is bound to that CPU, or if $src$ is a GPU, that GPU is made active.
+$transfer\_size$ bytes are then allocated through \texttt{cudaMallocManaged}, and are associated with the source device thanks to the previous step.
+The benchmark loop is then
+\begin{itemize}
+    \item \texttt{cudaMemPrefetchAsync} is used to move the pages to the source device (if they are not already there).
+    \item \texttt{cudaDeviceSynchronize} ensures the asynchronous prefetch completes.
+    \item the wall time is recorded
+    \item \texttt{cudaMemPrefetchAsync} to move the allocation to $dst$.
+    \item \texttt{cudaDeviceSynchronize} ensures the asynchronous prefetch completes.
+    \item the end wall time is recorded
+\end{itemize}
+The loop is run $num\_iters$ times, and the fastest observed time is reported.
+
+\begin{algorithm}
+    \caption{CPU-GPU Prefetch Bandwidth}
+    \label{alg:um-prefetch-bw}
+    \begin{algorithmic}[1]
+    \Statex
+    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
+
+        \If{$src$ is CPU}
+            \State \texttt{cpu\_bind($src$)}
+        \Else
+            \State \texttt{cudaSetDevice($src$)}
+        \EndIf
+
+        \State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
+        \State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+
+        \State $elapsed \gets \infty$
+        \For{$i$ in $numIters$}
+
+            \State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
+            \State \texttt{cudaDeviceSynchronize()}
+
+            \State $start \gets$ walltime()
+            \State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $dst$)} \Comment pages on $dst$
+            \State \texttt{cudaDeviceSynchronize()}
+            \State $end \gets$ walltime()
+            \State $elapsed \gets$ min($elapsed$, $end-start$)
+        \EndFor
+        \State \Return $elapsed$
+    \EndFunction
+
+    \end{algorithmic}
+\end{algorithm}
+
 \section{CPU to GPU Transfers}
 \label{sec:um-cpu-gpu}
 
 \subsection{Coherence vs Prefetch Bandwidth}
 This section investigates the performance of CPU-GPU transfers in the unified memory system.
+Figure~\ref{fig:um-cpu0-gpu0} shows transfer bandwidth vs transfer size between CPU0 and GPU0 on the three systems.
 
 \begin{figure}[ht]
     \centering
@@ -119,14 +214,15 @@ This section investigates the performance of CPU-GPU transfers in the unified me
         \label{}
     \end{subfigure}
     \caption[\todo{short}]{
-        Minsky, local CPU/GPU coherence and prefetch bandwidth.
+        Transfer bandwidth vs. transfer size for coherence and prefetch bandwidth on S822LC, AC922, and DGX-1.
+        (a-c) show CPU0 to GPU0 transfers.
+        (d-f) show GPU0 to CPU0 transfers,
     }
-    \label{}
+    \label{fig:um-cpu0-gpu0}
 \end{figure}
 
-\subsection{Page Fault Latency}
-
 \section{GPU / GPU Transfers}
+\label{sec:um-gpu-gpu}
 
 \begin{figure}[ht]
     \centering
@@ -146,10 +242,6 @@ This section investigates the performance of CPU-GPU transfers in the unified me
     }
     \label{}
 \end{figure}
-
-
-\section{GPU / GPU Transfers}
-\label{sec:um-gpu-gpu}
 
 
 \begin{figure}[ht]
@@ -191,7 +283,19 @@ Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency}
       ptr[next] = 1;
     }
 \end{lstlisting}
-    
+
+\begin{algorithm}
+    \caption{CPU-GPU Coherence Bandwidth}
+    \label{alg:um-coherence-bw}
+    \begin{algorithmic}[1]
+    \Statex
+    \Function{latency}{$ptr$, $count$, $stride$}
+
+    \EndFunction
+
+    \end{algorithmic}
+\end{algorithm}
+
 
 \begin{table}[h]
 	\centering

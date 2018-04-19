@@ -1,0 +1,17 @@
+series:
+  - file: m2_prefetch-bw.csv
+    col: a
+  - label: Coherence
+    file: m2_coherence-bw.csv
+    col: e
+  - label: Prefetch
+    file: m2_prefetch-bw.csv
+    col: j
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 70000
+xaxis:
+  scale: log
+title: S822LC Coherence vs. Prefetch Bandwidth (GPU0 to CPU0)
