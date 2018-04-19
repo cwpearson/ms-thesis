@@ -172,54 +172,55 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 \section{CPU to GPU Transfers}
 \label{sec:um-cpu-gpu}
 
-\subsection{Coherence vs Prefetch Bandwidth}
-This section investigates the performance of CPU-GPU transfers in the unified memory system.
-Figure~\ref{fig:um-cpu0-gpu0} shows transfer bandwidth vs transfer size between CPU0 and GPU0 on the three systems.
 
 \begin{figure}[ht]
     \centering
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_cpu0-gpu0.pdf}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_prefetch_cpu-gpu.pdf}
         \caption{}
-        \label{}
+        \label{fig:um-prefetch-s822lc-cpu-gpu}
     \end{subfigure}
     ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_cpu0-gpu0.pdf}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/m2_coherence_cpu-gpu.pdf}
         \caption{}
-        \label{}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_um-bw_cpu0-gpu0.pdf}
-        \caption{}
-        \label{}
+        \label{fig:um-coherence-s822lc-cpu-gpu}
     \end{subfigure}
     \\
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_gpu0-cpu0.pdf}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/hal_prefetch_cpu-gpu.pdf}
+        \caption{}
+        \label{fig:um-prefetch-ac922-cpu-gpu}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/hal_coherence_cpu-gpu.pdf}
+        \caption{}
+        \label{fig:um-coherence-ac922-cpu-gpu}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_prefetch_cpu-gpu.pdf}
         \caption{}
         \label{}
     \end{subfigure}
     ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_gpu0-cpu0.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_um-bw_gpu0-cpu0.pdf}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_cpu-gpu.pdf}
         \caption{}
         \label{}
     \end{subfigure}
     \caption[\todo{short}]{
-        Transfer bandwidth vs. transfer size for coherence and prefetch bandwidth on S822LC, AC922, and DGX-1.
-        (a-c) show CPU0 to GPU0 transfers.
-        (d-f) show GPU0 to CPU0 transfers,
+        CPU-GPU Coherence and Prefetch Bandwidth
     }
-    \label{fig:um-cpu0-gpu0}
+    \label{fig:um-cpu-gpu}
 \end{figure}
+
+
+
+\subsection{Coherence vs Prefetch Bandwidth}
+This section investigates the performance of CPU-GPU transfers in the unified memory system.
+Figure~\ref{fig:um-cpu-gpu} shows transfer bandwidth vs transfer size between CPU0 and GPU0 on the three systems.
 
 \subsection{Coherence Affinity}
 
@@ -230,30 +231,6 @@ On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
 
 \todo{any speculation about why?}
 
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_coherence_affinity_gpu0-gpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-s822lc-affinity-gpu-gpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_coherence_affinity_gpu0-cpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-ac922-affinity-gpu-cpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_coherence_affinity_gpu0-gpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-ac922-affinity-gpu-gpu}
-    \end{subfigure}
-    ~
-    \caption[\todo{short}]{}
-    \label{fig:um-coherence-affinity}
-\end{figure}
-
 \begin{table}[ht]
     \centering
     \caption[\todo{short}]{Effect of Device Affinity on Coherence Bandwidth}
@@ -261,33 +238,21 @@ On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    CPU $\rightarrow$     GPU & $\times$                                                         & $\times$                                                        & (Fig.~\ref{}) \\ \hline
-    CPU $\leftarrow$      GPU & $\times$                                                         & \checkmark (Fig.~\ref{fig:um-coherence-ac922-affinity-gpu-cpu}) & (Fig.~\ref{}) \\ \hline
-    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-affinity-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-affinity-gpu-gpu}) & (Fig.~\ref{}) \\ \hline
+    CPU $\rightarrow$     GPU & $\times$                                                & $\times$                                               & (Fig.~\ref{}) \\ \hline
+    CPU $\leftarrow$      GPU & $\times$                                                & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{}) \\ \hline
+    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{}) \\ \hline
     \end{tabular}
 \end{table}
 
 
 \subsection{Prefetch Affinity}
 
+Device affinity can affect the observed prefetch bandwidth.
+Table~\ref{tab:um-prefetch-affinity} shows some cases where affinity affects prefetch transfer bandwidth, with Figure~\ref{fig:um-prefetch-affinity} showing the corresponding results.
+Figures \ref{fig:um-prefetch-s822lc-affinity-gpu-gpu} and \ref{fig:um-prefetch-ac922-affinity-gpu-gpu} show that GPU-GPU affinity has a very large effect for prefetch bandwidth, with local GPUs having double or more the prefetch performance of remote GPUs.
+Figures \ref{fig:um-prefetch-s822lc-affinity-cpu-gpu} and \ref{fig:um-prefetch-ac922-affinity-cpu-gpu} show that CPU to GPU transfers are also affected, to a lesser degree.
 
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_prefetch_affinity_cpu0-gpu.pdf}
-        \caption{}
-        \label{fig:um-prefetch-s822lc-affinity-cpu-gpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_prefetch_affinity_gpu0-gpu.pdf}
-        \caption{}
-        \label{fig:um-prefetch-s822lc-affinity-gpu-gpu}
-    \end{subfigure}
-    ~
-    \caption[\todo{short}]{}
-    \label{fig:um-prefetch-affinity}
-\end{figure}
+\todo{speculation why?}
 
 \begin{table}[ht]
     \centering
@@ -296,11 +261,13 @@ On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    CPU $\rightarrow$     GPU \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-affinity-cpu-gpu}) & & & \\ \hline
-    CPU $\leftarrow$      GPU $\times$                                                        & & & \\ \hline
-    GPU $\leftrightarrow$ GPU \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-affinity-gpu-gpu}) & & & \\ \hline
+    CPU $\rightarrow$     GPU \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & & \\ \hline
+    CPU $\leftarrow$      GPU $\times$                                                        & $\times$ & & \\ \hline
+    GPU $\leftrightarrow$ GPU \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & & \\ \hline
     \end{tabular}
 \end{table}
+
+\section{Coherence Direction}
 
 \section{GPU / GPU Transfers}
 \label{sec:um-gpu-gpu}
@@ -310,37 +277,45 @@ On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_prefetch_gpu-local-remote.pdf}
         \caption{}
-        \label{}
+        \label{fig:um-prefetch-s822lc-gpu-gpu}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_coherence_gpu-local-remote.pdf}
         \caption{}
-        \label{}
+        \label{fig:um-coherence-s822lc-gpu-gpu}
     \end{subfigure}
-    \caption[\todo{short}]{
-        Minsky, GPU/GPU coherence and prefetch bandwidth
-    }
-    \label{}
-\end{figure}
-
-
-\begin{figure}[ht]
-    \centering
+    \\
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_prefetch_gpu-local-remote.pdf}
         \caption{}
-        \label{}
+        \label{fig:um-prefetch-ac922-gpu-gpu}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_coherence_gpu-local-remote.pdf}
         \caption{}
+        \label{fig:um-coherence-ac922-gpu-gpu}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_prefetch_gpu-gpu.pdf}
+        \caption{}
         \label{}
     \end{subfigure}
-    \caption[\todo{short}]{Hal, GPU/GPU coherence and prefetch bandwidth}
-    \label{}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_gpu-gpu.pdf}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    \caption[\todo{short}]{
+        GPU-GPU Coherence and Prefetch Bandwidth
+    }
+    \label{fig:um-coherence-gpu-gpu}
 \end{figure}
+
+
 
 
 \section{Page Fault Latency}
