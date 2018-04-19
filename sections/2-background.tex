@@ -291,6 +291,7 @@ The availablility of peer access may rely on a combination of interconnect topol
 \todo{What happens when peer access is disabled}.
 
 \subsubsection{Unified Memory with CC 3.0+ (Kepler+)}
+\label{sec:unified-cc3}
 
 \begin{itemize}
 	\item cudaMallocManaged (cudaMemAttachHost, cudaMemAttachGlobal)
@@ -335,6 +336,7 @@ Concurrent inter-GPU accesses are allowed, as are concurrently-executing kernels
 Writes are expensive but allowed.}
 
 \subsubsection{Unified Memory with CC 6.0+ (Pascal+)}
+\label{sec:unified-cc6}
 
 \begin{itemize}
 	\item cudaMemAdvise (setReadMostly, setPreferredLocation, setAccessedBy)

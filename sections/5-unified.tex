@@ -1,45 +1,130 @@
 \chapter{Unified Memory Performance}
 \label{ch:unified}
 
-This characterization method outlined in Algorithm~\ref{alg:cuda-d2d} is available for path terminated by CUDA-supported devices on both ends.
-A single unified memory allocation is established, and the entire allocation is touched by the source device to ensure the data is resident on that device.
-Bandwidth between devices under various access patterns is established by executing a kernel with the corresponding pattern on the destination device.
-
-Applicable Systems
+The unified memory system (Sections~\ref{sec:unified-cc3} and \ref{sec:unified-cc6}) greatly simplifies the programmer interaction with CUDA memories and data transfer.
+Data tranfers in the unified memory system are created in two ways:
 \begin{itemize}
-    \item CUDA 9.1 / Power8 / NVLink1 / Pascal
-    \item CUDA 9.1 / Power9 / NVLink2 / Volta
-    \item x86 / PCIe / Pascal
-    \item x86 / PCIe / Kepler
+    \item \textit{coherence} transfers, where data is migrated to ensure that the CPU and GPU have a consistent view of memory.
+    \item \textit{prefetch} transfers, where data is moved ahead of time, with the purpose of reducing future access times. 
 \end{itemize}
+This chapter comprises two sections, detailing performance of CPU-to-GPU transfers (Section~\ref{sec:um-cpu-gpu}), and GPU-GPU transfers (Section~\ref{sec:um-gpu-gpu}).
+In each section, transfer bandwidth for coherence and prefetch transfers is examined, as well as page-fault latency for demand transfers, where applicable.
 
-Applicable Measures
-\begin{itemize}
-    \item Coherence vs Prefetch (CPU - GPU)
-    \item Coherence vs Prefetch (GPU - CPU)
-    \item Coherence vs Prefetch (GPU - GPU)
-\end{itemize}
+Algorithm~\ref{alg:um-coherence-bw} describes the approach to measure coherence bandwidth between any two CUDA devices in the unified memory system.
+First, if the source or destination device is a CPU, the application and worker threads are bound to that CPU.
+Then, if the destination is a GPU, that GPU is set as the active device, so future kernel executions will happen on that GPU.
+$transfer\_size$ bytes are allocated for the unified memory system, and touched by the CPU to ensure the allocation is actually backed by pages.
+Then, the CPU or GPU workload is executed on the destination device.
+That workload, described in \texttt{cpu\_write} or \texttt{gpu\_write}, writes a single value to every $stride$ bytes in $transer_size$.
+To minimize the extra work, $stride$ is set to the page size on the target system.
+This forces the unified memory system to migrate each page to the destination.
+\texttt{cudaDeviceSynchronize} is used to ensure the GPU kernel is finished.
+The time for the CPU workload or GPU workload and synchronization is recorded, and the minimum time over $numIters$ is returned.
 
+\begin{algorithm}
+    \caption{Algorithm to measure CPU-CPU Bandwidth}
+    \label{alg:um-coherence-bw}
+    \begin{algorithmic}[1]
+    \Statex
+    \Function{cpu\_write}{$ptr$, $count$, $stride$}
+        \State \Return 
+    \EndFunction
+    \Statex
+    \Function{gpu\_write}{$ptr$, $count$, $stride$}
+        \State \Return 
+    \EndFunction
+    \Statex
+    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
 
+        \If{$src$ is CPU}
+            \State \texttt{numa\_bind($src$)} \Comment bind thread and children to $src$
+        \EndIf
+        \If{$dst$ is CPU}
+        \State \texttt{numa\_bind($dst$)}
+        \EndIf
+        \State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
+        \State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+        
 
-\section{CPU / GPU Transfers}
+        \State $blockDim \gets [256,1,1]$
+        \State $transferStrides \gets floor(\frac{transfer\_size + stride - 1}{stride})$
+        \State $gridDim \gets [floor(\frac{transferStride + 255}{256}), 1, 1]$
+
+        \If{$dst$ is GPU}
+            \State \texttt{cudaSetDevice($dst$)}
+        \EndIf
+        \State $elapsed \gets \infty$
+        \For{$i$ in $numIters$}
+
+            \State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
+            \State \texttt{cudaDeviceSynchronize()}
+
+            \State $start \gets$ walltime()
+            \If{$dst$ is GPU}
+                \State \texttt{gpu\_read\_8<<<$gridDim$,$blockDim$>>>($ptr$, $transfer\_size$, $stride$)}
+                \State \texttt{cudaDeviceSynchronize()}
+            \Else
+                \State \texttt{cpu\_write\_8($ptr$, $transfer\_size$, $stride$)}
+            \EndIf
+            \State $end \gets$ walltime()
+            \State $elapsed \gets$ min($elapsed$, $end-start$)
+        \EndFor
+        \State \Return $elapsed$
+    \EndFunction
+
+    \end{algorithmic}
+\end{algorithm}
+
+\section{CPU to GPU Transfers}
+\label{sec:um-cpu-gpu}
+
+\subsection{Coherence vs Prefetch Bandwidth}
+This section investigates the performance of CPU-GPU transfers in the unified memory system.
 
 \begin{figure}[ht]
     \centering
-    \begin{subfigure}[b]{0.45\textwidth}
+    \begin{subfigure}[b]{0.31\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_cpu0-gpu0.pdf}
         \caption{}
         \label{}
     \end{subfigure}
     ~
-    \begin{subfigure}[b]{0.45\textwidth}
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_cpu0-gpu0.pdf}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_um-bw_cpu0-gpu0.pdf}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    \\
+    \begin{subfigure}[b]{0.31\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_gpu0-cpu0.pdf}
         \caption{}
         \label{}
     \end{subfigure}
-    \caption[\todo{short}]{Minsky, local CPU/GPU coherence and prefetch bandwidth.}
+    ~
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_gpu0-cpu0.pdf}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.31\textwidth}
+        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_um-bw_gpu0-cpu0.pdf}
+        \caption{}
+        \label{}
+    \end{subfigure}
+    \caption[\todo{short}]{
+        Minsky, local CPU/GPU coherence and prefetch bandwidth.
+    }
     \label{}
 \end{figure}
+
+\subsection{Page Fault Latency}
 
 \section{GPU / GPU Transfers}
 
@@ -56,29 +141,16 @@ Applicable Measures
         \caption{}
         \label{}
     \end{subfigure}
-    \caption[\todo{short}]{Minsky, GPU/GPU coherence and prefetch bandwidth}
+    \caption[\todo{short}]{
+        Minsky, GPU/GPU coherence and prefetch bandwidth
+    }
     \label{}
 \end{figure}
 
-
-\begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_cpu0-gpu0.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_gpu0-cpu0.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    \caption[\todo{short}]{Hal, local CPU/GPU coherence and prefetch bandwidth.}
-    \label{}
-\end{figure}
 
 \section{GPU / GPU Transfers}
+\label{sec:um-gpu-gpu}
+
 
 \begin{figure}[ht]
     \centering
