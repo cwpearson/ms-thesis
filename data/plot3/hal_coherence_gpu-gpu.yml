@@ -1,0 +1,23 @@
+series:
+  - file: hal_coherence-bw.csv
+    col: a
+  - label: GPU0 to GPU1
+    file: hal_coherence-bw.csv
+    col: b
+  - label: GPU0 to GPU2
+    file: hal_coherence-bw.csv
+    col: c
+  - label: GPU1 to GPU0
+    file: hal_coherence-bw.csv
+    col: g
+  - label: GPU2 to GPU0
+    file: hal_coherence-bw.csv
+    col: l
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 70000
+xaxis:
+  scale: log
+title: AC922 Coherence Bandwidth (GPU0 to GPU1 and GPU2)
