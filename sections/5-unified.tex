@@ -391,33 +391,85 @@ Neither of the other systems demonstrate any GPU-GPU prefetch anisotropy.
 
 \section{Page Fault Latency}
 
-Unified memory page fault latency is estimated by constructing a linked list in managed memory.
+Unified memory page fault latency is estimated by constructing a linked list in managed memory and traversing it.
+Algorithm~\ref{alg:um-latency} summarizes the measurement routine.
 The stride between linked list elements is a large number, to avoid prefetching effects on page faults.
-The managed memory allocation is prefetched to the source, and a single-threaded traversal function (shown in Listing~\ref{lst:traversal}) is executed on the destination.
+The managed memory allocation is prefetched to the source, and a single-threaded traversal function (shown in Listings \ref{lst:gpu-traversal} and \ref{lst:cpu-traversal}) is executed on the destination.
 Each access to the list incurs a page fault.
+
+
 The incremental change in function execution time as the number of strides increases is therefore an approximate measure of the page fault latency.
 Table~\ref{tab:page-fault-latency} summarizes the estimated page fault latencies.
 Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency} show the raw traversal times.
 
-\begin{lstlisting}[language=c++, caption=Linked List Traversal, label=lst:traversal]
-    __global__ void gpu_traverse(size_t *ptr, const size_t steps)
-    {
-      size_t next = 0;
-      for (int i = 0; i < steps; ++i)
-      {
-        next = ptr[next];
-      }
-      ptr[next] = 1;
-    }
+\begin{lstlisting}[language=c++, caption=GPU Linked List Traversal Kernel, label=lst:gpu-traversal]
+__global__ void gpu_traverse(size_t *ptr, const size_t steps)
+{
+  size_t next = 0;
+  for (int i = 0; i < steps; ++i)
+  {
+    next = ptr[next];
+  }
+  ptr[next] = 1;
+}
 \end{lstlisting}
 
+\begin{lstlisting}[language=c++, caption=CPU Linked List Traversal Function, label=lst:cpu-traversal]
+void cpu_traverse(size_t *ptr, const size_t steps)
+{
+  size_t next = 0;
+  for (size_t i = 0; i < steps; ++i)
+  {
+    next = ptr[next];
+  }
+  ptr[next] = 1;
+}
+\end{lstlisting}
+
+\todo{fix stride}
+\todo{fix count}
 \begin{algorithm}
 	\caption{CPU-GPU Coherence Bandwidth}
-	\label{alg:um-coherence-bw}
+	\label{alg:um-latency}
 	\begin{algorithmic}[1]
 		\Statex
-		\Function{latency}{$ptr$, $count$, $stride$}
+		\Function{latency}{$dst$, $src$, $ptr$, $count$, $stride$}
 				
+        \If{$src$ is CPU}
+            \State \texttt{bind\_cpu($src$)}
+        \EndIf
+        \If{$dst$ is CPU}
+            \State \texttt{bind\_cpu($dst$)}
+        \EndIf
+
+        \State $blockDim \gets [1,1,1]$ 
+        \State $gridDim \gets [1,1,1]$
+        \State $stride \gets PAGE\_SIZE \times 2$
+        \State $count \gets sizeof(size\_t) \times (steps + 1) \times stride$
+
+        \State $ptr \gets \texttt{cudaMallocManaged(count))}$
+
+        \For{ $i$ in $steps$}
+            \State ptr[$i$] $\gets$ $(i+1)\times stride$
+        \EndFor
+        \State \texttt{cudaDeviceSynchronize()}
+
+        \State $elapsed \gets \infty$
+        \For{ $i$ in $numIters$}
+            \State $\texttt{cudaMemPrefetchAsync(ptr, count, src))}$
+            \State $\texttt{cudaDeviceSynchronize()}$
+
+            \State $start \gets \texttt{wall\_time()}$
+
+            \If{$dst$ is GPU}
+                \State \texttt{gpu\_traverse<<<1,1>>>($ptr$, $steps$)}
+            \Else
+                \State \texttt{cpu\_traverse($ptr$, $steps$)}
+            \EndIf
+
+            \State $end \gets \texttt{wall\_time()}$
+        \EndFor
+
 		\EndFunction
 				
 	\end{algorithmic}
