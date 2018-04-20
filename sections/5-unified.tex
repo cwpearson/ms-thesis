@@ -231,14 +231,17 @@ The following figures compare prefetch and coherence bandwidth for CPU/GPU trans
 \end{itemize}
 
 
-\subsection{Coherence Affinity}
+\subsection{Effect of Device Affinity on Coherence Bandwidth}
 
 Device affinity can affect the observed coherence transfer bandwidth.
 Table~\ref{tab:um-coherence-affinity} shows some cases where affinity affects transfer bandwidth.
-On S822LC and AC922, GPU-GPU coherence traffic is affected by affinity, with local transfers exhibiting nearly double the bandwidth for intermediate transfer sizes.
-On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
+Figures \ref{fig:um-coherence-s822lc-cpu-gpu} and ~\ref{fig:um-coherence-ac922-cpu-gpu} shows no affinity effect for CPU to GPU coherence traffic.
+On AC922, the same is not true for GPU-to-CPU traffic, where local transfers saturate above 40GB/s while remote transfers are limited to around 30 GB/s.
+The CPUs on AC922 may be able to generate more coherence requests, or the system may be able to serve them faster, and ultimately the performance is limited by the slower CPU-CPU X bus.
 
-\todo{any speculation about why?}
+Figures \ref{fig:um-coherence-s822lc-gpu-gpu} and ~\ref{fig:um-coherence-ac922-gpu-gpu} show that affinity influences the performance of GPU-GPU transfers, with local transfers being faster than remote transfers.
+The performance difference is much greater for intermediate transfers than large transfers.
+\todo{Can we figure out why?}
 
 \begin{table}[ht]
     \centering
