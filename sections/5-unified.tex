@@ -173,9 +173,7 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 	\end{algorithmic}
 \end{algorithm}
 
-\section{CPU to GPU Transfers}
-\label{sec:um-cpu-gpu}
-
+\section{Coherence vs Prefetch Bandwidth}
 
 \begin{figure}[ht]
 	\centering
@@ -220,16 +218,71 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 	\label{fig:um-cpu-gpu}
 \end{figure}
 
-
-
-\subsection{Coherence vs Prefetch Bandwidth}
 The following figures compare prefetch and coherence bandwidth for CPU/GPU transfers;
 \begin{itemize}
 	\item Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-coherence-s822lc-cpu-gpu} on S822LC,
 	\item Figures \ref{fig:um-prefetch-ac922-cpu-gpu} and \ref{fig:um-coherence-ac922-cpu-gpu}   on AC922,
 	\item Figures \ref{fig:um-prefetch-dgx-cpu-gpu} and \ref{fig:um-coherence-dgx-cpu-gpu}       on DGX,
 \end{itemize}
+In general, the CPU/GPU prefetch bandwidth saturates at a higher fraction of the theoretical underlying link bandwidth.
+This is likely because the DMA associated with a prefetch is a simpler and higher-performance operation than the on-demand migration of pages.
+Coherence migrations can provide higher transfer bandwidth at small and intermediate transfer sizes.
+This suggests that the overhead of the prefetch transfer is higher than the coherence transfer.
 
+
+
+
+\begin{figure}[ht]
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_prefetch_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-s822lc-gpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_coherence_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-s822lc-gpu-gpu}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_prefetch_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-ac922-gpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_coherence_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-ac922-gpu-gpu}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_prefetch_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-dgx-gpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-dgx-gpu-gpu}
+	\end{subfigure}
+	\caption[\todo{short}]{
+		GPU-GPU Coherence and Prefetch Bandwidth
+	}
+	\label{fig:um-coherence-gpu-gpu}
+\end{figure}
+
+
+The following figures compare prefetch and coherence bandwidth for GPU/GPU transfers;
+\begin{itemize}
+	\item Figures \ref{fig:um-prefetch-s822lc-gpu-gpu} and \ref{fig:um-coherence-s822lc-gpu-gpu} on S822LC,
+	\item Figures \ref{fig:um-prefetch-ac922-gpu-gpu} and \ref{fig:um-coherence-ac922-gpu-gpu}   on AC922,
+	\item Figures \ref{fig:um-prefetch-dgx-gpu-gpu} and \ref{fig:um-coherence-dgx-gpu-gpu}       on DGX,
+\end{itemize}
+The GPU/GPU prefetch bandwidth also saturates at a higher bandwidth than the coherence transfers, and like the CPU/GPU transfers, the coherence bandwidth is higher for small and intermediate transfers.
 
 \subsection{Effect of Device Affinity on Coherence Bandwidth}
 
@@ -335,55 +388,6 @@ Neither of the other systems demonstrate any GPU-GPU prefetch anisotropy.
 		GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu}) \\ \hline
 	\end{tabular}
 \end{table}
-
-\section{GPU / GPU Transfers}
-\label{sec:um-gpu-gpu}
-
-\begin{figure}[ht]
-	\centering
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/m2_prefetch_gpu-gpu.pdf}
-		\caption{}
-		\label{fig:um-prefetch-s822lc-gpu-gpu}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/m2_coherence_gpu-gpu.pdf}
-		\caption{}
-		\label{fig:um-coherence-s822lc-gpu-gpu}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_prefetch_gpu-gpu.pdf}
-		\caption{}
-		\label{fig:um-prefetch-ac922-gpu-gpu}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_coherence_gpu-gpu.pdf}
-		\caption{}
-		\label{fig:um-coherence-ac922-gpu-gpu}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/dgx_prefetch_gpu-gpu.pdf}
-		\caption{}
-		\label{fig:um-prefetch-dgx-gpu-gpu}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_gpu-gpu.pdf}
-		\caption{}
-		\label{fig:um-coherence-dgx-gpu-gpu}
-	\end{subfigure}
-	\caption[\todo{short}]{
-		GPU-GPU Coherence and Prefetch Bandwidth
-	}
-	\label{fig:um-coherence-gpu-gpu}
-\end{figure}
-
-
-
 
 \section{Page Fault Latency}
 
@@ -493,6 +497,8 @@ Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency}
 \end{figure}
 
 \section{Quirks}
+
+Coherence bandwidth is higher for small / intermediate transfers.
 
 Remote GPU-CPU prefetch bandwidth higher than local on IBM systmes.
 
