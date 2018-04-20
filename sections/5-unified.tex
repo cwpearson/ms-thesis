@@ -242,7 +242,7 @@ On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
 
 \begin{table}[ht]
     \centering
-    \caption[\todo{short}]{Effect of Device Affinity on Coherence Bandwidth}
+    \caption[\todo{short}]{Observations of Device Affinity affecting Coherence Bandwidth}
     \label{tab:um-coherence-affinity}
     \begin{tabular}{|c|c|c|c|}
     \hline
@@ -254,29 +254,35 @@ On AC922, GPU-CPU bandwidth for large transfers is also larger for local CPUs.
 \end{table}
 
 
-\subsection{Prefetch Affinity}
+\subsection{Effect of Device Affinity on Prefetch Bandwidth}
 
 Device affinity can affect the observed prefetch bandwidth.
 Table~\ref{tab:um-prefetch-affinity} shows some cases where affinity affects prefetch transfer bandwidth.
-Figures \ref{fig:um-prefetch-s822lc-gpu-gpu} and \ref{fig:um-prefetch-ac922-gpu-gpu} show that GPU-GPU affinity has a very large effect for prefetch bandwidth, with local GPUs having double or more the prefetch performance of remote GPUs.
-Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-gpu} show that CPU to GPU transfers are also affected, to a lesser degree.
+Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-gpu} show that CPU-GPU prefetch bandwidth is influenced by device affinity.
+For S822LC and AC922, the prefetch bandwidth from GPU2 to CPU0 is substantially higher than that of GPU0 to CPU0, even though GPU2 is remote from CPU0 and must traverse more links.
+The CPU-to-GPU transfers show more expected behavior, with local transfer bandwidth being higher than remote.
+On DGX-1, there is no effect, probably due to the low PCIe bandwidth hiding other factors that might introduce unepxected behavior.
 
-\todo{speculation why?}
+Figures \ref{fig:um-prefetch-s822lc-gpu-gpu}, \ref{fig:um-prefetch-ac922-gpu-gpu}, and \ref{fig:um-prefetch-dgx-gpu-gpu} show that GPU-GPU affinity has a very large effect for prefetch bandwidth.
+On all systems, local GPUs can prefetch data much faster than remote GPUs.
+On S822LC, local GPUs enjoy $162\%$ of the transfer bandwidth of their remote companions.
+On DGX-1, it is $170\%$, and on AC922, that number balloons to $230\%$.
+Generally, local GPU-GPU transfers are able to saturate around 75\% of the theoretical underlying link bandwidth.
 
 \begin{table}[ht]
     \centering
-    \caption[\todo{short}]{Effect of Device Affinity on Prefetch Bandwidth}
+    \caption[\todo{short}]{Observations of Device Affinity affecting Prefetch Bandwidth}
     \label{tab:um-prefetch-affinity}
     \begin{tabular}{|c|c|c|c|}
     \hline
     \textbf{Transfer Kind}    & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    CPU $\rightarrow$     GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
-    CPU $\leftarrow$      GPU & $\times$   (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
-    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu}) \\ \hline
+    CPU $\rightarrow$     GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
+    CPU $\leftarrow$      GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
+    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu}) \\ \hline
     \end{tabular}
 \end{table}
 
-\section{Coherence Anisotropy}
+\section{Observed Anisotropy in Coherence Bandwidth}
 
 \begin{table}[ht]
     \centering
@@ -300,28 +306,24 @@ Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-
 \begin{figure}[ht]
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
-        % \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_prefetch_gpu-local-remote.pdf}
         \includegraphics[width=\textwidth]{figures/generated/m2_prefetch_gpu-gpu.pdf}
         \caption{}
         \label{fig:um-prefetch-s822lc-gpu-gpu}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.45\textwidth}
-        % \includegraphics[width=\textwidth]{figures/generated/m2_um-bw_coherence_gpu-local-remote.pdf}
         \includegraphics[width=\textwidth]{figures/generated/m2_coherence_gpu-gpu.pdf}
         \caption{}
         \label{fig:um-coherence-s822lc-gpu-gpu}
     \end{subfigure}
     \\
     \begin{subfigure}[b]{0.45\textwidth}
-        % \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_prefetch_gpu-local-remote.pdf}
         \includegraphics[width=\textwidth]{figures/generated/hal_prefetch_gpu-gpu.pdf}
         \caption{}
         \label{fig:um-prefetch-ac922-gpu-gpu}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.45\textwidth}
-        % \includegraphics[width=\textwidth]{figures/generated/hal_um-bw_coherence_gpu-local-remote.pdf}
         \includegraphics[width=\textwidth]{figures/generated/hal_coherence_gpu-gpu.pdf}
         \caption{}
         \label{fig:um-coherence-ac922-gpu-gpu}
@@ -454,3 +456,10 @@ Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency}
     \label{fig:hal-page-fault-latency}
 \end{figure}
 
+\section{Quirks}
+
+Remote GPU-CPU prefetch bandwidth higher than local on IBM systmes.
+
+GPU-CPU prefetch on DGX-1 no effect of affinity.
+
+Remote GPU-GPU prefetch bandwidth has some anisotropy on S822LC.
