@@ -4,8 +4,8 @@
 The unified memory system (Sections~\ref{sec:unified-cc3} and \ref{sec:unified-cc6}) greatly simplifies the programmer interaction with CUDA memories and data transfer.
 Data tranfers in the unified memory system are created in two ways:
 \begin{itemize}
-    \item \textit{coherence} transfers, where data is migrated to ensure that the CPU and GPU have a consistent view of memory.
-    \item \textit{prefetch} transfers, where data is moved ahead of time, with the purpose of reducing future access times. 
+	\item \textit{coherence} transfers, where data is migrated to ensure that the CPU and GPU have a consistent view of memory.
+	\item \textit{prefetch} transfers, where data is moved ahead of time, with the purpose of reducing future access times. 
 \end{itemize}
 This chapter comprises two sections, detailing performance of CPU-to-GPU transfers (Section~\ref{sec:um-cpu-gpu}), and GPU-GPU transfers (Section~\ref{sec:um-gpu-gpu}).
 In each section, transfer bandwidth for coherence and prefetch transfers is examined, as well as page-fault latency for demand transfers, where applicable.
@@ -80,49 +80,49 @@ Since warps execute in lockstep, this ensures the broadest simultaneous demands 
 \end{lstlisting}
 
 \begin{algorithm}
-    \caption{CPU-GPU Coherence Bandwidth}
-    \label{alg:um-coherence-bw}
-    \begin{algorithmic}[1]
-    \Statex
-    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-
-        \If{$src$ is CPU}
-            \State \texttt{numa\_bind($src$)} \Comment bind thread and children to $src$
-        \EndIf
-        \If{$dst$ is CPU}
-        \State \texttt{numa\_bind($dst$)}
-        \EndIf
-        \State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
-        \State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
-        
-
-        \State $blockDim \gets [256,1,1]$
-        \State $transferStrides \gets floor(\frac{transfer\_size + stride - 1}{stride})$
-        \State $gridDim \gets [floor(\frac{transferStride + 255}{256}), 1, 1]$
-
-        \If{$dst$ is GPU}
-            \State \texttt{cudaSetDevice($dst$)}
-        \EndIf
-        \State $elapsed \gets \infty$
-        \For{$i$ in $numIters$}
-
-            \State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
-            \State \texttt{cudaDeviceSynchronize()}
-
-            \State $start \gets$ walltime()
-            \If{$dst$ is GPU}
-                \State \texttt{gpu\_read\_8<<<$gridDim$,$blockDim$>>>($ptr$, $transfer\_size$, $stride$)}
-                \State \texttt{cudaDeviceSynchronize()}
-            \Else
-                \State \texttt{cpu\_write\_8($ptr$, $transfer\_size$, $stride$)}
-            \EndIf
-            \State $end \gets$ walltime()
-            \State $elapsed \gets$ min($elapsed$, $end-start$)
-        \EndFor
-        \State \Return $elapsed$
-    \EndFunction
-
-    \end{algorithmic}
+	\caption{CPU-GPU Coherence Bandwidth}
+	\label{alg:um-coherence-bw}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
+				
+		\If{$src$ is CPU}
+		\State \texttt{numa\_bind($src$)} \Comment bind thread and children to $src$
+		\EndIf
+		\If{$dst$ is CPU}
+		\State \texttt{numa\_bind($dst$)}
+		\EndIf
+		\State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
+		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+				        
+				
+		\State $blockDim \gets [256,1,1]$
+		\State $transferStrides \gets floor(\frac{transfer\_size + stride - 1}{stride})$
+		\State $gridDim \gets [floor(\frac{transferStride + 255}{256}), 1, 1]$
+				
+		\If{$dst$ is GPU}
+		\State \texttt{cudaSetDevice($dst$)}
+		\EndIf
+		\State $elapsed \gets \infty$
+		\For{$i$ in $numIters$}
+				
+		\State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
+		\State \texttt{cudaDeviceSynchronize()}
+				
+		\State $start \gets$ walltime()
+		\If{$dst$ is GPU}
+		\State \texttt{gpu\_read\_8<<<$gridDim$,$blockDim$>>>($ptr$, $transfer\_size$, $stride$)}
+		\State \texttt{cudaDeviceSynchronize()}
+		\Else
+		\State \texttt{cpu\_write\_8($ptr$, $transfer\_size$, $stride$)}
+		\EndIf
+		\State $end \gets$ walltime()
+		\State $elapsed \gets$ min($elapsed$, $end-start$)
+		\EndFor
+		\State \Return $elapsed$
+		\EndFunction
+				
+	\end{algorithmic}
 \end{algorithm}
 
 Algorithm~\ref{alg:um-coherence-bw} describes the approach to measure prefetch bandwidth between two devices participating in the unified memory system.
@@ -130,47 +130,47 @@ First, if $src$ is a CPU, the application thread is bound to that CPU, or if $sr
 $transfer\_size$ bytes are then allocated through \texttt{cudaMallocManaged}, and are associated with the source device thanks to the previous step.
 The benchmark loop is then
 \begin{itemize}
-    \item \texttt{cudaMemPrefetchAsync} is used to move the pages to the source device (if they are not already there).
-    \item \texttt{cudaDeviceSynchronize} ensures the asynchronous prefetch completes.
-    \item the wall time is recorded
-    \item \texttt{cudaMemPrefetchAsync} to move the allocation to $dst$.
-    \item \texttt{cudaDeviceSynchronize} ensures the asynchronous prefetch completes.
-    \item the end wall time is recorded
+	\item \texttt{cudaMemPrefetchAsync} is used to move the pages to the source device (if they are not already there).
+	\item \texttt{cudaDeviceSynchronize} ensures the asynchronous prefetch completes.
+	\item the wall time is recorded
+	\item \texttt{cudaMemPrefetchAsync} to move the allocation to $dst$.
+	\item \texttt{cudaDeviceSynchronize} ensures the asynchronous prefetch completes.
+	\item the end wall time is recorded
 \end{itemize}
 The loop is run $num\_iters$ times, and the fastest observed time is reported.
 
 \begin{algorithm}
-    \caption{CPU-GPU Prefetch Bandwidth}
-    \label{alg:um-prefetch-bw}
-    \begin{algorithmic}[1]
-    \Statex
-    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-
-        \If{$src$ is CPU}
-            \State \texttt{cpu\_bind($src$)}
-        \Else
-            \State \texttt{cudaSetDevice($src$)}
-        \EndIf
-
-        \State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
-        \State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
-
-        \State $elapsed \gets \infty$
-        \For{$i$ in $numIters$}
-
-            \State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
-            \State \texttt{cudaDeviceSynchronize()}
-
-            \State $start \gets$ walltime()
-            \State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $dst$)} \Comment pages on $dst$
-            \State \texttt{cudaDeviceSynchronize()}
-            \State $end \gets$ walltime()
-            \State $elapsed \gets$ min($elapsed$, $end-start$)
-        \EndFor
-        \State \Return $elapsed$
-    \EndFunction
-
-    \end{algorithmic}
+	\caption{CPU-GPU Prefetch Bandwidth}
+	\label{alg:um-prefetch-bw}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
+				
+		\If{$src$ is CPU}
+		\State \texttt{cpu\_bind($src$)}
+		\Else
+		\State \texttt{cudaSetDevice($src$)}
+		\EndIf
+				
+		\State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
+		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+				
+		\State $elapsed \gets \infty$
+		\For{$i$ in $numIters$}
+				
+		\State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
+		\State \texttt{cudaDeviceSynchronize()}
+				
+		\State $start \gets$ walltime()
+		\State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $dst$)} \Comment pages on $dst$
+		\State \texttt{cudaDeviceSynchronize()}
+		\State $end \gets$ walltime()
+		\State $elapsed \gets$ min($elapsed$, $end-start$)
+		\EndFor
+		\State \Return $elapsed$
+		\EndFunction
+				
+	\end{algorithmic}
 \end{algorithm}
 
 \section{CPU to GPU Transfers}
@@ -178,46 +178,46 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_prefetch_cpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-prefetch-s822lc-cpu-gpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_coherence_cpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-s822lc-cpu-gpu}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_prefetch_cpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-prefetch-ac922-cpu-gpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_coherence_cpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-ac922-cpu-gpu}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/dgx_prefetch_cpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-prefetch-dgx-cpu-gpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_cpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-dgx-cpu-gpu}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        CPU-GPU Coherence and Prefetch Bandwidth
-    }
-    \label{fig:um-cpu-gpu}
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_prefetch_cpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-s822lc-cpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_coherence_cpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-s822lc-cpu-gpu}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_prefetch_cpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-ac922-cpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_coherence_cpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-ac922-cpu-gpu}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_prefetch_cpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-dgx-cpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_cpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-dgx-cpu-gpu}
+	\end{subfigure}
+	\caption[\todo{short}]{
+		CPU-GPU Coherence and Prefetch Bandwidth
+	}
+	\label{fig:um-cpu-gpu}
 \end{figure}
 
 
@@ -225,9 +225,9 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 \subsection{Coherence vs Prefetch Bandwidth}
 The following figures compare prefetch and coherence bandwidth for CPU/GPU transfers;
 \begin{itemize}
-    \item Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-coherence-s822lc-cpu-gpu} on S822LC,
-    \item Figures \ref{fig:um-prefetch-ac922-cpu-gpu} and \ref{fig:um-coherence-ac922-cpu-gpu}   on AC922,
-    \item Figures \ref{fig:um-prefetch-dgx-cpu-gpu} and \ref{fig:um-coherence-dgx-cpu-gpu}       on DGX,
+	\item Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-coherence-s822lc-cpu-gpu} on S822LC,
+	\item Figures \ref{fig:um-prefetch-ac922-cpu-gpu} and \ref{fig:um-coherence-ac922-cpu-gpu}   on AC922,
+	\item Figures \ref{fig:um-prefetch-dgx-cpu-gpu} and \ref{fig:um-coherence-dgx-cpu-gpu}       on DGX,
 \end{itemize}
 
 
@@ -244,16 +244,16 @@ The performance difference is much greater for intermediate transfers than large
 \todo{Can we figure out why?}
 
 \begin{table}[ht]
-    \centering
-    \caption[\todo{short}]{Observations of Device Affinity affecting Coherence Bandwidth}
-    \label{tab:um-coherence-affinity}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    CPU $\rightarrow$     GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-    CPU $\leftarrow$      GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
-    \end{tabular}
+	\centering
+	\caption[\todo{short}]{Observations of Device Affinity affecting Coherence Bandwidth}
+	\label{tab:um-coherence-affinity}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}    & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
+		CPU $\rightarrow$     GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		CPU $\leftarrow$      GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+	\end{tabular}
 \end{table}
 
 
@@ -273,32 +273,32 @@ On DGX-1, it is $170\%$, and on AC922, that number balloons to $230\%$.
 Generally, local GPU-GPU transfers are able to saturate around 75\% of the theoretical underlying link bandwidth.
 
 \begin{table}[ht]
-    \centering
-    \caption[\todo{short}]{Observations of Device Affinity affecting Prefetch Bandwidth}
-    \label{tab:um-prefetch-affinity}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind}    & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    CPU $\rightarrow$     GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
-    CPU $\leftarrow$      GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
-    GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu}) \\ \hline
-    \end{tabular}
+	\centering
+	\caption[\todo{short}]{Observations of Device Affinity affecting Prefetch Bandwidth}
+	\label{tab:um-prefetch-affinity}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}    & \textbf{S822LC}                                        & \textbf{AC922}                                        & \textbf{DGX-1}                                      \\ \hline 
+		CPU $\rightarrow$     GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
+		CPU $\leftarrow$      GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu}) \\ \hline
+	\end{tabular}
 \end{table}
 
 \section{Observed Anisotropy in Coherence Bandwidth}
 
 \begin{table}[ht]
-    \centering
-    \caption[\todo{short}]{Observed Coherence Bandiwdth Anisotopy}
-    \label{tab:um-prefetch-affinity}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind} & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-    CPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-    GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
-    GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
-    \end{tabular}
+	\centering
+	\caption[\todo{short}]{Observed Coherence Bandiwdth Anisotopy}
+	\label{tab:um-prefetch-affinity}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}             & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
+		CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		CPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+	\end{tabular}
 \end{table}
 
 
@@ -307,46 +307,46 @@ Generally, local GPU-GPU transfers are able to saturate around 75\% of the theor
 \label{sec:um-gpu-gpu}
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_prefetch_gpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-prefetch-s822lc-gpu-gpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_coherence_gpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-s822lc-gpu-gpu}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_prefetch_gpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-prefetch-ac922-gpu-gpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_coherence_gpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-ac922-gpu-gpu}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/dgx_prefetch_gpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-prefetch-dgx-gpu-gpu}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_gpu-gpu.pdf}
-        \caption{}
-        \label{fig:um-coherence-dgx-gpu-gpu}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        GPU-GPU Coherence and Prefetch Bandwidth
-    }
-    \label{fig:um-coherence-gpu-gpu}
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_prefetch_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-s822lc-gpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_coherence_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-s822lc-gpu-gpu}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_prefetch_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-ac922-gpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_coherence_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-ac922-gpu-gpu}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_prefetch_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-prefetch-dgx-gpu-gpu}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth,draft]{figures/generated/dgx_coherence_gpu-gpu.pdf}
+		\caption{}
+		\label{fig:um-coherence-dgx-gpu-gpu}
+	\end{subfigure}
+	\caption[\todo{short}]{
+		GPU-GPU Coherence and Prefetch Bandwidth
+	}
+	\label{fig:um-coherence-gpu-gpu}
 \end{figure}
 
 
@@ -375,15 +375,15 @@ Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency}
 \end{lstlisting}
 
 \begin{algorithm}
-    \caption{CPU-GPU Coherence Bandwidth}
-    \label{alg:um-coherence-bw}
-    \begin{algorithmic}[1]
-    \Statex
-    \Function{latency}{$ptr$, $count$, $stride$}
-
-    \EndFunction
-
-    \end{algorithmic}
+	\caption{CPU-GPU Coherence Bandwidth}
+	\label{alg:um-coherence-bw}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{latency}{$ptr$, $count$, $stride$}
+				
+		\EndFunction
+				
+	\end{algorithmic}
 \end{algorithm}
 
 
@@ -393,70 +393,70 @@ Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency}
 	\label{tab:page-fault-latency}
 	\begin{tabular}{|c|c|c|}
 		\hline
-		\textbf{Page Fault} & \textbf{Minsky Latency} & \textbf{Power9 Latency} \\ \hline
-		CPU0 $\leftarrow$ GPU0  (local) & 17.9 & 24.4   \\ \hline
-        CPU0 $\rightarrow$ GPU0 (local) & 15.2 & 23.6  \\ \hline
-        CPU0 $\leftarrow$ GPU2  (remote) & 19.5 & 24.5   \\ \hline
-        CPU0 $\rightarrow$ GPU2 (remote) & 16.6 & 23.2  \\ \hline
-        GPU0 $\leftarrow$ GPU1  (local) & 26.9 & 35.9   \\ \hline
-		GPU0 $\rightarrow$ GPU2 (remote) & 35.6 & 38.5  \\ \hline
+		\textbf{Page Fault}              & \textbf{Minsky Latency} & \textbf{Power9 Latency} \\ \hline
+		CPU0 $\leftarrow$ GPU0  (local)  & 17.9                    & 24.4                    \\ \hline
+		CPU0 $\rightarrow$ GPU0 (local)  & 15.2                    & 23.6                    \\ \hline
+		CPU0 $\leftarrow$ GPU2  (remote) & 19.5                    & 24.5                    \\ \hline
+		CPU0 $\rightarrow$ GPU2 (remote) & 16.6                    & 23.2                    \\ \hline
+		GPU0 $\leftarrow$ GPU1  (local)  & 26.9                    & 35.9                    \\ \hline
+		GPU0 $\rightarrow$ GPU2 (remote) & 35.6                    & 38.5                    \\ \hline
 	\end{tabular}
 \end{table}
 
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpu0cpu0.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpu2cpu0.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpus.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    \caption[\todo{short}]{ 
-        Total kernel execution times on IBM Minsky for linked-list traversal.
-        Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
-        For example, GPU0 to CPU0 means the managed allocation is on GPU0, and the traversal function is executing on CPU0.
-    }
-    \label{fig:minsky-page-fault-latency}
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpu0cpu0.pdf}
+		\caption{}
+		\label{}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpu2cpu0.pdf}
+		\caption{}
+		\label{}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpus.pdf}
+		\caption{}
+		\label{}
+	\end{subfigure}
+	\caption[\todo{short}]{ 
+		Total kernel execution times on IBM Minsky for linked-list traversal.
+		Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
+		For example, GPU0 to CPU0 means the managed allocation is on GPU0, and the traversal function is executing on CPU0.
+	}
+	\label{fig:minsky-page-fault-latency}
 \end{figure}
 
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpu0cpu0.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpu2cpu0.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpus.pdf}
-        \caption{}
-        \label{}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        Total kernel execution times on IBM Power9 for linked-list traversal.
-        Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
-        For example, GPU0 to CPU0 means the managed allocation is on GPU0, and the traversal function is executing on CPU0.
-        }
-    \label{fig:hal-page-fault-latency}
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpu0cpu0.pdf}
+		\caption{}
+		\label{}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpu2cpu0.pdf}
+		\caption{}
+		\label{}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpus.pdf}
+		\caption{}
+		\label{}
+	\end{subfigure}
+	\caption[\todo{short}]{
+		Total kernel execution times on IBM Power9 for linked-list traversal.
+		Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
+		For example, GPU0 to CPU0 means the managed allocation is on GPU0, and the traversal function is executing on CPU0.
+	}
+	\label{fig:hal-page-fault-latency}
 \end{figure}
 
 \section{Quirks}
