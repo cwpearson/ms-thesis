@@ -1,0 +1,23 @@
+series:
+  - file: dgx_prefetch-bw.csv
+    col: a
+  - label: CPU0 to GPU0
+    file: dgx_prefetch-bw.csv
+    col: b
+  - label: CPU0 to GPU2
+    file: dgx_prefetch-bw.csv
+    col: d
+  - label: GPU0 to CPU0
+    file: dgx_prefetch-bw.csv
+    col: j
+  - label: GPU2 to CPU0
+    file: dgx_prefetch-bw.csv
+    col: t
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 70000
+xaxis:
+  scale: log
+title: DGX Prefetch Bandwidth (CPU0 to GPU0 and GPU2)

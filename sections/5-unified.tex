@@ -15,15 +15,20 @@ First, if the source or destination device is a CPU, the application and worker 
 Then, if the destination is a GPU, that GPU is set as the active device, so future kernel executions will happen on that GPU.
 $transfer\_size$ bytes are allocated for the unified memory system, and touched by the CPU to ensure the allocation is actually backed by pages.
 Then, the CPU or GPU workload is executed on the destination device.
-That workload, described in \texttt{cpu\_write} or \texttt{gpu\_write}, writes a single value to every $stride$ bytes in $transer_size$.
+That workload, shown in Listing~\ref{lst:cpu-write} and \ref{lst:gpu-write}, writes a single value to every $stride$ bytes in $transer_size$.
 To minimize the extra work, $stride$ is set to the page size on the target system.
-This forces the unified memory system to migrate each page to the destination.
+This causes a single access to each page, and forces the unified memory system to migrate each page to the destination.
 \texttt{cudaDeviceSynchronize} is used to ensure the GPU kernel is finished.
 The time for the CPU workload or GPU workload and synchronization is recorded, and the minimum time over $numIters$ is returned.
 
+Listing~\ref{lst:cpu-write} shows a simple function to write \texttt{sizeof(data\_type)} bytes to every \texttt{stride} byte in a \texttt{count}-byte region starting at \texttt{ptr}.
+OpenMP is used to statically partition the write loop, with each thread taking a contiguous chunk the loop iteration space.
+This ensures that the CPU is running enough threads to maximize demand on the unified memory system.
+
 \begin{lstlisting}[language=c++, caption=CPU Write Function, label=lst:cpu-write]
     template <typename data_type>
-    void cpu_write(data_type *ptr, const size_t count, const size_t stride)
+    void cpu_write(data_type *ptr, const size_t count,
+                   const size_t stride)
     {
     
       const size_t numElems = count / sizeof(data_type);
@@ -37,32 +42,31 @@ The time for the CPU workload or GPU workload and synchronization is recorded, a
     }
 \end{lstlisting}
 
+Listing~\ref{lst:gpu-write} shows CUDA kernel to write \texttt{sizeof(data\_type)} bytes to every \texttt{stride} byte in a \texttt{count}-byte region starting at \texttt{ptr}.
+It assigns consecutive warps in the grid to handle consecutive writes, with a single thread from each warp doing a write.
+If there are not sufficient warps in the grid to cover all writes, the grid loops over the required writes.
+Since warps execute in lockstep, this ensures the broadest simultaneous demands on the unified memory system without reduntant work within a warp.
+
 \begin{lstlisting}[language=c++, caption=GPU Write Function, label=lst:cpu-write]
-    template <typename data_type, bool NOOP = false>
-    __global__ void gpu_write(data_type *ptr, const size_t count, const size_t stride)
+    template <typename data_type>
+    __global__ void gpu_write(data_type *ptr,
+                              const size_t count,
+                              const size_t stride)
     {
-      if (NOOP)
-      {
-        return;
-      }
     
-      // global ID
-      const size_t gx = blockIdx.x * blockDim.x + threadIdx.x;
-      // lane ID 0-31
-      const size_t lx = gx & 31;
-      // warp ID
+      size_t gx = 
+        blockIdx.x * blockDim.x + threadIdx.x;
+      size_t lx = gx & 31;
       size_t wx = gx / 32;
-      // number of warps in the grid
-      const size_t numWarps = (gridDim.x * blockDim.x + 32 - 1) / 32;
-      // number of strides in N bytes
-      const size_t numStrides = count / stride;
-      const size_t numData = count / sizeof(data_type);
-      // number of data_types in each
-      const size_t dataPerStride = stride / sizeof(data_type);
+      size_t numWarps = 
+        (gridDim.x * blockDim.x + 32 - 1) / 32;
+      size_t numStrides = count / stride;
+      size_t numData = count / sizeof(data_type);
+      size_t dataPerStride = 
+        stride / sizeof(data_type);
     
       if (0 == lx)
       {
-    
         for (; wx < numStrides; wx += numWarps)
         {
           const size_t id = wx * dataPerStride;
@@ -320,7 +324,7 @@ Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-
     \end{subfigure}
     \\
     \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth,draft]{figures/generated/dgx_prefetch_gpu-gpu.pdf}
+        \includegraphics[width=\textwidth]{figures/generated/dgx_prefetch_gpu-gpu.pdf}
         \caption{}
         \label{fig:um-prefetch-dgx-gpu-gpu}
     \end{subfigure}
