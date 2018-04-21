@@ -1,18 +1,18 @@
 generator: regplot
 file: dgx_coherence-latency.csv
 ydata:
-  - label: GPU0 to GPU1
-    col: b
   - label: GPU0 to GPU5
     col: f
-    style: "--"
-  - label: GPU0 to CPU0
-    col: i
-    color: gray
+  - label: GPU0 to GPU1
+    col: b
+    color: "0.25"
   - label: CPU0 to GPU0
     col: bv
-    color: gray
-    style: "-."
+    color: "0.5"
+  - label: GPU0 to CPU0
+    col: i
+    color: "0.75"
+
 yaxis:
   label: Traversal Time (us)
 xaxis:

@@ -18,6 +18,7 @@ TARGETS += $(GEN_FILES)
 
 
 # Handle Plot3 YMLs
+PLOT3_CSVS = $(wildcard ../data/plot3/*.csv)
 PLOT3_YMLS = $(wildcard ../data/plot3/*.yml)
 PLOT3_PDFS = $(patsubst ../data/plot3/%.yml, $(GEN_DIR)/%.pdf, ${PLOT3_YMLS})
 TARGETS += $(PLOT3_PDFS)

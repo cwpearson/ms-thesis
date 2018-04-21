@@ -473,20 +473,36 @@ void cpu_traverse(size_t *ptr, const size_t steps)
 \end{algorithm}
 
 Table~\ref{tab:page-fault-latency} summarizes the estimated page fault latencies.
-Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency} show the raw traversal times.
-There is no substantial difference between 
+Figure~\ref{fig:coherence-page-fault-latency} shows the raw traversal times.
+There is no substantial difference in page fault latencies for different CPUs, so values for transfers to CPU0 are shown.
+
+All three systems follow the same behavior, with GPU/GPU page fault latencies being higher than CPU/GPU page fault latencies.
+The bottom section of Table~\ref{tab:page-fault-latency} shows that the cost of moving the page is a small portion of the observed transfer time.
+These calculated values do not include link latencies, and represent a lower bound.
+On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both directions.
+
 
 \begin{table}[h]
 	\centering
-	\caption[\todo{short}]{Page Fault latency}
+	\caption[\todo{short}]{
+        Page Fault latencies.
+        Above the double-line are empirically-measured values.
+        Below the double-line are computed values, for the system page size and system configuration.
+        The value is computed by taking the link bandwidth and dividing it by the page size.
+        e.g., NVLink for S822LC refers to two-lane NVLink 1.0.
+    }
 	\label{tab:page-fault-latency}
 	\begin{tabular}{|c|c|c|c|}
-		\hline
-		\textbf{Page Fault}              & \textbf{S822LC Latency} & \textbf{AC922 Latency} & \textbf{DGX-1 Latency} \\ \hline
-		CPU  $\leftarrow$  GPU  (local)  & 17.9                    & 24.4                   &  32.2 \\ \hline
-		CPU  $\rightarrow$ GPU  (local)  & 15.2                    & 23.6                   &  26.6 \\ \hline
-		GPU0 $\leftarrow$  GPU1 (local)  & 26.9                    & 35.9                   &  37.1 \\ \hline
-		GPU0 $\rightarrow$ GPU2 (remote) & 35.6                    & 38.5                   &  50.3\\ \hline
+        \hline
+        \textbf{Page Fault}                  & \multicolumn{3}{c|}{\textbf{Latency ($\mu$s)}}    \\ \hline
+		\textbf{Type}                        & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline
+		CPU  $\leftarrow$  GPU               & 13.7            & 24.4           & 26.6           \\ \hline
+		CPU  $\rightarrow$ GPU               & 16.3            & 22.3           & 32.2           \\ \hline
+		GPU0 $\leftrightarrow$ GPU1 (local)  & 27.6            & 36.0           & 37.1           \\ \hline
+        GPU0 $\leftrightarrow$ GPU2 (remote) & 28.3            & 36.5           & 50.3           \\ \hline
+        \hline
+        One Page, PCIe 3.0 x16               & N/A             & N/A            & 0.25           \\ \hline
+        One Page, NVLink                     & 1.6             & 0.9            & 0.4            \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -510,7 +526,11 @@ There is no substantial difference between
 		\caption{}
 		\label{}
 	\end{subfigure}
-	\caption[\todo{short}]{}
+	\caption[Page Fault Latencies for S822LC, AC922, and DGX-1]{
+        Linked-list traversal time vs number of strides for S822LC, AC922, and DGX-1.
+        For each system, CPU-to-GPU, GPU-to-CPU, and remote/local GPU-to-GPU times are shown.
+        Each stride incurs a page fault, so the slope of these lines estimate the page fault cost.
+    }
 	\label{fig:coherence-page-fault-latency}
 \end{figure}
 

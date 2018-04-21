@@ -209,7 +209,9 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
 
     # Set limits
     ax.set_ylim([0, 1600])
-    ax.set_ylabel("Traversal Time (us)")
+    ylabel = plot_cfg.get("yaxis", {}).get("label", "")
+    print "set ylabel to:", ylabel
+    ax.set_ylabel(ylabel)
 
     # update labels
     h, l = ax.get_legend_handles_labels()
@@ -220,11 +222,12 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
             x = ax.get_lines()[series].get_xdata()
             y = ax.get_lines()[series].get_ydata()
             z, cov = np.polyfit(x, y, 1, cov=True)
-            print np.sqrt(np.diag(cov))
+            # print np.sqrt(np.diag(cov))
             return z[0], z[1]
         # slope, intercept, r_value, p_value, std_err = get_linregress(c)
         slope, intercept = get_polyfit(c)
         l[c] = l[c] + ": " + "{:.2f}".format(slope) + " us/fault"
+        print "set label", c, "to:", l[c]
     ax.legend(h, l)
 
     title = plot_cfg.get("title", "")

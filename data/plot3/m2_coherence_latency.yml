@@ -1,18 +1,17 @@
 generator: regplot
 file: m2_coherence-latency.csv
 ydata:
-  - label: GPU0 to GPU1
-    col: b
   - label: GPU0 to GPU2
     col: d
-    style: "--"
-  - label: GPU0 to CPU0
-    col: h
-    color: gray
+  - label: GPU0 to GPU1
+    col: b
+    color: "0.25"
   - label: CPU0 to GPU0
     col: ap
-    color: gray
-    style: "-."
+    color: "0.5"
+  - label: GPU0 to CPU0
+    col: h
+    color: "0.75"
 yaxis:
   label: Traversal Time (us)
 xaxis:
