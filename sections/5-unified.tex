@@ -396,11 +396,8 @@ Algorithm~\ref{alg:um-latency} summarizes the measurement routine.
 The stride between linked list elements is a large number, to avoid prefetching effects on page faults.
 The managed memory allocation is prefetched to the source, and a single-threaded traversal function (shown in Listings \ref{lst:gpu-traversal} and \ref{lst:cpu-traversal}) is executed on the destination.
 Each access to the list incurs a page fault.
-
-
 The incremental change in function execution time as the number of strides increases is therefore an approximate measure of the page fault latency.
-Table~\ref{tab:page-fault-latency} summarizes the estimated page fault latencies.
-Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency} show the raw traversal times.
+
 
 \begin{lstlisting}[language=c++, caption=GPU Linked List Traversal Kernel, label=lst:gpu-traversal]
 __global__ void gpu_traverse(size_t *ptr, const size_t steps)
@@ -475,20 +472,21 @@ void cpu_traverse(size_t *ptr, const size_t steps)
 	\end{algorithmic}
 \end{algorithm}
 
+Table~\ref{tab:page-fault-latency} summarizes the estimated page fault latencies.
+Figures~\ref{fig:minsky-page-fault-latency}~and~\ref{fig:hal-page-fault-latency} show the raw traversal times.
+There is no substantial difference between 
 
 \begin{table}[h]
 	\centering
 	\caption[\todo{short}]{Page Fault latency}
 	\label{tab:page-fault-latency}
-	\begin{tabular}{|c|c|c|}
+	\begin{tabular}{|c|c|c|c|}
 		\hline
-		\textbf{Page Fault}              & \textbf{Minsky Latency} & \textbf{Power9 Latency} \\ \hline
-		CPU0 $\leftarrow$ GPU0  (local)  & 17.9                    & 24.4                    \\ \hline
-		CPU0 $\rightarrow$ GPU0 (local)  & 15.2                    & 23.6                    \\ \hline
-		CPU0 $\leftarrow$ GPU2  (remote) & 19.5                    & 24.5                    \\ \hline
-		CPU0 $\rightarrow$ GPU2 (remote) & 16.6                    & 23.2                    \\ \hline
-		GPU0 $\leftarrow$ GPU1  (local)  & 26.9                    & 35.9                    \\ \hline
-		GPU0 $\rightarrow$ GPU2 (remote) & 35.6                    & 38.5                    \\ \hline
+		\textbf{Page Fault}              & \textbf{S822LC Latency} & \textbf{AC922 Latency} & \textbf{DGX-1 Latency} \\ \hline
+		CPU  $\leftarrow$  GPU  (local)  & 17.9                    & 24.4                   &  32.2 \\ \hline
+		CPU  $\rightarrow$ GPU  (local)  & 15.2                    & 23.6                   &  26.6 \\ \hline
+		GPU0 $\leftarrow$  GPU1 (local)  & 26.9                    & 35.9                   &  37.1 \\ \hline
+		GPU0 $\rightarrow$ GPU2 (remote) & 35.6                    & 38.5                   &  50.3\\ \hline
 	\end{tabular}
 \end{table}
 

@@ -3,11 +3,12 @@
 import sys
 import pandas as pd
 import matplotlib.pylab as plt
+import numpy as np
 import yaml
 import os.path as path
 import pprint
 import seaborn as sns
-import scipy
+# import scipy
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -213,9 +214,16 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
     # update labels
     h, l = ax.get_legend_handles_labels()
     for c, col in enumerate(y_cfgs):
-        def get_linregress(series):
-            return scipy.stats.linregress(x=ax.get_lines()[series].get_xdata(), y=ax.get_lines()[series].get_ydata())
-        slope, intercept, r_value, p_value, std_err = get_linregress(c)
+        # def get_linregress(series):
+        #     return scipy.stats.linregress(x=ax.get_lines()[series].get_xdata(), y=ax.get_lines()[series].get_ydata())
+        def get_polyfit(series):
+            x = ax.get_lines()[series].get_xdata()
+            y = ax.get_lines()[series].get_ydata()
+            z, cov = np.polyfit(x, y, 1, cov=True)
+            print np.sqrt(np.diag(cov))
+            return z[0], z[1]
+        # slope, intercept, r_value, p_value, std_err = get_linregress(c)
+        slope, intercept = get_polyfit(c)
         l[c] = l[c] + ": " + "{:.2f}".format(slope) + " us/fault"
     ax.legend(h, l)
 
