@@ -199,11 +199,12 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
         print "selecting y data from column:", col_idx
         col = df.iloc[:, col_idx]
         color = y_cfg.get("color", "black")
+        style = y_cfg.get("style", "-")
 
         label = y_cfg.get("label", col.name)
 
         ax = sns.regplot(ax=ax, x=x_col, y=col, data=df,
-                         ci=68, label=label, color=color)
+                         ci=68, label=label, color=color, line_kws={"linestyle": style})
 
     # Set limits
     ax.set_ylim([0, 1600])

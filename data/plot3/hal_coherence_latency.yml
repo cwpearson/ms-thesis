@@ -5,10 +5,14 @@ ydata:
     col: b
   - label: GPU0 to GPU2
     col: c
+    style: "--"
   - label: GPU0 to CPU0
     col: e
+    color: gray
   - label: CPU0 to GPU0
     col: v
+    color: gray
+    style: "-."
 yaxis:
   label: Traversal Time (us)
 xaxis:
