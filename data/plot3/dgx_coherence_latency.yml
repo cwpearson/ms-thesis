@@ -1,0 +1,21 @@
+generator: regplot
+series:
+  - file: dgx_coherence-latency.csv
+    col: a
+  - label: GPU0 to GPU1
+    file: dgx_coherence-latency.csv
+    col: b
+  - label: GPU0 to GPU5
+    file: dgx_coherence-latency.csv
+    col: f
+  - label: GPU0 to CPU0
+    file: dgx_coherence-latency.csv
+    col: i
+  - label: CPU0 to GPU0
+    file: dgx_coherence-latency.csv
+    col: bv
+yaxis:
+  label: Traversal Time (us)
+xaxis:
+  label: Number of Strides
+title: placeholder
