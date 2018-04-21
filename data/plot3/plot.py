@@ -6,6 +6,8 @@ import matplotlib.pylab as plt
 import yaml
 import os.path as path
 import pprint
+import seaborn as sns
+import scipy
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -36,6 +38,8 @@ def get(element, *keys):
 def col_to_idx(s):
     if isinstance(s, int):
         return s
+    elif not isinstance(s, str):
+        raise TypeError
 
     acc = 0
     for idx in range(len(s)):
@@ -174,6 +178,46 @@ def generator_df(fig, yaml_dir, plot_cfg):
     return fig
 
 
+def generator_regplot(fig, yaml_dir, plot_cfg):
+    file_path = plot_cfg["file"]
+    if not path.isabs(file_path):
+        file_path = path.join(yaml_dir, file_path)
+
+    df = pd.read_csv(file_path)
+
+    xdata_cfg = plot_cfg.get("xdata", {})
+    x_col_idx = col_to_idx(xdata_cfg.get("col", 0))
+    x_col = df.iloc[:, x_col_idx]
+
+    ax = fig.add_subplot(111)
+    y_cfgs = plot_cfg.get("ydata", [])
+    for y_cfg in y_cfgs:
+        print y_cfg
+        col_idx = col_to_idx(y_cfg["col"])
+        col = df.iloc[:, col_idx]
+        color = y_cfg.get("color", "black")
+
+        label = y_cfg.get("label", col.name)
+
+        ax = sns.regplot(ax=ax, x=x_col, y=col, data=df,
+                         ci=68, label=label, color=color)
+
+    # Set limits
+    ax.set_ylim([0, 1600])
+    ax.set_ylabel("Traversal Time (us)")
+
+    # update labels
+    h, l = ax.get_legend_handles_labels()
+    for c, col in enumerate(y_cfgs):
+        def get_linregress(series):
+            return scipy.stats.linregress(x=ax.get_lines()[series].get_xdata(), y=ax.get_lines()[series].get_ydata())
+        slope, intercept, r_value, p_value, std_err = get_linregress(c)
+        l[c] = l[c] + ": " + str(slope) + " us/fault"
+    ax.legend(h, l)
+
+    return fig
+
+
 def generate_figure(plot_cfg, root_dir):
 
     fig = plt.figure()
@@ -181,6 +225,11 @@ def generate_figure(plot_cfg, root_dir):
     if "generator" in plot_cfg:
         if plot_cfg["generator"] == "df":
             fig = generator_df(fig, root_dir, plot_cfg)
+        elif plot_cfg["generator"] == "regplot":
+            fig = generator_regplot(fig, root_dir, plot_cfg)
+        else:
+            print "Unhandled generator!"
+            assert False
     else:
         fig = generator_old(fig, root_dir, plot_cfg)
 

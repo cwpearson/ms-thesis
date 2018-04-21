@@ -540,6 +540,12 @@ void cpu_traverse(size_t *ptr, const size_t steps)
 		\caption{}
 		\label{}
 	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_coherence_latency.pdf}
+		\caption{}
+		\label{}
+	\end{subfigure}
 	\caption[\todo{short}]{
 		Total kernel execution times on IBM Power9 for linked-list traversal.
 		Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
