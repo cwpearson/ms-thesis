@@ -5,14 +5,9 @@ CSV_FILES =
 
 GEN_DIR = generated
 
-# Handle Regplots
-REGPLOT_DIR = ../data/regplot
-CSV_FILES += $(wildcard $(REGPLOT_DIR)/*.csv)
-GEN_FILES := $(patsubst $(REGPLOT_DIR)/%.csv, $(GEN_DIR)/%.pdf, ${CSV_FILES})
-
 # handle SVGs
 SVG_FILES=$(wildcard *.svg)
-GEN_FILES += $(patsubst %.svg, $(GEN_DIR)/%.pdf, ${SVG_FILES})
+GEN_FILES := $(patsubst %.svg, $(GEN_DIR)/%.pdf, ${SVG_FILES})
 
 # handle DOT
 DOT_FILES=$(wildcard *.dot)

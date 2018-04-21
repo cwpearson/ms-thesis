@@ -495,63 +495,25 @@ void cpu_traverse(size_t *ptr, const size_t steps)
 
 \begin{figure}[ht]
 	\centering
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpu0cpu0.pdf}
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/m2_coherence_latency.pdf}
 		\caption{}
 		\label{}
 	\end{subfigure}
 	~
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpu2cpu0.pdf}
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_coherence_latency.pdf}
 		\caption{}
 		\label{}
 	\end{subfigure}
 	~
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/m2_um-latency_gpus.pdf}
-		\caption{}
-		\label{}
-	\end{subfigure}
-	\caption[\todo{short}]{ 
-		Total kernel execution times on IBM Minsky for linked-list traversal.
-		Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
-		For example, GPU0 to CPU0 means the managed allocation is on GPU0, and the traversal function is executing on CPU0.
-	}
-	\label{fig:minsky-page-fault-latency}
-\end{figure}
-
-
-\begin{figure}[ht]
-	\centering
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpu0cpu0.pdf}
-		\caption{}
-		\label{}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpu2cpu0.pdf}
-		\caption{}
-		\label{}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_um-latency_gpus.pdf}
-		\caption{}
-		\label{}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.3\textwidth}
+	\begin{subfigure}[b]{0.31\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/dgx_coherence_latency.pdf}
 		\caption{}
 		\label{}
 	\end{subfigure}
-	\caption[\todo{short}]{
-		Total kernel execution times on IBM Power9 for linked-list traversal.
-		Each additional stride incurs another page fault; the slope of the line estimates the page fault latency.
-		For example, GPU0 to CPU0 means the managed allocation is on GPU0, and the traversal function is executing on CPU0.
-	}
-	\label{fig:hal-page-fault-latency}
+	\caption[\todo{short}]{}
+	\label{fig:coherence-page-fault-latency}
 \end{figure}
 
 \section{Quirks}

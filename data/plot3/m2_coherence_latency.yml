@@ -1,18 +1,18 @@
 generator: regplot
-file: dgx_coherence-latency.csv
+file: m2_coherence-latency.csv
 ydata:
   - label: GPU0 to GPU1
     col: b
-  - label: GPU0 to GPU5
-    col: f
+  - label: GPU0 to GPU2
+    col: d
   - label: GPU0 to CPU0
-    col: i
+    col: h
   - label: CPU0 to GPU0
-    col: bv
+    col: ap
 yaxis:
   label: Traversal Time (us)
 xaxis:
   label: Number of Strides
 xdata:
   col: a
-title: DGX-1 Page Fault Latency
+title: S822LC Coherence Latency

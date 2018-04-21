@@ -184,9 +184,11 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
         file_path = path.join(yaml_dir, file_path)
 
     df = pd.read_csv(file_path)
+    print "reading:", file_path
 
     xdata_cfg = plot_cfg.get("xdata", {})
     x_col_idx = col_to_idx(xdata_cfg.get("col", 0))
+    print "x data from:", x_col_idx
     x_col = df.iloc[:, x_col_idx]
 
     ax = fig.add_subplot(111)
@@ -194,6 +196,7 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
     for y_cfg in y_cfgs:
         print y_cfg
         col_idx = col_to_idx(y_cfg["col"])
+        print "selecting y data from column:", col_idx
         col = df.iloc[:, col_idx]
         color = y_cfg.get("color", "black")
 
@@ -212,8 +215,11 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
         def get_linregress(series):
             return scipy.stats.linregress(x=ax.get_lines()[series].get_xdata(), y=ax.get_lines()[series].get_ydata())
         slope, intercept, r_value, p_value, std_err = get_linregress(c)
-        l[c] = l[c] + ": " + str(slope) + " us/fault"
+        l[c] = l[c] + ": " + "{:.2f}".format(slope) + " us/fault"
     ax.legend(h, l)
+
+    title = plot_cfg.get("title", "")
+    ax.set_title(title)
 
     return fig
 
