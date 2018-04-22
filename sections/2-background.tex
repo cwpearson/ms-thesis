@@ -1,9 +1,6 @@
 \chapter{Background}
 \label{ch:background}
 
-\todo{discuss cudaMemcpy synchronization behavior (relates to measuring performance)}.
-\todo{OpenMP section}
-
 This work examines the relationship between system and application performance in the context of systems comprised of CPUs and NVIDIA GPUs.
 To that end, this section describes
 \begin{itemize}
@@ -30,28 +27,34 @@ Finally, though not covered in this work, the GPU compute cores have dramaticall
     \centering
     \begin{subfigure}[b]{0.2\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/x86-kepler-bw.pdf}
-        \caption{AMD Opteron 6200 / PCIe 2.0 / K20X }
+        \caption{}
         \label{fig:x86-kepler-bw}
     \end{subfigure}
 	~
 	\begin{subfigure}[b]{0.2\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/x86-pascal-bw.pdf}
-        \caption{Intel Xeon Platinum 8180M / PCIe 3.0 / Pascal P100}
+        \caption{}
         \label{fig:x86-pascal-bw}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.2\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/p8-pascal-bw.pdf}
-        \caption{Power8 / NVLink / Pascal}
+        \caption{}
         \label{fig:p8-pascal-bw}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.2\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/p9-volta-bw.pdf}
-        \caption{Power9 / NVLink / Volta}
+        \caption{}
         \label{fig:p9-pascal-bw}
     \end{subfigure}
-    \caption[\todo{short}]{Relative interconnect bandwidths of some hypothetical systems. \cite{amd2012opteron6200} \cite{stuechli2013power8}}.
+	\caption[Example System Interconnect Bandwidths]{
+		Example interconnect bandwidths of four systems.
+		(a) shows a c.2011 x86 system with an AMD Operton 6200 CPU~\cite{amd2012opteron6200} system, PCIe 2.0 x16, and NVIDIA K20 GPU.
+		(b) shows a c.2017 x86 system with an Intel Xeon Platinum 8180M~\cite{intel20188180m} CPU, PCIe 3.0 x16, and an NVIDIA P100 GPU.
+		(c) shows a c.2013 PowerPC system with an IBM Power8~\cite{stuechli2013power8} CPU, two-lane NVLink 1.0, and an NVIDIA P100 GPU.
+		(d) shows a c.2017 PowerPC system with an IBM Power9~\cite{thompto2016power9} CPU, three-lane NVLink 2.0, and an NVIDIA V100 GPU.
+	}
     \label{fig:gpu-sys-arch}
 \end{figure}
 
@@ -123,8 +126,6 @@ The total bandwidth of the link depends on the PCIe revision and the number of l
 Figure~\ref{fig:pcie-cartoon} shows an example topology.
 
 
-
-
 \subsection{NVLink}
 
 NVLink is a communication protocol developed by NVIDIA.
@@ -136,13 +137,10 @@ Figure~\ref{fig:nvlink-cartoon} shows an example topology.
 
 
 
-
-%
-%
-%
 \section{Programming Systems}
 \subsection{CUDA}
 \label{sec:cuda}
+
 
 
 NVIDIA's CUDA (Compute Unified Device Architecture) is a programming system for enabling general-purpose computation on NVIDIA GPUs (graphics processing units).
@@ -199,7 +197,7 @@ This API definition imposes the following basic structure on all CUDA programs, 
 
 Unified virtual addressing (Section~\ref{sec:uva}) and unified memory (Section ~\ref{sec:um}) allow the programmer to make some of these steps implicit.
 
-
+\todo{discuss cudaMemcpy synchronization behavior (relates to measuring performance)}.
 
 \subsubsection{Page-Locked Memory}
 \label{sec:pinned-memory}
