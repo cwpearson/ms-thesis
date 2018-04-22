@@ -3,23 +3,36 @@
 
 Chapter~\ref{ch:introduction} introduced the objective of characterizing the communication performance of heterogeneous systems.
 Section~\ref{sec:sys-abstraction} described how applications interact with an abstraction presented by the system hardware, operating system, and software.
-This chapter describes initial efforts towards a bottom-up approach to characterizing communication system performance that attempts to expose the communication capabilities exposed by the hardware.
+This chapter describes initial efforts towards a bottom-up approach to characterizing communication system performance.
+
+\begin{itemize}
+    \item Section~\ref{sec:abstraction-hardware} motivates a joint model of software abstractions and underlying hardware.
+    \item Section~\ref{sec:hardware-enumeration} describes an approach for enumerating hardware components and connections.
+\end{itemize}
+
 Chapters~\ref{ch:explicit}~and~\ref{ch:unified} describe results obtained from a top-down approach, where communication abilities exposed to the application are characterized.
 
-\section{Physical and Logical Communication Paths}
 
-Consider the four different views of the S822LC machine shown in Figure~\ref{fig:minsky-hardware-logical} (Section~\ref{sec:minsky} describes the machine in more detail).
-Figure~\ref{fig:minsky-topo-hardware} shows an annotated topographical view of the hardware.
+Though data movement between many different system components is possible, this work focuses on CPU-CPU and CPU-GPU data transfers.
+Section~\ref{sec:hardware-model} describes an overview of the system model.
+Section~\ref{sec:hardware-enumeration} describes a method for discovering data sources, sinks, and communication paths in a system.
+
+
+\section{Joint Abstraction and Hardware MOdel}
+\label{sec:abstraction-hardware}
+
+Consider the two different views of the S822LC machine shown in Figure~\ref{fig:minsky-abstraction}.
 Figure~\ref{fig:minsky-topo-cuda} represents the connectivity of the components through the CUDA API.
 Figure~\ref{fig:minsky-topo-numa} represents the Linux NUMA view of the system.
-Figure~\ref{fig:minsky-topo-logical} shows more detailed communication capabilities between allocations on those components.
+Both NUMA and CUDA present a different abstraction, which is again different from the system layout in Section~\ref{sec:s822lc}.
+In practice, the logical communication paths available to the system is the union of these abstractions, and any other made available by the system.
 
 \begin{figure}[ht]
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-hardware.pdf}
+        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-numa.pdf}
         \caption{}
-        \label{fig:minsky-topo-hardware}
+        \label{fig:minsky-topo-numa}
     \end{subfigure}
     ~
     \begin{subfigure}[b]{0.45\textwidth}
@@ -27,25 +40,15 @@ Figure~\ref{fig:minsky-topo-logical} shows more detailed communication capabilit
         \caption{}
         \label{fig:minsky-topo-cuda}
     \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-numa.pdf}
-        \caption{}
-        \label{fig:minsky-topo-numa}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky-topo-logical.pdf}
-        \caption{}
-        \label{fig:minsky-topo-logical}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        Connectivity and components on Minsky at (a) the hardware level, (b) through the CUDA API, (c) through NUMA, and (d) when CUDA and numa are considered together.
+    \caption[Communication Topologies Exposed to Application]{
+        Communication Topologies exposed to the application.
+        (a) shows the abstraction presented by NUMA.
+        (b) shows the abstraction presented by CUDA.
     }
-    \label{fig:minsky-hardware-logical}
+    \label{fig:minsky-abstraction}
 \end{figure}
 
-
+These communication paths each must make use of a communication link present in the physical system, but they do not achieve the same performance on those links.
 High-performance data movement in heterogeneous systems requires understanding properties of the logical communication capabilities exposed by the system.
 The real-world properties of these communication capabilities depends on 
 \begin{enumerate}
@@ -60,40 +63,28 @@ With full knowledge of link properties it is possible to derive an accurate mode
     \item Even if a link is pysically present on the system, it may not be available to the application {e.g., due to bugs in the system configuration}
 \end{itemize}
 Instead of deriving a model of link performance from the ``first principles'' of link properties, this work attempts to generate an empirical model of performance of data movement in the system.
+By combining the empirical data (the ``top-down approach'') with an understanding of the underlying hardware topology (the ``bottom-up approach''), a realistic model can be created.
 
-Though data movement between many different system components is possible, this work focuses on CPU-CPU and CPU-GPU data transfers.
-Section~\ref{sec:hardware-model} describes an overview of the system model.
-Section~\ref{sec:hardware-enumeration} describes a method for discovering data sources, sinks, and communication paths in a system.
 
-\section{Hardware Model}
-\label{sec:hardware-model}
+
+\section{Topology Enumeration}
+\label{sec:hardware-enumeration}
+
+In this approach, the underlying hardware is discovered.
 
 The hardware is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing communication endpoints, or data routing elements.
 Sections~\ref{sec:system-vertices} and \ref{sec:system-edges} describe the specific system components explored.
-Associated with each edge is a performance model function $M: C \rightarrow P$ that maps communication $C$ to an achievable performance $P$.
-For example, a simple model $M$ would have $C$ parameterized by transfer size, and produce $P$ by considering link latency and bandwidth.
-A more complicated model might also consider contention on the link.
-
 Each vertex in $V$ is a data routing element.
 These vertices are able to receive and re-transmit data on any of their links.
-A PCIe hub \todo{cite PCIe discussion} is an example of a pure data-routing vertex.
+A PCIe switch is an example of a pure data-routing vertex.
 Optionally, the vertex may serve as a communication endpoint; a source or a sink for data.
 Processing elements and data storage elements serve as communication endpoints.
 
 \texttt{hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration.
 This tool can be executed on a target system to generate $G_s$ for that system.
 Presently, the tool has only been tested on Linux operating systems.
-
-
-
-%
-% SECTION
-%
-\section{\texttt{hwcomm} Topology Enumeration}
-\label{sec:hardware-enumeration}
-
 The first step in generating $G_s$ is to discovere the topology.
-hwcomm builds an in-memory representation of $G_s$, with sufficient information to later access the device during characterization.
+\texttt{hwcomm} builds an in-memory representation of $G_s$, with sufficient information to later access the device during characterization.
 Enumeration is done in several phases.
 
 \textbf{Enumerate and Link CPU Sockets:}

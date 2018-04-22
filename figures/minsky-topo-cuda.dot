@@ -2,19 +2,65 @@ graph G {
 
     //ratio=fill;
     //ranksep=1.5;
-    nodesep=0.25;
+    //nodesep=0.25;
 
-    cpu -- gpu0;
-    cpu -- gpu1;
-    cpu -- gpu2;
-    cpu -- gpu3;
+    subgraph cluster_gpu0 { label="GPU 0";
+        alloc0;
+        gpu0;
+        graph[style=dotted];
+    }
 
-    gpu0 -- gpu1;
-    gpu0 -- gpu2;
-    gpu0 -- gpu3;
+    subgraph cluster_gpu1 { label="gpu1";
+        alloc1;
+        gpu1;
+        graph[style=dotted];
+    }
 
-    gpu1 -- gpu2;
-    gpu1 -- gpu3;
+    subgraph cluster_gpu2 { label="gpu2";
+        alloc2;
+        gpu2;
+        graph[style=dotted];
+    }
 
-    gpu2 -- gpu3;
+    subgraph cluster_gpu3 { label="gpu3";
+        alloc3;
+        gpu3;
+        graph[style=dotted];
+    }
+
+    subgraph cluster_host { label="Host";
+        pinned;
+        pageable;
+        cpu0;
+        graph[style=dotted];
+    }
+
+    // cuda memcpy
+    alloc0 -- alloc1 [color = blue];
+    alloc0 -- alloc2 [color = blue];
+    alloc0 -- alloc3 [color = blue];
+    alloc1 -- alloc2 [color = blue];
+    alloc1 -- alloc3 [color = blue];
+    alloc2 -- alloc3 [color = blue];
+    alloc0 -- unified [color = blue];
+    alloc1 -- unified [color = blue];
+    alloc2 -- unified [color = blue];
+    alloc3 -- unified [color = blue];
+    pinned -- alloc0 [color = blue];
+    pinned -- alloc1 [color = blue];
+    pinned -- alloc2 [color = blue];
+    pinned -- alloc3 [color = blue];
+    pageable -- alloc0 [color = blue];
+    pageable -- alloc1 [color = blue];
+    pageable -- alloc2 [color = blue];
+    pageable -- alloc3 [color = blue];
+    pageable -- pinned [color = blue];
+
+    // unified
+    unified -- gpu0 [color = red];
+    unified -- gpu1 [color = red];
+    unified -- gpu2 [color = red];
+    unified -- gpu3 [color = red];
+    unified -- cpu0 [color = red];
+    unified -- cpu1 [color = red];
 }
