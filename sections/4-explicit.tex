@@ -3,9 +3,9 @@
 
 This chapter examines the performance of explicit data transfers over logical communication links presented in a system with NUMA and CUDA interfaces.
 \begin{itemize}
-    \item Section~\ref{sec:explicit-cpu-cpu} describes CPU-to-CPU transfers.
-    \item Section~\ref{sec:explicit-cpu-gpu} describes transfers between CPUs and GPUs.
-    \item Section~\ref{sec:explicit-gpu-gpu} describes GPU-to-GPU transfers.
+	\item Section~\ref{sec:explicit-cpu-cpu} describes CPU-to-CPU transfers.
+	\item Section~\ref{sec:explicit-cpu-gpu} describes transfers between CPUs and GPUs.
+	\item Section~\ref{sec:explicit-gpu-gpu} describes GPU-to-GPU transfers.
 \end{itemize}
 It highlights cases where the observed logical communication performance deviates significantly from the symmetries present in the CUDA API, numactl API, and hardware.
 Those deviances take the form of different performance on identical links, anisotropic link performance, or performance affected by device affinity.
@@ -64,53 +64,59 @@ For both operations, OpenMP is used to evenly distribute the read or write opera
 Entering and exiting the parallel region incurrs some cost, which is counted in the bandwidth computation.
 
 \begin{algorithm}
-    \caption[test]{
-        Algorithm to measure CPU-CPU Bandwidth.
-        \texttt{cpu\_read} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuread} and \texttt{cpu\_write} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}.
-        \texttt{numa\_bind} binds the executing thread to the provided NUMA node.
-        \texttt{walltime} returns the current wall time.
-    }
-    \label{alg:explicit-cpu-cpu}
-    \begin{algorithmic}[1]
-    \Statex
-    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-        \If{$op$ is RD}
-            \State \texttt{numa\_bind($src$)}
-        \Else
-            \State \texttt{numa\_bind($dst$)}
-        \EndIf
-        \State $srcPtr \gets$ \texttt{malloc($transfer\_size$)}
-        \State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
-
-        \If{$op$ is RD}
-            \State \texttt{numa\_bind($dst$)}
-        \Else
-            \State \texttt{numa\_bind($src$)}
-        \EndIf
-        \State \texttt{omp\_set\_num\_threads($num\_workers$)}
-        \Statex
-        
-        \For{all worker threads} \Comment bind workers to $src$ or $dst$
-            \If{$op$ is RD}
-                \State \texttt{numa\_bind($dst$)}
-            \Else
-                \State \texttt{numa\_bind($src$)}
-            \EndIf
-        \EndFor
-
-        \State $start \gets$ walltime()
-        \If{$op$ is RD}
-            \State \texttt{cpu\_read($dst$)}
-        \Else
-            \State \texttt{cpu\_write($src$}
-        \EndIf
-        \State $end \gets$ walltime()
-        \State $elapsed \gets$ min($elapsed$, $end-start$)
-
-        \State \Return $elapsed$
-    \EndFunction
-
-    \end{algorithmic}
+	\caption[test]{
+		Algorithm to measure CPU-CPU Bandwidth.
+		\texttt{cpu\_read} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuread} and \texttt{cpu\_write} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}.
+		\texttt{numa\_bind} binds the executing thread to the provided NUMA node.
+		\texttt{walltime} returns the current wall time.
+	}
+	\label{alg:explicit-cpu-cpu}
+	\begin{algorithmic}[1]
+		\Statex
+		
+		\Function{read\_bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
+		\State \texttt{numa\_bind($src$)}
+		\State $srcPtr \gets$ \texttt{malloc($transfer\_size$)}
+		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+		
+		\State \texttt{numa\_bind($dst$)}
+		\State \texttt{omp\_set\_num\_threads($num\_workers$)}
+		\Statex
+		
+		\For{all worker threads} \Comment bind workers to $src$ or $dst$
+		\State \texttt{numa\_bind($dst$)}
+		\EndFor
+		
+		\State $start \gets$ walltime()
+		\State \texttt{cpu\_read($dst$)}
+		\State $end \gets$ walltime()
+		\State $elapsed \gets$ min($elapsed$, $end-start$)
+		
+		\State \Return $elapsed$
+		\EndFunction
+		
+		\Function{write\_bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
+		\State \texttt{numa\_bind($dst$)}
+		\State $srcPtr \gets$ \texttt{malloc($transfer\_size$)}
+		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+		
+		\State \texttt{numa\_bind($src$)}
+		\State \texttt{omp\_set\_num\_threads($num\_workers$)}
+		\Statex
+		        
+		\For{all worker threads} \Comment bind workers to $src$ or $dst$
+		\State \texttt{numa\_bind($src$)}
+		\EndFor
+		
+		\State $start \gets$ walltime()
+		\State \texttt{cpu\_write($src$}
+		\State $end \gets$ walltime()
+		\State $elapsed \gets$ min($elapsed$, $end-start$)
+		
+		\State \Return $elapsed$
+		\EndFunction
+		
+	\end{algorithmic}
 \end{algorithm}
 
 
@@ -127,49 +133,49 @@ This is consistent with the theoretical 38.4 GB/s performance of the X bus on S8
 \todo{Data for DGX-1, AC922}
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-dst.pdf}
-        \caption{}
-        \label{fig:s822lc-cpu0-cpu1}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-src.pdf}
-        \caption{}
-        \label{fig:s822lc-cpu0-cpu1}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/ac922_cpu0-cpu1-dst.pdf}
-        \caption{}
-        \label{fig:ac922-cpu0-cpu1-dst}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/ac922_cpu0-cpu1-src.pdf}
-        \caption{}
-        \label{fig:ac922-cpu0-cpu1-src}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/dgx_cpu0-cpu1-dst.pdf}
-        \caption{}
-        \label{fig:dgx-cpu0-cpu1-dst}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/dgx_cpu0-cpu1-src.pdf}
-        \caption{}
-        \label{fig:dgx-cpu0-cpu1-src}
-    \end{subfigure}
-    \caption[CPU0 to CPU1 transfer bandwidth]{
-        CPU0 to CPU1 transfer bandwidth vs. transfer size.
-        The bandwidth achieved by one through 16 simultaneous worker threads is shown, with the maximum observed bandwidth across the number of threads highlighted.
-        (a,c,e) show multi-threaded reads from CPU1 of an allocation on CPU0's NUMA node on S822LC, AC922, and DGX-1.
-        (b,d,f) show multi-threaded writes from CPU0 to an allocation on CPU1's NUMA Node on S822LC, AC922, and DGX-1.
-    }
-    \label{fig:cpu0-cpu1}
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-dst.pdf}
+		\caption{}
+		\label{fig:s822lc-cpu0-cpu1}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-src.pdf}
+		\caption{}
+		\label{fig:s822lc-cpu0-cpu1}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_cpu0-cpu1-dst.pdf}
+		\caption{}
+		\label{fig:ac922-cpu0-cpu1-dst}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_cpu0-cpu1-src.pdf}
+		\caption{}
+		\label{fig:ac922-cpu0-cpu1-src}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_cpu0-cpu1-dst.pdf}
+		\caption{}
+		\label{fig:dgx-cpu0-cpu1-dst}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_cpu0-cpu1-src.pdf}
+		\caption{}
+		\label{fig:dgx-cpu0-cpu1-src}
+	\end{subfigure}
+	\caption[CPU0 to CPU1 transfer bandwidth]{
+		CPU0 to CPU1 transfer bandwidth vs. transfer size.
+		The bandwidth achieved by one through 16 simultaneous worker threads is shown, with the maximum observed bandwidth across the number of threads highlighted.
+		(a,c,e) show multi-threaded reads from CPU1 of an allocation on CPU0's NUMA node on S822LC, AC922, and DGX-1.
+		(b,d,f) show multi-threaded writes from CPU0 to an allocation on CPU1's NUMA Node on S822LC, AC922, and DGX-1.
+	}
+	\label{fig:cpu0-cpu1}
 \end{figure}
 
 
@@ -182,10 +188,10 @@ The host allocation may be pageable (created by \texttt{malloc} or \texttt{new})
 The device allocation is created by \texttt{cudaMalloc}.
 This section covers
 \begin{itemize}
-\item Comparing bandwidth achievable from pinned, pageable, and write-combining host allocations (Section~\ref{sec:explicit-pageable-pinned-wc})
-\item The effect of device affinity on transfer performance (Section~\ref{sec:explicit-cpu-gpu-affinity})
-\item Cases of observed anisotropic transfer properties (Section~\ref{sec:explicit-cpu-gpu-anisotropy})
-\item Cases of differing performance on identical links (Section~\ref{sec:explicit-cpu-gpu-identical})
+	\item Comparing bandwidth achievable from pinned, pageable, and write-combining host allocations (Section~\ref{sec:explicit-pageable-pinned-wc})
+	\item The effect of device affinity on transfer performance (Section~\ref{sec:explicit-cpu-gpu-affinity})
+	\item Cases of observed anisotropic transfer properties (Section~\ref{sec:explicit-cpu-gpu-anisotropy})
+	\item Cases of differing performance on identical links (Section~\ref{sec:explicit-cpu-gpu-identical})
 \end{itemize}
 
 Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth when \texttt{cudaMemcpy} is used to transfer data between a GPU allocation and a pageable, pinned, or write-combining host allocation. 
@@ -200,41 +206,41 @@ For pageable transfers, a \texttt{cudaDeviceSynchronize} is also included in the
 
 
 \begin{algorithm}
-
-    \begin{algorithmic}[1]
-    \Statex
-    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$}
-        \If{$src$ is GPU}
-            \State \texttt{cudaSetDevice($src$}
-        \Else \Comment{$src$ is CPU}
-            \State \texttt{numa\_bind($src$}
-        \EndIf
-        \If{$dst$ is GPU}
-        \State \texttt{cudaSetDevice($dst$)}
-        \Else \Comment{$dst$ is CPU}
-        \State \texttt{numa\_bind($dst$)}
-        \EndIf
-
-        \State $devPtr \gets$ \texttt{cudaMalloc($transfer\_size$)} \Comment{device allocation}
-        \State $srcPtr \gets$ \texttt{malloc($transfer\_size$)} \Comment{or cudaHostAlloc()}
-
-        \State $elapsed \gets infinity$ \Comment{minimum of $num\_iters$ observations}
-        \For{$i \gets 1 \textrm{ to } num\_iters$}
-            \State $start \gets$ walltime()
-            \State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
-            \State \texttt{cudaDeviceSynchronize()}
-            \State $end \gets$ walltime()
-            \State $elapsed \gets$ min($elapsed$, $end-start$)
-        \EndFor
-
-        \Return $elapsed$
-    \EndFunction
-
-    \end{algorithmic}
-    \caption[Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}]{
-        Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}
-    }
-    \label{alg:explicit}
+	
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$}
+		\If{$src$ is GPU}
+		\State \texttt{cudaSetDevice($src$}
+		\Else \Comment{$src$ is CPU}
+		\State \texttt{numa\_bind($src$}
+		\EndIf
+		\If{$dst$ is GPU}
+		\State \texttt{cudaSetDevice($dst$)}
+		\Else \Comment{$dst$ is CPU}
+		\State \texttt{numa\_bind($dst$)}
+		\EndIf
+		
+		\State $devPtr \gets$ \texttt{cudaMalloc($transfer\_size$)} \Comment{device allocation}
+		\State $srcPtr \gets$ \texttt{malloc($transfer\_size$)} \Comment{or cudaHostAlloc()}
+		
+		\State $elapsed \gets infinity$ \Comment{minimum of $num\_iters$ observations}
+		\For{$i \gets 1 \textrm{ to } num\_iters$}
+		\State $start \gets$ walltime()
+		\State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
+		\State \texttt{cudaDeviceSynchronize()}
+		\State $end \gets$ walltime()
+		\State $elapsed \gets$ min($elapsed$, $end-start$)
+		\EndFor
+		
+		\Return $elapsed$
+		\EndFunction
+		
+	\end{algorithmic}
+	\caption[Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}]{
+		Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}
+	}
+	\label{alg:explicit}
 \end{algorithm}
 
 \subsection{Comparison of Pageable, Pinned, and Write-Combining Host Allocations}
@@ -243,9 +249,9 @@ For pageable transfers, a \texttt{cudaDeviceSynchronize} is also included in the
 To contextualize other results presented in this chapter, Figure~\ref{fig:pageable-pinned-wc} shows the transfer performance from pageable, pinned, and write-combined allocations on CPU0 to device allocations on GPU0.
 These performance curves exhibit features common throughout this chapter:
 \begin{itemize}
-\item For small transfer sizes, the time is dominated by overhead introduced by the abstraction layer.
-\item For large transfer sizes, the time is dominated by bandwidth limits on the exercised physical link.
-\item The performance may vary smoothly across intermediate transfer sizes, or exhibit more complicated behavior.
+	\item For small transfer sizes, the time is dominated by overhead introduced by the abstraction layer.
+	\item For large transfer sizes, the time is dominated by bandwidth limits on the exercised physical link.
+	\item The performance may vary smoothly across intermediate transfer sizes, or exhibit more complicated behavior.
 \end{itemize}
 
 The curves for transfers from a pinned allocation on CPU0 to GPU0 shown in Figure~\ref{fig:pinned-cpu-gpu0} share a similar shape: the transfer bandwidth is low for small sizes, and eventually saturates once transfers become large enough.
@@ -266,10 +272,10 @@ Figure~\ref{fig:explicit-pageable-cpu} shows the performance achieved by using \
 \todo{any conclusions to draw?}
 
 \begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{figures/generated/page-to-pin.pdf}
-    \caption[\todo{short}]{\todo{long}}
-    \label{fig:explicit-pageable-cpu}
+	\centering
+	\includegraphics[width=\textwidth]{figures/generated/page-to-pin.pdf}
+	\caption[\todo{short}]{\todo{long}}
+	\label{fig:explicit-pageable-cpu}
 \end{figure}
 
 Furthermore, the topologically-similar S822LC and AC922 machines do not have similar shaped curves.
@@ -277,32 +283,32 @@ Figure~\ref{fig:wc-cpu0-gpu0} shows that write-combining allocations do not affe
 
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/pinned_cpu0-gpu0.pdf}
-        \caption{}
-        \label{fig:pinned-cpu0-gpu0}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/pageable_cpu0-gpu0.pdf}
-        \caption{}
-        \label{fig:pageable-cpu0-gpu0}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/wc_cpu0-gpu0.pdf}
-        \caption{}
-        \label{fig:wc-cpu0-gpu0}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        \texttt{cudaMemcpy} bandwidth vs transfer size for CPU0 to GPU0 transfers from 
-        (a) pageable allocations,
-        (b) pinned allocations, and
-        (c) write-combining allocations.
-        Results for S822LC, AC922, and DGX-1 systems are shown.
-    }
-    \label{fig:pageable-pinned-wc}
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/pinned_cpu0-gpu0.pdf}
+		\caption{}
+		\label{fig:pinned-cpu0-gpu0}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/pageable_cpu0-gpu0.pdf}
+		\caption{}
+		\label{fig:pageable-cpu0-gpu0}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/wc_cpu0-gpu0.pdf}
+		\caption{}
+		\label{fig:wc-cpu0-gpu0}
+	\end{subfigure}
+	\caption[\todo{short}]{
+		\texttt{cudaMemcpy} bandwidth vs transfer size for CPU0 to GPU0 transfers from 
+		(a) pageable allocations,
+		(b) pinned allocations, and
+		(c) write-combining allocations.
+		Results for S822LC, AC922, and DGX-1 systems are shown.
+	}
+	\label{fig:pageable-pinned-wc}
 \end{figure}
 
 \subsection{Affinity}
@@ -318,66 +324,66 @@ Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affini
 Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned transfers for DGX-1.
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pageable_affinity.pdf}
-        \caption{}
-        \label{fig:minsky_pageable_affinity}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_pageable_affinity.pdf}
-        \caption{}
-        \label{fig:hal_pageable_affinity}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/dgx_pageable_affinity.pdf}
-        \caption{}
-        \label{fig:dgx_pageable_affinity}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu0.pdf}
-        \caption{}
-        \label{fig:minsky_pinned_affinity}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_pinned_affinity.pdf}
-        \caption{}
-        \label{fig:hal_pinned_affinity}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.31\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/dgx_pinned_affinity.pdf}
-        \caption{}
-        \label{fig:dgx_pinned_affinity}
-
-    \end{subfigure}
-    \caption[\todo{short}]{
-    Transfer bandwidth vs transfer size for local and remote transfers from pageable and pinned host allocations on S822LC, AC922, and DGX-1.
-    (a-c) show transfers from pageable allocations to GPUs.
-    (d-f) show transfers from pinned allocations to GPUs.
-    (a) and (d) are for S822LC, (b) and (e) for AC922, and (c) and (f) for DGX-1.
-    }
-    \label{fig:cpu-gpu-affinity-direction}
+	\centering
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/minsky_pageable_affinity.pdf}
+		\caption{}
+		\label{fig:minsky_pageable_affinity}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_pageable_affinity.pdf}
+		\caption{}
+		\label{fig:hal_pageable_affinity}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_pageable_affinity.pdf}
+		\caption{}
+		\label{fig:dgx_pageable_affinity}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu0.pdf}
+		\caption{}
+		\label{fig:minsky_pinned_affinity}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_pinned_affinity.pdf}
+		\caption{}
+		\label{fig:hal_pinned_affinity}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_pinned_affinity.pdf}
+		\caption{}
+		\label{fig:dgx_pinned_affinity}
+		
+	\end{subfigure}
+	\caption[\todo{short}]{
+		Transfer bandwidth vs transfer size for local and remote transfers from pageable and pinned host allocations on S822LC, AC922, and DGX-1.
+		(a-c) show transfers from pageable allocations to GPUs.
+		(d-f) show transfers from pinned allocations to GPUs.
+		(a) and (d) are for S822LC, (b) and (e) for AC922, and (c) and (f) for DGX-1.
+	}
+	\label{fig:cpu-gpu-affinity-direction}
 \end{figure}
 
 
 
 \begin{table}[ht]
-    \centering
-    \caption[Affinity and Logical Communication Bandwidth]{Effect of Device Affinity on Logical Transfer Bandiwdth}
-    \label{tab:cpu-gpu-affinity}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind}     & \textbf{S822LC}                                    & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU & $\times$ (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & $\times$ (Fig.~\ref{fig:dgx_pageable_affinity})\\ \hline
-    Pageable $\leftarrow$ GPU  & \makecell{ for intermediate \\ sizes (Fig.~\ref{fig:minsky_pageable_affinity}) } & \makecell{ for intermediate \\ sizes (Fig.~\ref{fig:hal_pageable_affinity}) } & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
-    Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity}) & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$  (Fig.~\ref{fig:dgx_pinned_affinity})\\ \hline
-    Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity}) & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$ (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
-    \end{tabular}
+	\centering
+	\caption[Affinity and Logical Communication Bandwidth]{Effect of Device Affinity on Logical Transfer Bandiwdth}
+	\label{tab:cpu-gpu-affinity}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}     & \textbf{S822LC}                                    & \textbf{AC922}                                    & \textbf{DGX-1}                                  \\ \hline 
+		Pageable $\rightarrow$ GPU & $\times$ (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & $\times$ (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+		Pageable $\leftarrow$ GPU  & \makecell{ for intermediate \\ sizes (Fig.~\ref{fig:minsky_pageable_affinity}) } & \makecell{ for intermediate \\ sizes (Fig.~\ref{fig:hal_pageable_affinity}) } & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+		Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity}) & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$  (Fig.~\ref{fig:dgx_pinned_affinity})  \\ \hline
+		Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity}) & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$ (Fig.~\ref{fig:dgx_pinned_affinity})   \\ \hline
+	\end{tabular}
 \end{table}
 
 \subsection{Anisotropy}
@@ -391,17 +397,17 @@ For AC922, (Fig.~\ref{fig:hal_pinned_affinity}), local transfers show anisotropy
 For DGX-1, pinned transfers all show 2 GB/s of anisotropy (Fig.~\ref{fig:dgx_pinned_affinity}), while the degree of anisotropy in pageable allocations depends on the affinity (Fig.~\ref{fig:dgx_pageable_affinity}).
 
 \begin{table}[ht]
-    \centering
-    \caption[Summary of Host-Device Transfer Anisotropy]{Summary of Host-Device Transfer Anisotropy}
-    \label{tab:explicit-anisotropy}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind}                         & \textbf{S822LC}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\leftrightarrow$ GPU (local)         & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity})                          & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
-    Pageable $\leftrightarrow$ GPU (remote)        & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity})                          & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity})\\ \hline
-    Pinned $\leftrightarrow$ GPU (local)           & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \makecell{for intermediate \\ sizes (Fig.~\ref{fig:hal_pinned_affinity}) } & \checkmark (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
-    Pinned $\leftrightarrow$ GPU (remote)          & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})                            & \checkmark (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
-    \end{tabular}
+	\centering
+	\caption[Summary of Host-Device Transfer Anisotropy]{Summary of Host-Device Transfer Anisotropy}
+	\label{tab:explicit-anisotropy}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}                  & \textbf{S822LC}                                      & \textbf{AC922}                                    & \textbf{DGX-1}                                    \\ \hline 
+		Pageable $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+		Pageable $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+		Pinned $\leftrightarrow$ GPU (local)    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \makecell{for intermediate \\ sizes (Fig.~\ref{fig:hal_pinned_affinity}) } & \checkmark (Fig.~\ref{fig:dgx_pinned_affinity}) \\ \hline
+		Pinned $\leftrightarrow$ GPU (remote)   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & \checkmark (Fig.~\ref{fig:dgx_pinned_affinity})   \\ \hline
+	\end{tabular}
 \end{table}
 
 \subsection{Differences between Identical Transfers}
@@ -413,26 +419,26 @@ Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer perfo
 S822LC is the only system where this behavior is observed for CPU-GPU transfers.
 
 \begin{figure}[ht]
-    \centering
-        \includegraphics[width=0.45\textwidth]{figures/generated/minsky_pageable_cpu1-gpu01.pdf}
-    \caption[\todo{short}]{
-        Transfer bandwidth vs size for a pageable allocation on CPU1 to an allocation on GPU0 or GPU1.
-    }
-    \label{fig:minsky_pageable_cpu1-gpu01}
+	\centering
+	\includegraphics[width=0.45\textwidth]{figures/generated/minsky_pageable_cpu1-gpu01.pdf}
+	\caption[\todo{short}]{
+		Transfer bandwidth vs size for a pageable allocation on CPU1 to an allocation on GPU0 or GPU1.
+	}
+	\label{fig:minsky_pageable_cpu1-gpu01}
 \end{figure}
 
 \begin{table}[ht]
-    \centering
-    \caption[Matrix: Transfer rate vary on identical links]{Scenarios where bandwidth is observed to differ on identical links}
-    \label{tab:explicit-identical}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind}     & \textbf{S822LC}     & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    Pageable $\rightarrow$ GPU & fot intermediate sizes (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$ & $\times$ \\ \hline
-    Pageable $\leftarrow$ GPU  & $\times$ & $\times$ & $\times$ \\ \hline
-    Pinned $\rightarrow$ GPU   & $\times$ & $\times$ & $\times$ \\ \hline
-    Pinned $\leftarrow$ GPU    & $\times$ & $\times$ & $\times$ \\ \hline
-    \end{tabular}
+	\centering
+	\caption[Matrix: Transfer rate vary on identical links]{Scenarios where bandwidth is observed to differ on identical links}
+	\label{tab:explicit-identical}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}     & \textbf{S822LC}                                                    & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+		Pageable $\rightarrow$ GPU & fot intermediate sizes (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$       & $\times$       \\ \hline
+		Pageable $\leftarrow$ GPU  & $\times$                                                           & $\times$       & $\times$       \\ \hline
+		Pinned $\rightarrow$ GPU   & $\times$                                                           & $\times$       & $\times$       \\ \hline
+		Pinned $\leftarrow$ GPU    & $\times$                                                           & $\times$       & $\times$       \\ \hline
+	\end{tabular}
 \end{table}
 
 \section{GPU / GPU Transfers}
@@ -443,9 +449,9 @@ Unlinke the different types of host allocations CPU-GPU transfers described in S
 Device allocations come with the concept of peer access, discussed in Section~\ref{sec:cuda-peer}.
 This section covers
 \begin{itemize}
-\item The effect of peer access on transfer bandwidth (Section~\ref{sec:explicit-peer-bandwidth})
-\item Cases of observed anisotropic transfer properties (Section~\ref{sec:explicit-peer-direction})
-\item Cases of differing performance on identical links (Section~\ref{sec:explicit-peer-identical})
+	\item The effect of peer access on transfer bandwidth (Section~\ref{sec:explicit-peer-bandwidth})
+	\item Cases of observed anisotropic transfer properties (Section~\ref{sec:explicit-peer-direction})
+	\item Cases of differing performance on identical links (Section~\ref{sec:explicit-peer-identical})
 \end{itemize}
 
 Algorithm~\ref{alg:explicit} is used to evaluate the achievable GPU-GPU transfer bandwidth.
@@ -454,41 +460,41 @@ Then, \texttt{cudaMalloc} is used to create allocations of $transfer\_size$ byte
 Finally, the achievable bandwidth is measured using the wall time for $num\_iters$ iterations, and the minimum elapsed time is reported, to help remove jitter from the results.
 
 \begin{algorithm}
-    \caption{Measuring explicit \texttt{cudaMemcpy} performance}
-    \label{alg:explicit}
-    \begin{algorithmic}[1]
-    \Statex
-    \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$, $peer\_access$}
-        \If{$peer\_access$}
-            \State \texttt{cudaSetDevice($src$)}
-            \State \texttt{cudaDeviceEnablePeerAccess($dst$)}
-            \State \texttt{cudaSetDevice($dst$)}
-            \State \texttt{cudaDeviceEnablePeerAccess($src$)}
-        \Else
-            \State \texttt{cudaSetDevice($src$)}
-            \State \texttt{cudaDeviceDisablePeerAccess($dst$)}
-            \State \texttt{cudaSetDevice($dst$)}
-            \State \texttt{cudaDeviceDisablePeerAccess($src$)}        
-        \EndIf
-
-        \State \texttt{cudaSetDevice($src$)} \Comment{Source allocation}
-        \State $srcPtr \gets$ \texttt{cudaMalloc($transfer\_size$)}
-
-        \State \texttt{cudaSetDevice($dst$)} \Comment{Destination allocation}
-        \State $dstPtr \gets$ \texttt{cudaMalloc($transfer\_size$)}
-
-        \State $elapsed \gets infinity$ \Comment{minimum of $num\_iters$ observations}
-        \For{$i \gets 1 \textrm{ to } num\_iters$}
-            \State $start \gets$ walltime()
-            \State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
-            \State $end \gets$ walltime()
-            \State $elapsed \gets$ min($elapsed$, $end-start$)
-        \EndFor
-
-    \Return $elapsed$
-    \EndFunction
-
-    \end{algorithmic}
+	\caption{Measuring explicit \texttt{cudaMemcpy} performance}
+	\label{alg:explicit}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$, $peer\_access$}
+		\If{$peer\_access$}
+		\State \texttt{cudaSetDevice($src$)}
+		\State \texttt{cudaDeviceEnablePeerAccess($dst$)}
+		\State \texttt{cudaSetDevice($dst$)}
+		\State \texttt{cudaDeviceEnablePeerAccess($src$)}
+		\Else
+		\State \texttt{cudaSetDevice($src$)}
+		\State \texttt{cudaDeviceDisablePeerAccess($dst$)}
+		\State \texttt{cudaSetDevice($dst$)}
+		\State \texttt{cudaDeviceDisablePeerAccess($src$)}        
+		\EndIf
+		
+		\State \texttt{cudaSetDevice($src$)} \Comment{Source allocation}
+		\State $srcPtr \gets$ \texttt{cudaMalloc($transfer\_size$)}
+		
+		\State \texttt{cudaSetDevice($dst$)} \Comment{Destination allocation}
+		\State $dstPtr \gets$ \texttt{cudaMalloc($transfer\_size$)}
+		
+		\State $elapsed \gets infinity$ \Comment{minimum of $num\_iters$ observations}
+		\For{$i \gets 1 \textrm{ to } num\_iters$}
+		\State $start \gets$ walltime()
+		\State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
+		\State $end \gets$ walltime()
+		\State $elapsed \gets$ min($elapsed$, $end-start$)
+		\EndFor
+		
+		\Return $elapsed$
+		\EndFunction
+		
+	\end{algorithmic}
 \end{algorithm}
 
 \subsection{Transfer Rate and Peer Access}
@@ -505,53 +511,53 @@ On remote transfers, with or without peer access, the data must traverse several
 Table~\ref{tab:explicit-peer} summarizes the scenarios where peer access affects transfer performance.
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_memcpy_local.pdf}
-        \caption{}
-        \label{fig:explicit-s822lc-peer}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_peer_local.pdf}
-        \caption{}
-        \label{fig:explicit-hal-peer-local}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_peer_remote.pdf}
-        \caption{}
-        \label{fig:explicit-hal-peer-remote}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/dgx_peer_nopeer_local.pdf}
-        \caption{}
-        \label{fig:explicit-dgx-peer-nopeer-local}
-    \end{subfigure}
-
-    \caption[\todo{short}]{
-        Transfer bandwidth vs transfer size for various scenarios with peer access enabled or disabled.
-        (a) shows a GPU0 to GPU1 transfer on S822LC with and without peer access,
-        (b) shows GPU to GPU local transfers on AC922.
-        (c) shows GPU to GPU remote transfers on AC922.
-        (d) shows GPU to GPU local transfers on DGX-1.
-        S822LC and DGX-1 do not support peer access for remote GPU-GPU transfers.
-    }
-    \label{fig:explicit-peer}
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/minsky_memcpy_local.pdf}
+		\caption{}
+		\label{fig:explicit-s822lc-peer}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_peer_local.pdf}
+		\caption{}
+		\label{fig:explicit-hal-peer-local}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_peer_remote.pdf}
+		\caption{}
+		\label{fig:explicit-hal-peer-remote}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_peer_nopeer_local.pdf}
+		\caption{}
+		\label{fig:explicit-dgx-peer-nopeer-local}
+	\end{subfigure}
+	
+	\caption[\todo{short}]{
+		Transfer bandwidth vs transfer size for various scenarios with peer access enabled or disabled.
+		(a) shows a GPU0 to GPU1 transfer on S822LC with and without peer access,
+		(b) shows GPU to GPU local transfers on AC922.
+		(c) shows GPU to GPU remote transfers on AC922.
+		(d) shows GPU to GPU local transfers on DGX-1.
+		S822LC and DGX-1 do not support peer access for remote GPU-GPU transfers.
+	}
+	\label{fig:explicit-peer}
 \end{figure}
 
 
 \begin{table}[ht]
-    \centering
-    \caption[Matrix: Transfer rate affected by peer access]{Is transfer rate affected by peer access?}
-    \label{tab:explicit-peer-rate}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind}       & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    GPU $\rightarrow$ Local GPU  & \checkmark      & \checkmark     & \checkmark \\ \hline
-    GPU $\rightarrow$ Remote GPU & N/A             & \checkmark     & N/A \\ \hline
-    \end{tabular}
+	\centering
+	\caption[Matrix: Transfer rate affected by peer access]{Is transfer rate affected by peer access?}
+	\label{tab:explicit-peer-rate}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}       & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+		GPU $\rightarrow$ Local GPU  & \checkmark      & \checkmark     & \checkmark     \\ \hline
+		GPU $\rightarrow$ Remote GPU & N/A             & \checkmark     & N/A            \\ \hline
+	\end{tabular}
 \end{table}
 
 
@@ -568,52 +574,52 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 Figure~\ref{fig:explicit-peer-anisotropy} highlights anisotropic remote GPU-GPU transfers on S822LC and AC922.
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_nopeer_remote.pdf}
-        \caption{}
-        \label{fig:minsky-explicit-nopeer-remote}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_path_gpu0-gpu2.pdf}
-        \caption{}
-        \label{fig:minsky-explicit-path-gpu0-gpu2}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_path_gpu2-gpu0.pdf}
-        \caption{}
-        \label{fig:minsky-explicit-path-gpu2-gpu0}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_nopeer_remote.pdf}
-        \caption{}
-        \label{fig:explicit-ac922-nopeer-remote}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        Transfer bandwidth vs transfer size when peer access is disabled.
-        (a) shows anisotropy on transfers between GPU0 and GPU2 on S822LC.
-        (b) and (c) show transfer rates along the GPU0-CPU0 and CPU1-GPU2 components of the links.
-        Although (b) and (c) are the same, the anisotropy still exists in the aggregated logical link.
-        (d) shows anisotropy on AC922.
-    }
-    \label{fig:explicit-peer-anisotropy}
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/minsky_nopeer_remote.pdf}
+		\caption{}
+		\label{fig:minsky-explicit-nopeer-remote}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/minsky_path_gpu0-gpu2.pdf}
+		\caption{}
+		\label{fig:minsky-explicit-path-gpu0-gpu2}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/minsky_path_gpu2-gpu0.pdf}
+		\caption{}
+		\label{fig:minsky-explicit-path-gpu2-gpu0}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_nopeer_remote.pdf}
+		\caption{}
+		\label{fig:explicit-ac922-nopeer-remote}
+	\end{subfigure}
+	\caption[\todo{short}]{
+		Transfer bandwidth vs transfer size when peer access is disabled.
+		(a) shows anisotropy on transfers between GPU0 and GPU2 on S822LC.
+		(b) and (c) show transfer rates along the GPU0-CPU0 and CPU1-GPU2 components of the links.
+		Although (b) and (c) are the same, the anisotropy still exists in the aggregated logical link.
+		(d) shows anisotropy on AC922.
+	}
+	\label{fig:explicit-peer-anisotropy}
 \end{figure}
 
 \begin{table}[ht]
-    \centering
-    \caption[GPU-GPU Transfer Anisotropy]{GPU-GPU Transfer Anisotropy}
-    \label{tab:explicit-peer-direction}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind}                           & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$        & $\times$       & $\times$ \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A             & $\times$       & N/A      \\ \hline
-    GPU $\leftrightarrow$ Local GPU  (peer disabled) & $\times$        & $\times$       & $\times$ \\ \hline
-    GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark (Fig.~\ref{fig:minsky-explicit-nopeer-remote})  & \checkmark (Fig.~\ref{fig:explicit-ac922-nopeer-remote})    & $\times$ \\ \hline
-    \end{tabular}
+	\centering
+	\caption[GPU-GPU Transfer Anisotropy]{GPU-GPU Transfer Anisotropy}
+	\label{tab:explicit-peer-direction}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}                           & \textbf{S822LC}                                           & \textbf{AC922}                                           & \textbf{DGX-1} \\ \hline 
+		GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$                                                  & $\times$                                                 & $\times$       \\ \hline
+		GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A                                                       & $\times$                                                 & N/A            \\ \hline
+		GPU $\leftrightarrow$ Local GPU  (peer disabled) & $\times$                                                  & $\times$                                                 & $\times$       \\ \hline
+		GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark (Fig.~\ref{fig:minsky-explicit-nopeer-remote}) & \checkmark (Fig.~\ref{fig:explicit-ac922-nopeer-remote}) & $\times$       \\ \hline
+	\end{tabular}
 \end{table}
 
 \subsection{Transfer Rate on Identical Transfers}
@@ -630,57 +636,57 @@ Figure~\ref{fig:explicit-nopeer-identical-dgx} shows how GPU0-GPU1, GPU2-GPU3, G
 Table~\ref{tab:explicit-identical} summarizes the cases where differing performance is observed.
 
 \begin{figure}[ht]
-    \centering
-    \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_nopeer_identical-local.pdf}
-        \caption{}
-        \label{fig:explicit-nopeer-identical-ac922-local}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/hal_nopeer_identical-remote.pdf}
-        \caption{}
-        \label{fig:explicit-nopeer-identical-ac922-remote}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_nopeer_identical-local.pdf}
-        \caption{}
-        \label{fig:explicit-nopeer-identical-s822lc-local}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/minsky_nopeer_identical-remote.pdf}
-        \caption{}
-        \label{fig:explicit-nopeer-identical-s822lc-remote}
-    \end{subfigure}
-    \\
-    \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{figures/generated/dgx_nopeer_identical.pdf}
-        \caption{}
-        \label{fig:explicit-nopeer-identical-dgx}
-    \end{subfigure}
-    \caption[\todo{short}]{
-        Transfer bandwidth vs transfer size for AC922 and S822LC.
-        (a) and (b) show differeing transfer bandwidth on logically-identical local and remote transfers for AC922.
-        (c) and (d) show the same for S822LC.
-        (e) shows the same for DGX-1.
-    }
-    \label{fig:explicit-nopeer-identical}
+	\centering
+	\begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_nopeer_identical-local.pdf}
+		\caption{}
+		\label{fig:explicit-nopeer-identical-ac922-local}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/hal_nopeer_identical-remote.pdf}
+		\caption{}
+		\label{fig:explicit-nopeer-identical-ac922-remote}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/minsky_nopeer_identical-local.pdf}
+		\caption{}
+		\label{fig:explicit-nopeer-identical-s822lc-local}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/minsky_nopeer_identical-remote.pdf}
+		\caption{}
+		\label{fig:explicit-nopeer-identical-s822lc-remote}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_nopeer_identical.pdf}
+		\caption{}
+		\label{fig:explicit-nopeer-identical-dgx}
+	\end{subfigure}
+	\caption[\todo{short}]{
+		Transfer bandwidth vs transfer size for AC922 and S822LC.
+		(a) and (b) show differeing transfer bandwidth on logically-identical local and remote transfers for AC922.
+		(c) and (d) show the same for S822LC.
+		(e) shows the same for DGX-1.
+	}
+	\label{fig:explicit-nopeer-identical}
 \end{figure}
 
 \begin{table}[ht]
-    \centering
-    \caption[Matrix: Transfer rate on Identical Links]{Does the GPU transfer rate vary on identical links?}
-    \label{tab:explicit}
-    \begin{tabular}{|c|c|c|c|}
-    \hline
-    \textbf{Transfer Kind}                           & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-    \makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer enabled)  } & $\times$                                                            & $\times$                                                           & $\times$                                                  \\ \hline
-    \makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer enabled)  } & N/A                                                                 & $\times$                                                           & N/A                                                       \\ \hline
-    \makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-local})  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-ac922-local})  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-dgx}) \\ \hline
-    \makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-remote}) & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-ac922-remote}) & $\times$                                                  \\ \hline
-    \end{tabular}
+	\centering
+	\caption[Matrix: Transfer rate on Identical Links]{Does the GPU transfer rate vary on identical links?}
+	\label{tab:explicit}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Transfer Kind}                      \\ \hline 
+		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer enabled)  } & $\times$                                                            & $\times$                                                           & $\times$                                                  \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer enabled)  } & N/A                                                                 & $\times$                                                           & N/A                                                       \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-local})  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-ac922-local})  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-dgx}) \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-remote}) & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-ac922-remote}) & $\times$                                                  \\ \hline
+	\end{tabular}
 \end{table}
 
 \section{Summary}
