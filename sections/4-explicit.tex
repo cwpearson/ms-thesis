@@ -1,7 +1,12 @@
 \chapter{Explicit Memory Performance}
 \label{ch:explicit}
 
-This chapter is broken into three sections, describing explicit CPU-GPU transfers (Section~\ref{sec:explicit-cpu-gpu}) and GPU-GPU transfers (Section~\ref{sec:explicit-gpu-gpu}), both using \texttt{cudaMemcpy}.
+This chapter examines the performance of explicit data transfers over logical communication links presented in a system with NUMA and CUDA interfaces.
+\begin{itemize}
+    \item Section~\ref{sec:explicit-cpu-cpu} describes CPU-to-CPU transfers.
+    \item Section~\ref{sec:explicit-cpu-gpu} describes transfers between CPUs and GPUs.
+    \item Section~\ref{sec:explicit-gpu-gpu} describes GPU-to-GPU transfers.
+\end{itemize}
 It highlights cases where the observed logical communication performance deviates significantly from the symmetries present in the CUDA API, numactl API, and hardware.
 Those deviances take the form of different performance on identical links, anisotropic link performance, or performance affected by device affinity.
 Full results can be found in Appendix~\ref{ch:data}.
@@ -9,35 +14,70 @@ Full results can be found in Appendix~\ref{ch:data}.
 \section{CPU / CPU Transfers}
 \label{sec:explicit-cpu-cpu}
 
-Although not an operation used in CUDA applications, this section begins by examining CPU-CPU transfer performance by using multiple threads to read remote data in an attempt to saturate the SMP bus and memory controllers.
+This section begins by examining CPU-CPU transfer performance by using multiple threads to read remote data in an attempt to saturate the SMP bus and memory controllers.
 This attempts to simulate the maximum possible performance that the CUDA API could achieve while sending data between sockets for CPU-to-GPU transfers.
 Algorithm~\ref{alg:explicit-cpu-cpu} describes the approach.
 
 Two types of traffic are generated.
-In the \texttt{read} operation, source-to-destination bandwidth is measured by a set of worker threads on the destination CPU generating loads for an allocation on the source CPU.
-In the \texttt{write} operation, bandwidth is measured by worker threads on the source CPU writing to an allocation on the destination CPU.
-First, an allocation is created on the appropriate CPU.
-Then, the worker threads are bound to the desired CPU, and the read or write workload is executed.
+In the \texttt{read} operation (Listing~\ref{lst:explicit-cpu-cpu-cpuread}), source-to-destination bandwidth is measured by a set of worker threads on the destination CPU generating loads for an allocation on the source CPU.
+In the \texttt{write} operation (Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}), bandwidth is measured by worker threads on the source CPU writing to an allocation on the destination CPU.
+First, an allocation is created on the source CPU
+Then, the worker threads are bound to the desired CPU, and the \texttt{cpu\_read} or \texttt{cpu\_write} workload is executed.
 The read and write operations are executed on data members 8 bytes in size, to reflect the 8-byte payload on the X bus~\cite{caldeira2016s822lc}.
 
+\begin{lstlisting}[language=C++, caption=CPU-CPU Read Function, label=lst:explicit-cpu-cpu-cpuread]
+void cpu_read(double *__restrict__ dummy,
+                double *__restrict__ ptr,
+                const size_t count,
+                const size_t stride) {
+    const size_t numElems = count / sizeof(double);
+    const size_t elemsPerStride = stride / sizeof(double);
+    double acc = 0;
+#pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < numElems; i += elemsPerStride) {
+        acc += ptr[i];
+    }
+    *dummy += acc;
+}
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=C++, caption=CPU-CPU Write Function, label=lst:explicit-cpu-cpu-cpuwrite]
+void cpu_write(double *__restrict__ ptr, 
+                 const size_t count, 
+                 const size_t stride) {
+    const size_t numElems = count / sizeof(double);
+    const size_t elemsPerStride = stride / sizeof(double);
+#pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < numElems; i += elemsPerStride) {
+        ptr[i] = i * 31ul + 7ul;
+    }
+}
+\end{lstlisting}
+
+For both the \texttt{cpu\_read} and \texttt{cpu\_write} operations, \texttt{ptr} is the allocation that is being read or written,
+\texttt{count} is the number of bytes in that allocation, and \texttt{stride} is the number of bytes between every read or write.
+Since memory loads in isolation are side-effect free, \texttt{cpu\_read} is designed to avoid being optimized away by the compiler.
+The array values are accumulated and the sum is written out through the \texttt{dummy} argument.
+This takes a small amount of time that is incorrectly attributed to the elapsed bandwidth time.
+For both operations, OpenMP is used to evenly distribute the read or write operations amongst the cores of the executing CPU.
+Entering and exiting the parallel region incurrs some cost, which is counted in the bandwidth computation.
+
 \begin{algorithm}
-    \caption{Algorithm to measure CPU-CPU Bandwidth}
+    \caption[test]{
+        Algorithm to measure CPU-CPU Bandwidth.
+        \texttt{cpu\_read} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuread} and \texttt{cpu\_write} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}.
+        \texttt{numa\_bind} binds the executing thread to the provided NUMA node.
+        \texttt{walltime} returns the current wall time.
+    }
     \label{alg:explicit-cpu-cpu}
     \begin{algorithmic}[1]
-    \Statex
-    \Function{cpu\_read}{$ptr$, $count$, $stride$}
-        \State \Return 
-    \EndFunction
-    \Statex
-    \Function{cpu\_write}{$ptr$, $count$, $stride$}
-        \State \Return 
-    \EndFunction
     \Statex
     \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
         \If{$op$ is RD}
             \State \texttt{numa\_bind($src$)}
         \Else
-            \State \texttt{numa\_bind($dst$}
+            \State \texttt{numa\_bind($dst$)}
         \EndIf
         \State $srcPtr \gets$ \texttt{malloc($transfer\_size$)}
         \State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
@@ -54,15 +94,15 @@ The read and write operations are executed on data members 8 bytes in size, to r
             \If{$op$ is RD}
                 \State \texttt{numa\_bind($dst$)}
             \Else
-                \State \texttt{numa\_bind($src$}
+                \State \texttt{numa\_bind($src$)}
             \EndIf
         \EndFor
 
         \State $start \gets$ walltime()
         \If{$op$ is RD}
-            \State \texttt{cpu\_read\_8($dst$)}
+            \State \texttt{cpu\_read($dst$)}
         \Else
-            \State \texttt{cpu\_write\_8($src$}
+            \State \texttt{cpu\_write($src$}
         \EndIf
         \State $end \gets$ walltime()
         \State $elapsed \gets$ min($elapsed$, $end-start$)
@@ -73,20 +113,28 @@ The read and write operations are executed on data members 8 bytes in size, to r
     \end{algorithmic}
 \end{algorithm}
 
-Figure~\ref{fig:cpu0-cpu1} shows the performance achieved by the \textit{read} and \textit{write} workloads.
-In both cases, the achievable bandwidth for low transfer sizes is limited by the overhead introduced by the workload function calls and OpenMP runtime.
+
+Figure~\ref{fig:cpu0-cpu1} shows the performance achieved by the \texttt{cpu\_read} and \texttt{cpu\_write} workloads.
+The measurement is taken multiple times with varying $num\_workers$, for each $transfer\_size$, and the maximum observed bandwidth
+at each transfer size is reported.
+The highest performing number of workers is highlighted at each transfer size.
+For smaller transfers, fewer workers may result in a faster transfer time as the overhead of entering the parallel region is not amortized effectively.
+
+For both workloads, the achievable bandwidth for low transfer sizes is limited by the overhead introduced by the workload function calls and OpenMP runtime.
 For large transfer sizes, the performance flattens out as the elapsed time is dominated by the actual data transfer over the SMP bus, achieving $30$ GB/s in the read workload and $25$ GB/s in the write workload on S822LC.
 This is consistent with the theoretical 38.4 GB/s performance of the X bus on S822LC.
 
+\todo{Data for DGX-1, AC922}
+
 \begin{figure}[ht]
     \centering
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-dst.pdf}
         \caption{}
         \label{fig:s822lc-cpu0-cpu1}
     \end{subfigure}
     ~
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-src.pdf}
         \caption{}
         \label{fig:s822lc-cpu0-cpu1}
@@ -128,8 +176,7 @@ For pageable transfers, a \texttt{cudaDeviceSynchronize} is also included in the
 
 
 \begin{algorithm}
-    \caption{Algorithm to measure bandwidth achieved using \texttt{cudaMemcpy}}
-    \label{alg:explicit}
+
     \begin{algorithmic}[1]
     \Statex
     \Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$}
@@ -160,6 +207,10 @@ For pageable transfers, a \texttt{cudaDeviceSynchronize} is also included in the
     \EndFunction
 
     \end{algorithmic}
+    \caption[Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}]{
+        Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}
+    }
+    \label{alg:explicit}
 \end{algorithm}
 
 \subsection{Comparison of Pageable, Pinned, and Write-Combining Host Allocations}
