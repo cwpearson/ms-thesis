@@ -2,7 +2,8 @@ graph G {
 
     //ratio=fill;
     //ranksep=1.5;
-    nodesep=0.25;
+    nodesep=1;
+    compound=true;
 
     subgraph cluster_numa0 { label="NUMA Node 0";
         mem0;
@@ -19,5 +20,5 @@ graph G {
     mem0 -- cpu0;
     mem1 -- cpu1;
 
-    mem0 -- mem1 [ltail=cluster_numa1,lhead=cluster_numa0];
+    mem0 -- mem1 [ltail=cluster_numa0,lhead=cluster_numa1,constraint=false];
 }

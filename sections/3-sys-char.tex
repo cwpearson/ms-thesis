@@ -1,31 +1,25 @@
 \chapter{System Characterization}
 \label{ch:sys-char}
 
-Chapter~\ref{ch:introduction} introduced the objective of characterizing the communication performance of heterogeneous systems.
-Section~\ref{sec:sys-abstraction} described how applications interact with an abstraction presented by the system hardware, operating system, and software.
-This chapter describes initial efforts towards a bottom-up approach to characterizing communication system performance.
-
+Section~\ref{sec:sys-abstraction} described how applications interact with an abstraction of the system hardware presented by the operating system, and software.
+This chapter describes the approach for producing an empirical performance model of that performance.
+Chapters~\ref{ch:explicit}~and~\ref{ch:unified} present the results of a ``top-down'' characterization the logical communication capabilities presented by the system abstraction.
+Understanding the results of that characterization requires information about how the logical communication exercises the underlying hardware.
+To that end, this chapter is organized as follows:
 \begin{itemize}
-    \item Section~\ref{sec:abstraction-hardware} motivates a joint model of software abstractions and underlying hardware.
+    \item Section~\ref{sec:abstraction-hardware} motivates a joint performance model of software abstractions and underlying hardware.
     \item Section~\ref{sec:hardware-enumeration} describes an approach for enumerating hardware components and connections.
 \end{itemize}
 
-Chapters~\ref{ch:explicit}~and~\ref{ch:unified} describe results obtained from a top-down approach, where communication abilities exposed to the application are characterized.
-
-
-Though data movement between many different system components is possible, this work focuses on CPU-CPU and CPU-GPU data transfers.
-Section~\ref{sec:hardware-model} describes an overview of the system model.
-Section~\ref{sec:hardware-enumeration} describes a method for discovering data sources, sinks, and communication paths in a system.
-
-
-\section{Joint Abstraction and Hardware MOdel}
+\section{Joint Abstraction and Hardware Model}
 \label{sec:abstraction-hardware}
 
-Consider the two different views of the S822LC machine shown in Figure~\ref{fig:minsky-abstraction}.
-Figure~\ref{fig:minsky-topo-cuda} represents the connectivity of the components through the CUDA API.
+Figure~\ref{fig:minsky-abstraction} shows two different communication abstractions of S822LC.
 Figure~\ref{fig:minsky-topo-numa} represents the Linux NUMA view of the system.
+Figure~\ref{fig:minsky-topo-cuda} represents the connectivity of the components through the CUDA API.
+Nodes in the graphs represent data storage locations or compute elements, and edges in the graph represent logical communication paths considered in this work.
 Both NUMA and CUDA present a different abstraction, which is again different from the system layout in Section~\ref{sec:s822lc}.
-In practice, the logical communication paths available to the system is the union of these abstractions, and any other made available by the system.
+In practice, the logical communication paths available to the system is the union of these abstractions (and any other abstraction made available by the system).
 
 \begin{figure}[ht]
     \centering
@@ -48,30 +42,21 @@ In practice, the logical communication paths available to the system is the unio
     \label{fig:minsky-abstraction}
 \end{figure}
 
-These communication paths each must make use of a communication link present in the physical system, but they do not achieve the same performance on those links.
-High-performance data movement in heterogeneous systems requires understanding properties of the logical communication capabilities exposed by the system.
-The real-world properties of these communication capabilities depends on 
-\begin{enumerate}
-    \item Performance of the logical communication paths provided by the system.
-    \item How the application uses those logical communication paths.
-\end{enumerate}
+Despite many of the logical communication paths using the same physical links, they achieve different performance on those links.
+As demonstrated in Chapters~\ref{ch:explicit}~and~\ref{ch:unified}, some aspects of the empirical performance are determined by properties of the hardware links, while others are not.
+A communication performance model must therefore be based off of the empirical performance of the logical links, but also incorporate understanding of the underlying hardware, if the model is to be applicable to more than just the system it was developed on.
 
-With full knowledge of link properties it is possible to derive an accurate model of the first two elements on this list, that approach has three key barriers
-\begin{itemize}
-    \item Detailed link hardware properties are not available, e.g., when the link provides a competitive advantage for an OEM.
-    \item Detailed link software properies are not available, e.g., when the drivers are proprietary.
-    \item Even if a link is pysically present on the system, it may not be available to the application {e.g., due to bugs in the system configuration}
-\end{itemize}
-Instead of deriving a model of link performance from the ``first principles'' of link properties, this work attempts to generate an empirical model of performance of data movement in the system.
-By combining the empirical data (the ``top-down approach'') with an understanding of the underlying hardware topology (the ``bottom-up approach''), a realistic model can be created.
-
-
+Ideally, while empirical communication performance is characterized, the mapping to underlying hardware should be automatically established.
+This work takes that mapping as a-priori, but the following section presents initial efforts to automate the process.
 
 \section{Topology Enumeration}
 \label{sec:hardware-enumeration}
 
-In this approach, the underlying hardware is discovered.
-
+This work proposes a two-step approach to establishing a mapping from logical communication paths to underlying hardware.
+\begin{enumerate}
+    \item Generate a graph $G_s$ of the hardware
+    \item Observe hardware utilization while exercising logical communication paths
+\end{enumerate}
 The hardware is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing communication endpoints, or data routing elements.
 Sections~\ref{sec:system-vertices} and \ref{sec:system-edges} describe the specific system components explored.
 Each vertex in $V$ is a data routing element.
@@ -82,10 +67,8 @@ Processing elements and data storage elements serve as communication endpoints.
 
 \texttt{hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration.
 This tool can be executed on a target system to generate $G_s$ for that system.
-Presently, the tool has only been tested on Linux operating systems.
-The first step in generating $G_s$ is to discovere the topology.
-\texttt{hwcomm} builds an in-memory representation of $G_s$, with sufficient information to later access the device during characterization.
-Enumeration is done in several phases.
+Thought \texttt{hwcomm} relies largely on exploring the PCIe device tree, it also uses information provided by the NVIDIA Management Library~\cite{nvidia2017nvml} (NVML) to discover NVLink devices, and build a graph of hardware components.
+The first step of generating $G_s$ is to discover the hardware components and connections through a multi-stage process.
 
 \textbf{Enumerate and Link CPU Sockets:}
 
@@ -101,7 +84,7 @@ Most attached storage, networking, and computing components are assigned an addr
 
 \textbf{Update GPUs to NVIDIA GPUs as appropriate:}
 
-Next, the NVIDIA Management Library~\cite{nvidia2017nvml} (NVML) is used to enumerate all NVIDIA GPUs.
+Next, NVML is used to enumerate all NVIDIA GPUs.
 Those GPUs are matched by PCI address with existing PCI devices previously added to $G_s$, and NVML is used to discover whether NVLink is supported on each GPU and which other device that NVLink terminates at.
 THis information is not provided by hwloc.
 The edges associated with those NVLinks are added to $G_s$.
@@ -113,23 +96,23 @@ The edges associated with those NVLinks are added to $G_s$.
 Table~\ref{tab:topology-vertices} summarizes the types of data routers discovered by hwcomm.
 These make up the vertices of $G_s$.
 
-\begin{table}[]
+\begin{table}[ht]
     \centering
     \caption[Discoverable vertex types]{
         A summary of the types of data routers that can be discovered by \texttt{hwcomm}.
         Some components may also serve as data endpoints.
         }
     \label{tab:topology-vertices}
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|c|c|}
     \hline
-    \textbf{Hardware}       & \textbf{Data Endpoint} & \textbf{Description} \\ \hline
-    CPU Socket              & \checkmark            &                \\ \hline
-    PCI Device              & \checkmark            &                \\ \hline
-    PCIe Hostbridge         &                       &                \\ \hline
-    PCIe Bridge             &                       &                \\ \hline
-    CUDA GPU                & \checkmark            &                \\ \hline
-    Linux Block Device      & \checkmark            &                \\ \hline
-    Linux Network Interface & \checkmark            &                \\ \hline
+    \textbf{Hardware}       & \textbf{Data Endpoint} \\ \hline
+    CPU Socket              & \checkmark             \\ \hline
+    PCI Device              & \checkmark             \\ \hline
+    PCIe Hostbridge         & $\times$               \\ \hline
+    PCIe Bridge             & $\times$               \\ \hline
+    CUDA GPU                & \checkmark             \\ \hline
+    Linux Block Device      & \checkmark             \\ \hline
+    Linux Network Interface & \checkmark             \\ \hline
     \end{tabular}
 \end{table}
 
@@ -138,7 +121,7 @@ These make up the vertices of $G_s$.
 
 In $G_s$, the vertices are connected by the discoverable edge types shown in Table~\ref{tab:topology-edges}.
 
-\begin{table}[]
+\begin{table}[ht]
     \centering
     \caption[Discoverable edge types]{
         A summary of the types of communication links that can be discovered by \texttt{hwcomm}.
@@ -156,5 +139,9 @@ In $G_s$, the vertices are connected by the discoverable edge types shown in Tab
     \end{tabularx}
 \end{table}
 
-In the future, the topology of this hardware graph can be paired with the information gathered during system communication characterization, described in more detail in Sections~\ref{ch:explicit}~and~\ref{ch:managed}.
-The topology of this graph will be used to choose which performance model should be applied to each logical communication path characterization.
+\subsection{Logical Path to Hardware Link Mapping}
+
+Once the system graph is established, the mapping between logical communication paths and system graph vertices and edges can be established by observing performance counters while benchmarking logical paths.
+For example, NVML provides access to NVLink performance counters.
+As known quantities of data are moved across the logical connections, hardware link activity can be observed to determine which links are used.
+This work takes the mapping as a-priori knowledge, but automatically determining this mapping is future work.
