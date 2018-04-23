@@ -49,7 +49,7 @@
 
 
 \newif\ifsubmit
-%\submittrue
+% \submittrue
 \submitfalse
 \ifsubmit
 
@@ -74,6 +74,9 @@
     \newcommand{\rmtext}[1]{{\color{removedColor}\sout{#1}}}
 
 \fi
+
+% Number algorithms by chapter
+\renewcommand{\thealgorithm}{\arabic{chapter}.\arabic{algorithm}} 
 
 % Uncomment the appropriate one of the following four lines:
 \msthesis
@@ -167,6 +170,8 @@
 \clearpage
 \addcontentsline{toc}{chapter}{LIST OF ALGORITHMS}
 \listofalgorithms
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % LIST OF ABBREVIATIONS
