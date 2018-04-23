@@ -1,5 +1,5 @@
 generator: df
-file: dgx_src-wr-dst.csv
+file: ac922_src-wr-dst.csv
 reduce-over:
   - transfer_size
   - threads
@@ -10,7 +10,7 @@ keep:
     val: CPU0
     op: "="
   - col: dst
-    val: CPU1
+    val: CPU8
     op: "="
   - col: "transfer_size"
     val: 0
@@ -28,4 +28,4 @@ yaxis:
 xaxis:
   type: log
   label: Transfer Size (MB/s)
-title: CPU0 Write to CPU1 (DGX-1)
+title: CPU0 Write to CPU1 (AC922)
