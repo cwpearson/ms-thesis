@@ -135,6 +135,12 @@ def generator_df(fig, yaml_dir, plot_cfg):
 
     df = pd.read_csv(file_path)
 
+    for scale_cfg in plot_cfg.get("scale", {}):
+        col = scale_cfg["col"]
+        factor = scale_cfg["factor"]
+        print "scaling:", col, factor
+        df[col] *= factor
+
     groups = plot_cfg["reduce-over"]
     print "reducing by", groups
     means = df.groupby(groups).mean()
@@ -147,8 +153,6 @@ def generator_df(fig, yaml_dir, plot_cfg):
 
     df = pd.concat([maxes, errors], axis=1)
     df = df.reset_index()
-
-    print df
 
     for keep in plot_cfg["keep"]:
         colStr = keep["col"]
@@ -167,12 +171,37 @@ def generator_df(fig, yaml_dir, plot_cfg):
     by_count = df.groupby(["transfer_size"])
     max_bw = by_count.max()
 
-    print max_bw
-
     ax = max_bw.plot(ax=ax, kind="line", y="bandwidth (max)",
                      label="max observed")
 
-    ax.set_xscale("log")
+    xscale = plot_cfg.get("xaxis", {}).get("type", "log")
+    print "setting xscale to:", xscale
+    ax.set_xscale(xscale)
+
+    # Set y axis stuff
+    yaxis_cfg = plot_cfg.get("yaxis", {})
+    label = yaxis_cfg.get("label", None)
+    if label:
+        print "setting ylabel:", label
+        ax.set_ylabel(label)
+    lim = yaxis_cfg.get("lim", None)
+    if lim:
+        print "setting ylim:", lim
+        ax.set_ylim(lim[0], lim[1])
+
+    # Set x axis stuff
+    label = plot_cfg.get("xaxis", {}).get("label", None)
+    if label:
+        print "setting xlabel:", label
+        ax.set_xlabel(label)
+
+    # Set title
+    title = plot_cfg.get("title", None)
+    if title:
+        print "setting title:", title
+        ax.set_title(title)
+
+
     ax.set_ylim(bottom=0)
     plt.legend()
 
