@@ -139,6 +139,18 @@ This is consistent with the theoretical 38.4 GB/s performance of the X bus on S8
         \caption{}
         \label{fig:s822lc-cpu0-cpu1}
     \end{subfigure}
+    \\
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/dgx_cpu0-cpu1-dst.pdf}
+        \caption{}
+        \label{fig:dgx-cpu0-cpu1-dst}
+    \end{subfigure}
+    ~
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figures/generated/dgx_cpu0-cpu1-src.pdf}
+        \caption{}
+        \label{fig:dgx-cpu0-cpu1-src}
+    \end{subfigure}
     \caption[\todo{short}]{
         CPU0 to CPU1 transfer bandwidth vs. transfer size.
         The bandwidth achieved by one through 16 simultaneous worker threads is shown, with the maximum observed bandwidth across the number of threads highlighted.
