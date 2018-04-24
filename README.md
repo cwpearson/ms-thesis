@@ -8,11 +8,12 @@
 
 * [Latest `master`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_master.pdf)
 * [Latest `develop`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_develop.pdf)
-* [v0.1](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.1.pdf) given to Wen-Mei Hwu on 3/15/2018.
-* [v0.2](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.2.pdf) shown to Wen-Mei Hwu on 4/08/2018.
-* [v0.3](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.3.pdf) shown to CAB on 4/10/2018.
-* [v0.4](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.4.pdf) Sent to Wen-Mei on 4/22/2018.
+* [v0.6](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.6.pdf) Clean up ch4.
 * [v0.5](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.5.pdf) Draft ch1,2,3.
+* [v0.4](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.4.pdf) Sent to Wen-Mei on 4/22/2018.
+* [v0.3](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.3.pdf) shown to CAB on 4/10/2018.
+* [v0.2](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.2.pdf) shown to Wen-Mei Hwu on 4/08/2018.
+* [v0.1](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.1.pdf) given to Wen-Mei Hwu on 3/15/2018.
 
 
 ## References
