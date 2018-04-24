@@ -9,25 +9,28 @@
     How this work furthers the understanding
 }
 
-\section{System Topology Enumeration}
+\section{System Topology Enumeration / Hardware Models}
 
-hwloc~\cite{broquedis2010hwloc} provides a tree of system components, while modern heterogeneous systems are better described as a graph.
-
-\todo{OS support for this sort of thing.}
-
-\section{System Characterization}
-
-MGBench, a multi-GPU communication benchmark~\cite{bennun2016mgbench}.
-
-Quantifying NUMA and contention effects in multi-GPU systems~\cite{spafford2011quantifying}.
-
-An Evaluation of Unified Memory Technology on NVIDIA GPUs~\cite{li2015evaluation}.
-
-\section{Dependence Graph Scheduling}
+hwloc~\cite{broquedis2010hwloc} is designed around the expectation that current and next-generation systems are hierarchical.
+This work proposes a tool that leverages \texttt{hwloc}, but is designed around the expectation that systems will be better modeled as a graph.
 
 \cite{amaral2017topology} use a similar hardware model, graph partitioning, estimating communication cost.
 
-\section{APIs}
+\section{System Characterization}
+
+Prior work has examined the performance penalty of incorrect NUMA mappings in multi-GPU systems.
+Spafford, Meredith, and Vetter~\cite{spafford2011quantifying} show significant anisotropy and bandwidth degredation in PCIe bandwidth for incorrect NUMA pinnings. \todo{They also discuss some performance effect on applications and performance under contention}.
+
+
+MGBench, a multi-GPU communication benchmark~\cite{bennun2016mgbench}.
+SHOC, the Scalable Heterogeneous Computing Benchmark Suite~\cite{danalis2010scalable}.
+
+
+Prior work has investigated unified memory performance in CUDA systems.
+Li et. al. examine several HPC applications, and attribute reduced UM performance to redundant memory transfers and page faults~\cite{li2015evaluation}.
+Landaverde et. al.~\cite{landaverde2014investigation}.
+
+\section{NUMA / Multi-GPU APIs}
 
 Umpire~\cite{beckingsale2018umpire}.
 

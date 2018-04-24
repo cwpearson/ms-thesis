@@ -18,7 +18,8 @@
 
 ## References
 
-[dropbox](https://www.dropbox.com/home/research/ms-thesis)
+[dropbox](https://www.dropbox.com/home/research/library)
+[spreadsheet](https://docs.google.com/spreadsheets/d/1GUxb7cs10_rtYfop1Kh68EDI8UsLvqtMwNE_sGqkqL4/edit#gid=2045760646)
 
 ## Useful Links
 
