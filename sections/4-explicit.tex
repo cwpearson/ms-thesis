@@ -18,7 +18,7 @@ This section begins by examining CPU-CPU transfer performance by using multiple 
 This attempts to simulate the maximum possible performance that the CUDA API could achieve while sending data between sockets for CPU-to-GPU transfers.
 Algorithm~\ref{alg:explicit-cpu-cpu} describes the approach.
 
-Two types of traffic are generated.
+Two types of traffic are measured, in \texttt{read\_bandwidth} and \texttt{write\_bandwidth}.
 In the \texttt{read} operation (Listing~\ref{lst:explicit-cpu-cpu-cpuread}), source-to-destination bandwidth is measured by a set of worker threads on the destination CPU generating loads for an allocation on the source CPU.
 In the \texttt{write} operation (Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}), bandwidth is measured by worker threads on the source CPU writing to an allocation on the destination CPU.
 First, an allocation is created on the source CPU
@@ -67,31 +67,32 @@ Entering and exiting the parallel region incurrs some cost, which is counted in 
 	\caption[test]{
 		Algorithm to measure CPU-CPU Bandwidth.
 		\texttt{cpu\_read} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuread} and \texttt{cpu\_write} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}.
-		\texttt{numa\_bind} binds the executing thread to the provided NUMA node.
+		\texttt{bind\_cpu} binds the executing thread to the provided NUMA node.
 		\texttt{walltime} returns the current wall time.
 	}
 	\label{alg:explicit-cpu-cpu}
 	\begin{algorithmic}[1]
 		\Statex
-		
+        
+        \Function{numa\_bind}{$dev$}
+        \State \texttt{bind\_cpu($dev$)}
+        \For{all worker threads}
+        \State \texttt{bind\_cpu($dev$)}
+        \EndFor
+        \EndFunction
+
 		\Function{read\_bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
+		\State \texttt{omp\_set\_num\_threads($num\_workers$)}
 		\State \texttt{numa\_bind($src$)}
 		\State $srcPtr \gets$ \texttt{malloc($transfer\_size$)}
-		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
 		
 		\State \texttt{numa\_bind($dst$)}
-		\State \texttt{omp\_set\_num\_threads($num\_workers$)}
 		\Statex
-		
-		\For{all worker threads} \Comment bind workers to $src$ or $dst$
-		\State \texttt{numa\_bind($dst$)}
-		\EndFor
-		
+
 		\State $start \gets$ walltime()
-		\State \texttt{cpu\_read($dst$)}
+		\State \texttt{cpu\_read($dst$, $transfer\_size$, $8$)}
 		\State $end \gets$ walltime()
-		\State $elapsed \gets$ min($elapsed$, $end-start$)
-		
+        \State $elapsed \gets$ $end-start$
 		\State \Return $elapsed$
 		\EndFunction
 		
@@ -109,10 +110,9 @@ Entering and exiting the parallel region incurrs some cost, which is counted in 
 		\EndFor
 		
 		\State $start \gets$ walltime()
-		\State \texttt{cpu\_write($src$}
+		\State \texttt{cpu\_write($src$, $transfer\_size$, 8)}
 		\State $end \gets$ walltime()
-		\State $elapsed \gets$ min($elapsed$, $end-start$)
-		
+        \State $elapsed \gets$ $end-start$
 		\State \Return $elapsed$
 		\EndFunction
 		
