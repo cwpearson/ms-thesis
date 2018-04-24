@@ -13,7 +13,6 @@ keep:
     val: CPU1
     op: "="
   - col: transfer_size
-    # val: 32000000
     val: 0
     op: gt # greater than
 scale:
@@ -25,7 +24,7 @@ yaxis:
   label: Transfer Bandwidth (MB/s)
   lim:
     - 0
-    - 100000
+    - 50000
 xaxis:
   type: log
   label: Transfer Size (MB/s)
