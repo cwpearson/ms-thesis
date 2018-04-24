@@ -104,7 +104,7 @@ Table~\ref{tab:interconnect-overview} summarizes the theoretical bandwidth of co
 Figure~\ref{fig:interconnect-cartoon} shows example PCIe and NVLink topologies.
 Section~\ref{sec:cuda-peer} describes how these topologies affect parts of the CUDA peer-communication API.
 
-\begin{table}[h]
+\begin{table}[ht]
 	\centering
 	\caption[Interconnect Performance Summary]{
 		Theoretical performance for common interconnect configurations.
@@ -202,7 +202,7 @@ This impacts the design of the performance characterization routines in Chapter~
 \texttt{cudaMemcpyPeer} initiates a DMA copy from one GPU to another, without involving the host.
 This can improve the bandwidth of the transfer between supported devices.
 
-\begin{table}[h]
+\begin{table}[ht]
 	\centering
 	\caption[Basic Memory-management APIs]{
 		Basic CUDA Memory-Management APIs and C/C++ APIs
@@ -250,7 +250,7 @@ When the application uses these APIs, the first copy from pageable host memory t
 Section~\ref{sec:explicit-pageable-pinned-wc} demonstrates the performance improvement from skipping this first copy.
 Overuse of page-locked memory on the host will degrade overall application performance or even impact system stability if the host system is not able to page as needed.
 
-\begin{table}[h]
+\begin{table}[ht]
 	\centering
 	\caption[CUDA Pinned Memory-Management APIs]{
 		CUDA Pinned Memory-Management APIs
@@ -266,8 +266,8 @@ Overuse of page-locked memory on the host will degrade overall application perfo
 	\end{tabularx}
 \end{table}
 
+\begin{sloppypar}
 \texttt{cudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable}, \texttt{cudaHostAllocMapped}, and \texttt{cudaHostAllocWriteCombined} flags.
-
 %3.2.4.2
 \texttt{cudaHostAllocWriteCombined} causes a pinned allocation to be write-combined.
 Writes to write-combined memory may be delayed and combined in a buffer to reduce the number of memory accesses.
@@ -275,11 +275,14 @@ Additionally, the host may not cache this data in L1 or L2 cache, freeing up tho
 This may prevent unecessary cache invalidations from occuring during the DMA.
 Furthermore, coherency is not enforced, so data is not snooped on the PCIe bus, which can increase bandwidth by up to 40\% (\cite{nvidia2010cuda30}, 3.2.5.2).
 Due to the possible lack of caching, this type of allocation makes sense for data that is not frequently read by the CPU, for example, data written once by the CPU before being sent to a GPU.
+\end{sloppypar}
 
 %3.2.4.3 
+\begin{sloppypar}
 \texttt{cudaHostAllocMapped} introduces the ability to map the host allocation (in the host address space) into the device's address space.
 By using \texttt{cudaHostGetDevicePointer}, the corresponding pointer in the device address space may be obtained and directly used by CUDA kernels.
 In this case, the programmer does not need to explicitly allocate memory or copy data to the device, nor does the programmer need to use streams to overlap computation with communication.
+\end{sloppypar}
 
 \texttt{cudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
 This became the default with the introduction of unified virtual addressing.
@@ -310,7 +313,7 @@ Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit 
 The availablility of peer access may rely on a combination of interconnect topology and system hardware, summarized in Table~\ref{tab:cuda-peer-topology}.
 When peer access is disabled, data transfers first pass through the host instead of allowing direct DMA between devices.
 
-\begin{table}[h]
+\begin{table}[ht]
 	\centering
 	\caption[System support for GPU-GPU Peer Access]{
 		GPU-to-GPU connection, and whether peer access is supported for the systems considered in this work.
@@ -338,7 +341,7 @@ CUDA automatically migrates data between the physically distinct CPU and GPU mem
 Like mapped memory, this simplifies programming by removing the need for spearate host and device allocations and explicit data transfers.
 A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 
-\begin{table}[h]
+\begin{table}[ht]
 	\centering
 	\caption[CUDA Unified Memory-Management APIs]{
 		CUDA Unified Memory-Management APIs.
