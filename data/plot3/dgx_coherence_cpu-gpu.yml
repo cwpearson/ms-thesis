@@ -3,16 +3,16 @@ series:
     col: a
   - label: CPU0 to GPU0
     file: dgx_coherence-bw.csv
-    col: v
+    col: bv
   - label: CPU0 to GPU2
     file: dgx_coherence-bw.csv
-    col: x
+    col: bx
   - label: GPU0 to CPU0
     file: dgx_coherence-bw.csv
-    col: e
+    col: i
   - label: GPU2 to CPU0
     file: dgx_coherence-bw.csv
-    col: o
+    col: aa
 yaxis:
   label: Transfer Bandwidth (MB/s)
   lim:

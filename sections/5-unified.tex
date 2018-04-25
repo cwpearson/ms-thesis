@@ -25,7 +25,7 @@ Listing~\ref{lst:cpu-write} shows a simple function to write \texttt{sizeof(data
 OpenMP is used to statically partition the write loop, with each thread taking a contiguous chunk the loop iteration space.
 This ensures that the CPU is running enough threads to maximize demand on the unified memory system.
 
-\begin{lstlisting}[language=c++, caption=CPU Write Function, label=lst:cpu-write]
+\begin{lstlisting}[language=c++, caption=\texttt{cpu\_write} function for Algorithm~\ref{alg:um-coherence-bw}, label=lst:cpu-write]
     template <typename data_type>
     void cpu_write(data_type *ptr, const size_t count,
                    const size_t stride)
@@ -47,7 +47,7 @@ It assigns consecutive warps in the grid to handle consecutive writes, with a si
 If there are not sufficient warps in the grid to cover all writes, the grid loops over the required writes.
 Since warps execute in lockstep, this ensures the broadest simultaneous demands on the unified memory system without reduntant work within a warp.
 
-\begin{lstlisting}[language=c++, caption=GPU Write Function, label=lst:cpu-write]
+\begin{lstlisting}[language=c++, caption=\texttt{gpu\_write} function for Algorithm~\ref{alg:um-coherence-bw}, label=lst:gpu-write]
     template <typename data_type>
     __global__ void gpu_write(data_type *ptr,
                               const size_t count,
@@ -213,7 +213,8 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 		\label{fig:um-coherence-dgx-cpu-gpu}
 	\end{subfigure}
 	\caption[CPU/GPU Coherence and Prefetch Bandwidth]{
-		CPU-GPU Coherence and Prefetch Bandwidth vs. transfer size.
+		Measured CPU-GPU coherence and prefetch bandwidth vs. transfer size  for S822LC, AC922, and DGX-1.
+		Local and remote transfers in the CPU-to-GPU and GPU-to-CPU direction are shown.
 	}
 	\label{fig:um-cpu-gpu}
 \end{figure}
@@ -228,9 +229,6 @@ In general, the CPU/GPU prefetch bandwidth saturates at a higher fraction of the
 This is likely because the DMA associated with a prefetch is a simpler and higher-performance operation than the on-demand migration of pages.
 Coherence migrations can provide higher transfer bandwidth at small and intermediate transfer sizes.
 This suggests that the overhead of the prefetch transfer is higher than the coherence transfer.
-
-
-
 
 \begin{figure}[ht]
 	\centering
@@ -270,7 +268,8 @@ This suggests that the overhead of the prefetch transfer is higher than the cohe
 		\label{fig:um-coherence-dgx-gpu-gpu}
 	\end{subfigure}
 	\caption[GPU/GPU Coherence and Prefetch Bandwidth]{
-		GPU/GPU Coherence and Prefetch Bandwidth vs. transfer size.
+		Measured GPU/GPU coherence and prefetch Bandwidth vs. transfer size for S822LC, AC922, and DGX-1.
+		Local and remote trasnfers in both directions for each pair of GPUs are shown.
 	}
 	\label{fig:um-gpu-gpu}
 \end{figure}
@@ -298,14 +297,16 @@ The performance difference is much greater for intermediate transfers than large
 
 \begin{table}[ht]
 	\centering
-	\caption[\todo{short}]{Observations of Device Affinity affecting Coherence Bandwidth}
+	\caption[Device Affinity and Coherence Bandwidth]{
+		Observed cases of device affinity affecting coherence bandwidth.
+	}
 	\label{tab:um-coherence-affinity}
 	\begin{tabular}{|c|c|c|c|}
 		\hline
 		\textbf{Transfer Kind}    & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
-		CPU $\rightarrow$     GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-		CPU $\leftarrow$      GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-		GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+		CPU $\rightarrow$     GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		CPU $\leftarrow$      GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -327,7 +328,9 @@ Generally, local GPU-GPU transfers are able to saturate around 75\% of the theor
 
 \begin{table}[ht]
 	\centering
-	\caption[\todo{short}]{Observations of Device Affinity affecting Prefetch Bandwidth}
+	\caption[Device Affinity and prefetch Bandwidth]{
+		Observed cases of device affinity affecting prefetch bandwidth.
+	}
 	\label{tab:um-prefetch-affinity}
 	\begin{tabular}{|c|c|c|c|}
 		\hline
@@ -350,15 +353,17 @@ On AC922, Figure~\ref{fig:um-coherence-ac922-gpu-gpu} shows there is no anisotro
 
 \begin{table}[ht]
 	\centering
-	\caption[\todo{short}]{Observed Coherence Bandwidth Anisotropy}
+	\caption[Anisotropy in Coherence Bandwidth]{
+		Cases where anisotropy is observed in coherence bandwidth.
+	}
 	\label{tab:um-coherence-anisotropy}
 	\begin{tabular}{|c|c|c|c|}
 		\hline
 		\textbf{Transfer Kind}             & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
-		CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-		CPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-		GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
-		GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+		CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		CPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -377,7 +382,9 @@ Neither of the other systems demonstrate any GPU-GPU prefetch anisotropy.
 
 \begin{table}[ht]
 	\centering
-	\caption[\todo{short}]{Observed Prefetch Bandwidth Anisotropy}
+	\caption[Anisotropy in Prefetch Bandwidth]{
+		Cases where anisotropy is observed in prefetch bandwidth.
+	}
 	\label{tab:um-prefetch-anisotropy}
 	\begin{tabular}{|c|c|c|c|}
 		\hline
@@ -399,7 +406,7 @@ Each access to the list incurs a page fault.
 The incremental change in function execution time as the number of strides increases is therefore an approximate measure of the page fault latency.
 
 
-\begin{lstlisting}[language=c++, caption=GPU Linked List Traversal Kernel, label=lst:gpu-traversal]
+\begin{lstlisting}[language=c++, caption=GPU Linked List Traversal Kernel for Algorithm~\ref{alg:um-latency}, label=lst:gpu-traversal]
 __global__ void gpu_traverse(size_t *ptr, const size_t steps)
 {
   size_t next = 0;
@@ -411,7 +418,7 @@ __global__ void gpu_traverse(size_t *ptr, const size_t steps)
 }
 \end{lstlisting}
 
-\begin{lstlisting}[language=c++, caption=CPU Linked List Traversal Function, label=lst:cpu-traversal]
+\begin{lstlisting}[language=c++, caption=CPU Linked List Traversal Function for Algorithm~\ref{alg:um-latency}, label=lst:cpu-traversal]
 void cpu_traverse(size_t *ptr, const size_t steps)
 {
   size_t next = 0;
@@ -423,8 +430,6 @@ void cpu_traverse(size_t *ptr, const size_t steps)
 }
 \end{lstlisting}
 
-\todo{fix stride}
-\todo{fix count}
 \begin{algorithm}
 	\caption{CPU-GPU Coherence Bandwidth}
 	\label{alg:um-latency}
@@ -536,10 +541,14 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
 
 \section{Quirks}
 
-Coherence bandwidth is higher for small / intermediate transfers.
+The performance of the unified memory system deviates from expectations in substantial ways
 
-Remote GPU-CPU prefetch bandwidth higher than local on IBM systmes.
-
-GPU-CPU prefetch on DGX-1 no effect of affinity.
-
-shows anisotropy in remote GPU-GPU prefetch transfers on S822LC (no hter systems)
+\begin{itemize}
+\item CPU-to-GPU coherence bandwidth is higher than prefetch bandwidth for small / intermediate transfer sizes.
+\item S822LC and AC922 exhibit faster remote GPU-GPU prefetch bandwidth than local GPU-GPU prefetch bandwidth.
+\item DGX-1 GPU-CPU prefetch bandwidth is not affected by device affinity.
+\item S822LC is alone in exhibiting remote GPU-GPU prefetch anisotropy.
+\item Anisotropy is observed in a wide variety of cases
+\item AC922 and DGX-1 have better CPU-to-GPU coherence bandwidth for smaller transfers and better GPU-to-CPU coherence bandwidth for large cases, while S822LC always demonstrates better CPU-to-GPU than GPU-to-GPU coherence bandwidth.
+\item IBM CPU/GPU prefetch bandwidth is anisotropic and affected by affinity.
+\end{itemize}
