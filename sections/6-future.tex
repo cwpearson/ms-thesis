@@ -1,15 +1,34 @@
 \chapter{Future Work: Application Characterization and Combined Modeling}
 \label{ch:future}
 
-\todo{automatically mapping logical path to hardware links}
+
+
+
+\section{Mapping Logical Communication to Underlying Links}
+
+Previous sections described the approach and results of creating a performance model of the logical communication paths.
+Those models took some knowledge of the underlying system configuration as \textit{a priori} knowledge, but in general this process should be automated.
+Application developers who want to understand the performance of the system may not have the architecture background to select appropriate performance models.
+System architects who develop system capabilties may not understand the implications their choices have on performance at the top abstraction layer.
+This work presents an initial step towards automation with automatic hardware enumeration described in Section~\ref{sec:hardware-enumeration}.
+
+The next step is to systematically instrument all possible links for observation during the logical workloads.
+If the instrumentation is low-overhead, this could be done jointly with logical performance measurements.
+If not, known, separate workloads could be sent over logical communication paths to observe hardware links.
+For NVLink monitoring, NVML provides the ability to query the link utilization counters~\cite{nvidia2017nvmlreference}.
+For PCIe monitoring, the Performance Counter Monitor~\cite{opcm2018pcm} project provides the ability to query PCIe link counters.
+
+For each enumerated link, the utilized hardware components could be associated and used to select the appropriate performance model.
+
+\section{Application Model}
+
+Chai benchmarks, neural networks in caffe and mxnet, the DARPA graph challenge, Lulesh, MLFMM, and PlasComCM.
 
 Directly analogous to the hardware model, this work models applications as a collection of communicating data sources and sinks (endpoints).
 This facilitates the performance modeling described in Chapter~\ref{ch:performance}.
 Through it is possible to generate such application models by hand, in general, this approach is not feasible for complicated applications.
 Furthermore, applications are frequently updated, which could require a new model.
 This work proposes an approach for automatically generating these application models.
-
-\section{Application Model}
 
 The goal of the application record is to track how an application produces, moves, and consumes data.
 To that end, the application is broken down into data sources and sinks.
@@ -67,52 +86,10 @@ The various kernel launches and allocations used by cuDNN and cuBLAS are already
 
 Additionally, conservative data consumption and generation from CUDA kernels can be inferred.
 Any arguments that point to previously-recorded allocations are assumed to modify that allocation.
-\todo{through monitoring the device metrics, it is possible to understand how much data is read and written through those pointers in aggregate.}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth,draft]{figures/example-app-char.png}
-    \caption{\todo{caption}}
-    \label{fig:example-app-char}
-\end{figure}
 
 
-\subsection{Communication Link Traffic}
-\todo{nothing yet}
-
-\outline{PCI traffic}
-
-\outline{NVLink traffic}
-
-\section{Application Modeling Case Studies}
-\subsection{Chai}
-\subsection{Caffe}
-\subsection{mxnet}
-\subsection{Graph Challenge}
-\subsection{Lulesh}
-\subsection{MLFMM}
-\subsection{PlasComCM}
 
 \section{Combined Modeling}
 \label{sec:modeling}
 
 \section{Methodology}
-
-The system graph $G_s$ and the application graph $G_a$ have analogous structure, summarized in Table~\ref{tab:graph-comparison}.
-
-\begin{table}[ht]
-    \centering
-    \caption{Analogous graph component roles in $G_a$ and $G_s$.}
-    \label{tab:graph-comparison}
-    \begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Graph Component} & \multicolumn{2}{|c|}{\textbf{Meaning in Graph}}   \\ \hline
-                             & $\bm{G_a}$    & $\bm{G_s}$                        \\ \hline \hline
-    \textbf{Vertex}          & Data source or sink & compute or storage hardware \\ \hline
-    \textbf{Edge}            & Data transfer & communication link                \\ \hline
-    \end{tabular}
-\end{table}
-
-
-
-\section{\{Minsky, DGX\} $\times$ \{Applications\}}
