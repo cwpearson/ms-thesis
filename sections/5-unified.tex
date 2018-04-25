@@ -212,8 +212,8 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 		\caption{}
 		\label{fig:um-coherence-dgx-cpu-gpu}
 	\end{subfigure}
-	\caption[\todo{short}]{
-		CPU-GPU Coherence and Prefetch Bandwidth
+	\caption[CPU/GPU Coherence and Prefetch Bandwidth]{
+		CPU-GPU Coherence and Prefetch Bandwidth vs. transfer size.
 	}
 	\label{fig:um-cpu-gpu}
 \end{figure}
@@ -269,10 +269,10 @@ This suggests that the overhead of the prefetch transfer is higher than the cohe
 		\caption{}
 		\label{fig:um-coherence-dgx-gpu-gpu}
 	\end{subfigure}
-	\caption[\todo{short}]{
-		GPU-GPU Coherence and Prefetch Bandwidth
+	\caption[GPU/GPU Coherence and Prefetch Bandwidth]{
+		GPU/GPU Coherence and Prefetch Bandwidth vs. transfer size.
 	}
-	\label{fig:um-coherence-gpu-gpu}
+	\label{fig:um-gpu-gpu}
 \end{figure}
 
 
@@ -484,8 +484,8 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
 
 \begin{table}[ht]
 	\centering
-	\caption[\todo{short}]{
-        Page Fault latencies.
+	\caption[Page Fault Latencies]{
+        Measured page-fault latencies on S822LC, AC922, and DGX-1.
         Above the double-line are empirically-measured values.
         Below the double-line are computed values, for the system page size and system configuration.
         The value is computed by taking the link bandwidth and dividing it by the page size.

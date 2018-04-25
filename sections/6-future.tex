@@ -1,9 +1,6 @@
 \chapter{Future Work: Application Characterization and Combined Modeling}
 \label{ch:future}
 
-
-
-
 \section{Mapping Logical Communication to Underlying Links}
 
 Previous sections described the approach and results of creating a performance model of the logical communication paths.
@@ -21,6 +18,14 @@ For PCIe monitoring, the Performance Counter Monitor~\cite{opcm2018pcm} project 
 For each enumerated link, the utilized hardware components could be associated and used to select the appropriate performance model.
 
 \section{Application Model}
+
+After a model of system communication performance is established, the next step is to establish an understanding of how applications use
+the logical communication paths.
+The application can be modeled as a dynamic dependence graph $G_a = \{E_a,V_a\}$ where $E_a$ is a set edges representing data transfer, and $V_a$ is a set of vertices representing data values.
+Each value represents a contiguous region of memory that the program interacts with.
+Each edge is either an explicit memory copy or a CUDA kernel launch.
+
+
 
 Chai benchmarks, neural networks in caffe and mxnet, the DARPA graph challenge, Lulesh, MLFMM, and PlasComCM.
 
@@ -51,7 +56,7 @@ Table~\ref{tab:source-sink-example} gives some examples of data movement and the
     \end{tabular}
 \end{table}
 
-The application can therefore be represented by a graph $G_a = \{E_a,V_a\}$ where $E_a$ is a set of edges representing data transfer, and $V_a$ is a set of vertices representing data endpoints.
+
 
 \section{Application Monitoring}
 
@@ -88,8 +93,14 @@ Additionally, conservative data consumption and generation from CUDA kernels can
 Any arguments that point to previously-recorded allocations are assumed to modify that allocation.
 
 
+Once CUDA is observed, the next step would be to extend the graph to some view of activity on the CPU as well.
+This could be acomplished through a variety of techniques.
+The \texttt{LD\_PRELOAD} mechanism could be used to instrument widespread libraries such as \tocite{BLAS} or \tocite{MPI}.
+The operating system trace facilities \tocite{strace} for Linux, \tocite{dtrace} for MacOS, \tocite{NT Kernel Logger}, \tocite{NtTrace}, or \tocite{Dr. Memory} for windows could be used to track system calls and profile things such as file I/O or network interaction.
+Tracking arbitrary function calls within an unmodified application may not be possible in the case of a binary without debug symbols.
+Dynamic tracing tools like \tocite{Intel PIN} can insert instrumentation code, but further work would be needed to determine the number of function arguments and their location to recover their values.
+
 
 \section{Combined Modeling}
 \label{sec:modeling}
 
-\section{Methodology}
