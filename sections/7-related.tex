@@ -19,18 +19,38 @@ This work proposes a tool that leverages \texttt{hwloc}, but is designed around 
 \section{System Characterization}
 
 Prior work has examined the performance penalty of incorrect NUMA mappings in multi-GPU systems.
-Spafford, Meredith, and Vetter~\cite{spafford2011quantifying} show significant anisotropy and bandwidth degredation in PCIe bandwidth for incorrect NUMA pinnings. \todo{They also discuss some performance effect on applications and performance under contention}.
+Spafford, Meredith, and Vetter~\cite{spafford2011quantifying} show significant anisotropy and bandwidth degradation in PCIe bandwidth for incorrect NUMA pinnings. \todo{They also discuss some performance effect on applications and performance under contention}.
+
+
+Some GPGPU benchmark suites also make an effort to characterize certain aspects of data-transfer performance.
+The Scalable Heterogeneous Computing (SHOC) benchmark suite~\cite{danalis2010scalable} examines host-to-device and device-to-host data transfer on some PCIe-based systems.
+It also examines the latency effect of data transfers conflicting with MPI message sending on the PCIe bus.
+This contention effect is similar to some future contention characterization this work will be extended to.
 
 
 MGBench, a multi-GPU communication benchmark~\cite{bennun2016mgbench}.
-SHOC, the Scalable Heterogeneous Computing Benchmark Suite~\cite{danalis2010scalable}.
 
 
 Prior work has investigated unified memory performance in CUDA systems.
-Li et. al. examine several HPC applications, and attribute reduced UM performance to redundant memory transfers and page faults~\cite{li2015evaluation}.
 Landaverde et. al.~\cite{landaverde2014investigation}.
+Li et. al~\cite{li2015evaluation} evaluate the unified memory system on several platforms, including a multi-CPU PCIe platform, and show around a 10\% performance penalty on some applications for Unified Memory.
+They do not do any microbenchmarking, but observe that the unified memory system in CUDA 6.0 produced redundant transfers that were avoiding in the explicitly-managed code.
+Agarwal et. al~\cite{agarwal2015unlocking} discuss the performance implications of different coherence schemes on multi-GPU systems
+
+Prior work has examined some inter-GPU communication.
+Ben-Nun et. al.~\cite{ben2017groute} examines direct-access transfers between GPUs.
+They show the transfer rate of direct-access transfers between local GPUs, remote GPUs, and CPU/GPU transfers with various access patterns.
+They observe that the performance is highly dependent on the access pattern.
+Like this work, they discover that the transfer rate is highly correlated with the topological proximity of the devices.
+
+Prior work as examined some multi-GPU collective communication
+Ben-Nun et. al.~\cite{ben2017groute} examines the performance of various multi-GPU broadcast methods.
 
 \section{NUMA / Multi-GPU APIs}
 
 Umpire~\cite{beckingsale2018umpire}.
+
+Ben-Nun et. al.~\cite{ben2017groute} propose parallel constructs for asynchronous multi-GPU programming.
+Ben-Nun et. al.~\cite{ben2015memory} describes a multi-GPU partitioning framework for distributing parallel workloads on multi-GPU nodes according to their access patterns.
+It provides a set of host and device APIs that describe containers and allow the framework to analyze kernels to determine access patters, to decide how to schedule underlying operations onto multiple GPUs.
 
