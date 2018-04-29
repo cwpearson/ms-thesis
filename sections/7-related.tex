@@ -37,7 +37,6 @@ Prior work has investigated unified memory performance in CUDA systems.
 Landaverde et. al.~\cite{landaverde2014investigation}.
 Li et. al~\cite{li2015evaluation} evaluate the unified memory system on several platforms, including a multi-CPU PCIe platform, and show around a 10\% performance penalty on some applications for Unified Memory.
 They do not do any microbenchmarking, but observe that the unified memory system in CUDA 6.0 produced redundant transfers that were avoiding in the explicitly-managed code.
-Agarwal et. al~\cite{agarwal2015unlocking} discuss the performance implications of different coherence schemes on multi-GPU systems
 
 Prior work has examined some inter-GPU communication and multi-GPU collective communications.
 MGBench, a multi-GPU communication benchmark~\cite{bennun2016mgbench}, contains multi-GU microbenchmarks including scatter, direct access, and ring broadcast messages.
@@ -62,14 +61,13 @@ LMBench~\cite{mcvoy1996lmbench} is a benchmark designed to determine memory hier
 It includes a single-threaded memory bandwidth benchmark similar to the one included in this work.
 It also includes cached I/O bandwidth measurements, a logical communication path that this work will be extended to explore.
 
-MOB:
-Memory Organization Benchmark
-
 Related works make use of the communication costs to make scheduling decisions.
 MPIPP~\cite{chen2006mpipp} uses communication parameters in its process placement routine, but it gets them from the technical specification of the machine.
 Mercier~\cite{mercier2009towards} also uses communication parameters in its placement policy.
 It determines the topology of the machine from the specification, and estimates the communication costs from that topology.
 
+Liu et. al.~\cite{liu2004microbenchmark} take a microbenchmarking approach to evaluating high-speed cluster interconnects, including latency, uni- and bi-directional bandwidth, and host latency.
+This work also take a microbenchmarking approach, but targets intra-node interconnects.
 
 \section{NUMA / Multi-GPU APIs}
 
