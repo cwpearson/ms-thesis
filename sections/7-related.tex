@@ -11,72 +11,69 @@
 
 \section{System Topology Enumeration / Hardware Models}
 
-\texttt{hwloc}~\cite{broquedis2010hwloc} is designed around the expectation that current and next-generation systems are hierarchical.
-This work proposes a tool that leverages \texttt{hwloc}, but is designed around the expectation that systems will be better modeled as a graph.
+This work relies on and enhances an existing system topology enumeration tool, \texttt{hwloc}~\cite{broquedis2010hwloc}.
+\texttt{hwloc} is designed around the expectation that current and next-generation systems are hierarchical.
+This work uses \texttt{hwloc} to enumerate topology, but embeds the devices that \texttt{hwloc} discovers in a graph (Section~\ref{sec:hardware-enumeration}), which is a more general model of modern hardware systems.
 
-\cite{amaral2017topology} use a similar hardware model that this work describes in Section~\ref{sec:hardware-enumeration}.
-Their path costs are defined qualitatively, whereas this work proposes automating a quantitative cost that depends on the communication method used.
+Amaral et. al.~\cite{amaral2017topology} use a similar hardware graph, but their path costs are defined qualitatively, whereas this work proposes automating a quantitative cost that depends on the communication method used.
 They also describe a topology-aware job placement strategy, but the problem considered is jobs on nodes in a cluster environment instead of computation tasks on GPUs.
 
 \section{System Characterization}
 
-Prior work has has used performance counters to evaluate communication performance.
+Several prior benchmark suites strive to determine system parameters through microbenchmarking.
+LMBench~\cite{mcvoy1996lmbench} is a benchmark designed to determine memory hierarchy parameters.
+It includes a single-threaded memory bandwidth benchmark similar to the one included in this work.
+It also includes cached I/O bandwidth measurements, a logical communication path that this work will be extended to explore.
+P-Ray~\cite{duchateau2008p} is a benchmark suite designed to help guide performance autotuners.
+It is designed to discover hardware parameters, such as L2 cache size.
+Among other things, it extends LMBench's memory bandwidth microbenchmark to include multithreaded transfers.
+Servet~\cite{gonzalez2010servet} goes a step further and includes a benchmark to determine communication costs between pairs of cores in the context of MPI.
+It also attempts to analyze the results to establish which cores are equivalent from a communication perspective to simplify the benchmarking process.
+BlackjackBench~\cite{danalis2012blackjackbench} benchmark suite designed to measure the observable performance parameters of a system as opposed to hardware paramters.
+This work also takes the view that observable system parameters are what matters to application performance.
+It focuses on memory hierarchy performance, but also includes a workload to measure communication bandwidth between pairs of CPU cores.
+Liu et. al.~\cite{liu2004microbenchmark} take a microbenchmarking approach to evaluating high-speed cluster interconnects, including latency, uni- and bi-directional bandwidth, and host latency.
+This work takes a similar approach or subsumes the communication microbenchmarking of this previous work, but extends it to many kinds of CUDA communication.
+
+This work also proposes correlating microbenchmark performance directly with underlying hardware.
 McCurdy and Vetter~\cite{mccurdy2010memphis} describe using performance counters to examine the NUMA abstraction and determine its mapping to the underlying hardware.
 This work proposes to automate that analysis in Section~\ref{sec:logical-hardware-mapping}.
 
-Prior work has examined the performance penalty of incorrect NUMA mappings in multi-GPU systems.
-Spafford, Meredith, and Vetter~\cite{spafford2011quantifying} show significant anisotropy and bandwidth degradation in PCIe bandwidth for incorrect NUMA pinnings. \todo{They also discuss some performance effect on applications and performance under contention}.
-
 Some GPGPU benchmark suites also make an effort to characterize certain aspects of data-transfer performance.
 The Scalable Heterogeneous Computing (SHOC) benchmark suite~\cite{danalis2010scalable} examines host-to-device and device-to-host data transfer on some PCIe-based systems.
+This work examines a much broader set of CUDA communication capabilities.
 It also examines the latency effect of data transfers conflicting with MPI message sending on the PCIe bus.
 This contention effect is similar to some future contention characterization this work will be extended to.
 
+Prior work has also specifically examined the communication performance effect of incorrect NUMA pinnings in multi-GPU systems.
+Spafford, Meredith, and Vetter~\cite{spafford2011quantifying} show significant anisotropy and bandwidth degradation in PCIe bandwidth for incorrect NUMA pinnings. \todo{They also discuss some performance effect on applications and performance under contention}.
 
-Prior work has investigated unified memory performance in CUDA systems.
+Limited prior work has examined performance of CUDA transfers specifically.
 Landaverde et. al.~\cite{landaverde2014investigation}.
 Li et. al~\cite{li2015evaluation} evaluate the unified memory system on several platforms, including a multi-CPU PCIe platform, and show around a 10\% performance penalty on some applications for Unified Memory.
 They do not do any microbenchmarking, but observe that the unified memory system in CUDA 6.0 produced redundant transfers that were avoiding in the explicitly-managed code.
-
-Prior work has examined some inter-GPU communication and multi-GPU collective communications.
 MGBench, a multi-GPU communication benchmark~\cite{bennun2016mgbench}, contains multi-GU microbenchmarks including scatter, direct access, and ring broadcast messages.
 Ben-Nun et. al.~\cite{ben2017groute} examines direct-access transfers between GPUs.
 They show the transfer rate of direct-access transfers between local GPUs, remote GPUs, and CPU/GPU transfers with various access patterns.
 They observe that the performance is highly dependent on the access pattern.
 Like this work, they discover that the transfer rate is highly correlated with the topological proximity of the devices.
 
-BlackjackBench~\cite{danalis2012blackjackbench} is a benchmark suite designed to measure the observable performance parameters of a system.
-It focuses on memory hierarchy performance, but also includes a workload to measure communication bandwidth between pairs of CPU cores.
 
-P-Ray~\cite{duchateau2008p} is a benchmark suite designed to help guide performance autotuners.
-It is designed to discover hardware parameters, such as L2 cache size.
-Two of its microbenchmarks measures single-threaded and multi-threaded effective memory bandwidth.
-
-Servet~\cite{gonzalez2010servet} includes a benchmark to determine communication costs between pairs of cores in the context of MPI.
-It also attempts to analyze the results to establish which cores are equivalent from a communication perspective to simplify the benchmarking process.
-
-Saavedra
-
-LMBench~\cite{mcvoy1996lmbench} is a benchmark designed to determine memory hierarchy parameters.
-It includes a single-threaded memory bandwidth benchmark similar to the one included in this work.
-It also includes cached I/O bandwidth measurements, a logical communication path that this work will be extended to explore.
+\section{Using Communication Models}
 
 Related works make use of the communication costs to make scheduling decisions.
-MPIPP~\cite{chen2006mpipp} uses communication parameters in its process placement routine, but it gets them from the technical specification of the machine.
+MPIPP~\cite{chen2006mpipp} uses communication parameters in its process placement routine, but it gets them from the technical specification of the machine instead of measuring it.
 Mercier~\cite{mercier2009towards} also uses communication parameters in its placement policy.
 It determines the topology of the machine from the specification, and estimates the communication costs from that topology.
 
-Liu et. al.~\cite{liu2004microbenchmark} take a microbenchmarking approach to evaluating high-speed cluster interconnects, including latency, uni- and bi-directional bandwidth, and host latency.
-This work also take a microbenchmarking approach, but targets intra-node interconnects.
-
 \section{NUMA / Multi-GPU APIs}
 
-Umpire~\cite{beckingsale2018umpire}.
-
-Ben-Nun et. al.~\cite{ben2017groute} propose parallel constructs for asynchronous multi-GPU programming.
+Prior work has made an effort to create NUMA-aware APIs, a possible future direction of this work.
+Ben-Nun et. al.~\cite{ben2015memory} describes a multi-GPU partitioning framework for distributing parallel workloads on multi-GPU nodes according to their access patterns.
+It provides a set of host and device APIs that describe containers and allow the framework to analyze kernels to determine access patters, to decide how to schedule underlying operations onto multiple GPUs.
+Groute ~\cite{ben2017groute} propose parallel constructs for asynchronous multi-GPU programming.
 The programming model involves describing the application communication pattern as a graph of communicating links and endpoints.
 Section~\ref{sec:app-model} of this work describes the DVDG, which would be used to construct a similar application model for an exising application.
 
-Ben-Nun et. al.~\cite{ben2015memory} describes a multi-GPU partitioning framework for distributing parallel workloads on multi-GPU nodes according to their access patterns.
-It provides a set of host and device APIs that describe containers and allow the framework to analyze kernels to determine access patters, to decide how to schedule underlying operations onto multiple GPUs.
+Umpire~\cite{beckingsale2018umpire}.
 
