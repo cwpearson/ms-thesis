@@ -14,20 +14,29 @@
 % \usepackage[titlenumbered,ruled]{algorithm2e}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{amsfonts}
+\usepackage{amsmath}  % for math spacing
 \usepackage[page]{appendix}
 \usepackage{array}
 \usepackage{bm}
-\usepackage{setspace}
+\usepackage[justification=raggedright]{caption}	% makes captions ragged right - thanks to Bryce Lobdell
+\usepackage{color}
 % \usepackage{epsfig}  % for figures
 \usepackage{graphicx}  % another package that works for figures
 % \usepackage{subfigure}  % for subfigures
-\usepackage{subcaption}
-\usepackage{amsmath}  % for math spacing
 %\usepackage{amssymb}  % for math spacing
-\usepackage{amsfonts}
 %\usepackage{url}  % Hyphenation of URLs.
 \usepackage{listings}
+\usepackage{lscape}  % Useful for wide tables or figures.
+\usepackage{makecell}
 \usepackage{microtype}
+\usepackage{setspace}
+\usepackage{subcaption}
+\usepackage{tabularx}
+
+% Fix long URL line breaks in bibliography
+\usepackage{url}
+\def\UrlBreaks{\do\/\do-}
 
 \lstset{basicstyle=\footnotesize\ttfamily,
         keywordstyle=\color{blue}\ttfamily,
@@ -37,17 +46,13 @@
 }
 
 
-\usepackage{lscape}  % Useful for wide tables or figures.
-\usepackage[justification=raggedright]{caption}	% makes captions ragged right - thanks to Bryce Lobdell
-\usepackage{color}
-\usepackage{tikz}
 \usepackage{svg}
+% \usepackage{tikz}
 % \usetikzlibrary{arrows}
-\usetikzlibrary{positioning}
-\usetikzlibrary{arrows.meta}
+% \usetikzlibrary{positioning}
+% \usetikzlibrary{arrows.meta}
 
-\usepackage{tabularx}
-\usepackage{makecell}
+
 
 \newcommand{\mytilde}{\raise.17ex\hbox{$\scriptstyle\mathtt{\sim}$}}
 \newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
@@ -226,7 +231,7 @@
 \appendix
 \begin{appendices}
 	\include{sections/a-full-topos}
-	\include{sections/b-data}
+	% \include{sections/b-data}
 \end{appendices}
 
 \backmatter
@@ -235,8 +240,12 @@
 % BIBLIOGRAPHY
 %
 \bibliographystyle{IEEE_ECE}
+
 % Put references in BibTeX format in thesisrefs.bib.
+
+
 \bibliography{thesisrefs}
+
 
 \end{document}
 \endinput
