@@ -111,7 +111,7 @@ Section~\ref{sec:cuda-peer} describes how these topologies affect parts of the C
 		Most PCIe 3.0-attached GPUs use 16 lanes, or PCIe x16.
 	}
 	\label{tab:interconnect-overview}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Interconnect}      & \textbf{Bandwidth}   & \textbf{Year} & \textbf{Architecture} \\ \hline
 		\textbf{PCIe 3.0}          & 15.8 GB/s (16 lanes) & 2010          & Tree                  \\ \hline
@@ -208,7 +208,7 @@ This can improve the bandwidth of the transfer between supported devices.
 		Basic CUDA Memory-Management APIs and C/C++ APIs
 	}
 	\label{tab:cuda-basic-apis}
-	\begin{tabular}{|c|c|}
+	\begin{tabular}{cc}
 		\hline
 		\textbf{CUDA API}          & \textbf{Description}                         \\ \hline
 		\texttt{cudaSetDevice()}   & Associate a device with the host thread.     \\ \hline
@@ -256,7 +256,7 @@ Overuse of page-locked memory on the host will degrade overall application perfo
 		CUDA Pinned Memory-Management APIs
 	}
 	\label{tab:cuda-pinned-apis}
-	\begin{tabularx}{\textwidth}{|M{1.5in}|Y|M{0.9in}|}
+	\begin{tabularx}{\textwidth}{M{1.5in} Y M{0.9in}}
 		\hline
 		\textbf{API}                & \textbf{Description}                    & \textbf{CUDA Version Introduced} \\ \hline
 		\texttt{cudaMallocHost()}   & allocate page-locked memory on the host & 1.0~\cite{nvidia2007cuda10} \\ \hline
@@ -319,7 +319,7 @@ When peer access is disabled, data transfers first pass through the host instead
 		GPU-to-GPU connection, and whether peer access is supported for the systems considered in this work.
 	}
 	\label{tab:cuda-peer-topology}
-	\begin{tabular}{|c|c|c|}
+	\begin{tabular}{ccc}
 		\hline
 		\textbf{GPU Configuration}  & \textbf{System} &  \textbf{Peer Access} \\ \hline
 		shared PCIe switch          & DGX-1           &  \checkmark           \\ \hline
@@ -348,7 +348,7 @@ A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 		Initial CUDA 6.0 APIs and additional CUDA 8.0 APIs are shown.
 	}
 	\label{tab:cuda-um-apis}
-	\begin{tabularx}{\textwidth}{|c|Y|}
+	\begin{tabularx}{\textwidth}{cY}
 		\hline
 		\textbf{CUDA 6 and CC3.0+}           & \textbf{Description}                        \\ \hline
 		\texttt{\_\_managed\_\_}             & Defines a global variable in managed memory \\ \hline
@@ -460,14 +460,14 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
     \centering
     \caption[NVIDIA DGX-1 Architecture Summary]{NVIDIA DGX-1 Architecture Summary}
     \label{tab:dgx1}
-    \begin{tabular}{|c|c|}
+    \begin{tabular}{cc}
     \hline
     \textbf{}                     & \textbf{Specification}                                      \\ \hline
     \textbf{CPU}                  & \makecell{2x Intel Xeon E5-2698 v4 \\ 40C / 80T \\ 2.2 GHz} \\ \hline
     \textbf{System Memory}        & 512 GB DDR4                                                 \\ \hline
 	\textbf{GPU}                  & 4 NVIDIA P100                                               \\ \hline
 	\textbf{CPU/GPU Interconnect} & NVLink 1.0 (1 lane) / PCIe 3.0                              \\ \hline
-	\textbf{CUDA}                 & \todo{cuda and driver}                                      \\ \hline
+	\textbf{CUDA}                 & 8.0, driver 384.125                                         \\ \hline
     \end{tabular}
 \end{table}
 
@@ -494,7 +494,7 @@ Figure \ref{fig:topo-dgx-simple} shows a simplified view of the topology.
     \centering
     \caption[IBM S822LC Architecture Summary]{IBM S822LC Architecture Summary.}
     \label{tab:minsky}
-    \begin{tabular}{|c|c|}
+    \begin{tabular}{cc}
     \hline
     \textbf{}                     & \textbf{Specification}                         \\ \hline
     \textbf{CPU}                  & \makecell{2x IBM Power8 \\ 20C / 80T \\ 4 GHz} \\ \hline
@@ -536,7 +536,7 @@ Like the S822LC, each triad is a Linux NUMA node.
     \centering
     \caption[IBM AC922 Architecture Summary]{IBM AC922 Architecture Schematic}
     \label{tab:hal}
-    \begin{tabular}{|c|c|}
+    \begin{tabular}{cc}
     \hline
     \textbf{}                      & \textbf{Specification}                           \\ \hline
     \textbf{CPU}                   & \makecell{2x IBM Power9 \\ 40C 160T \\ 3.0 GHz } \\ \hline

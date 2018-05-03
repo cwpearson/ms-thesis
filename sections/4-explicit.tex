@@ -372,7 +372,7 @@ Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned tra
 	\centering
 	\caption[Affinity and Logical Communication Bandwidth]{Effect of Device Affinity on Logical Transfer Bandwidth}
 	\label{tab:cpu-gpu-affinity}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}     & \textbf{S822LC}                                                                  & \textbf{AC922}                                    & \textbf{DGX-1}                                  \\ \hline 
 		Pageable $\rightarrow$ GPU & $\times$ (Fig.~\ref{fig:minsky_pageable_affinity})                               & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & $\times$ (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
@@ -396,7 +396,7 @@ For DGX-1, pinned transfers all show 2 GB/s of anisotropy (Fig.~\ref{fig:dgx_pin
 	\centering
 	\caption[Host-Device Transfer Anisotropy]{Host-Device Transfer Anisotropy}
 	\label{tab:explicit-anisotropy}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}                  & \textbf{S822LC}                                      & \textbf{AC922}                                    & \textbf{DGX-1}                                    \\ \hline 
 		Pageable $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
@@ -427,7 +427,7 @@ S822LC is the only system where this behavior is observed for CPU-GPU transfers.
 	\centering
 	\caption[Transfer Rate Variability on Identical Links]{Transfer Rate Variability on Identical Links}
 	\label{tab:explicit-identical}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}     & \textbf{S822LC}                                                    & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
 		Pageable $\rightarrow$ GPU & fot intermediate sizes (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$       & $\times$       \\ \hline
@@ -549,7 +549,7 @@ Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access af
 	\centering
 	\caption[Effect of Peer Access on Transfer Rate]{Effect of Peer Access on Transfer Rate}
 	\label{tab:explicit-peer-rate}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}       & \textbf{S822LC}                                   & \textbf{AC922}                                       & \textbf{DGX-1}                                             \\ \hline 
 		GPU $\rightarrow$ Local GPU  & \checkmark  (Fig.~\ref{fig:explicit-s822lc-peer}) & \checkmark (Fig.~\ref{fig:explicit-hal-peer-local})  & \checkmark (Fig.~\ref{fig:explicit-dgx-peer-nopeer-local}) \\ \hline
@@ -596,12 +596,24 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 		\caption{}
 		\label{fig:explicit-ac922-nopeer-remote}
 	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_path_gpu0-gpu2.pdf}
+		\caption{}
+		\label{fig:ac922-explicit-path-gpu0-gpu2}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_path_gpu2-gpu0.pdf}
+		\caption{}
+		\label{fig:ac922-explicit-path-gpu2-gpu0}
+	\end{subfigure}
 	\caption[Peer Access and GPU-GPU Transfer Bandwidth]{
 		Transfer bandwidth vs transfer size when peer access is disabled.
 		(a) shows anisotropy on transfers between GPU0 and GPU2 on S822LC.
 		(b) and (c) show transfer rates along the GPU0-CPU0 and CPU1-GPU2 components of the links.
 		Although (b) and (c) are the same, the anisotropy still exists in the aggregated logical link.
-		(d) shows anisotropy on AC922.
+		(d-c) show the same for AC922.
 	}
 	\label{fig:explicit-peer-anisotropy}
 \end{figure}
@@ -610,13 +622,13 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 	\centering
 	\caption[GPU-GPU Transfer Anisotropy]{GPU-GPU Transfer Anisotropy}
 	\label{tab:explicit-peer-direction}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}                           & \textbf{S822LC}                                           & \textbf{AC922}                                           & \textbf{DGX-1} \\ \hline 
-		GPU $\leftrightarrow$ Local GPU  (peer enabled)  & $\times$                                                  & $\times$                                                 & $\times$       \\ \hline
-		GPU $\leftrightarrow$ Remote GPU (peer enabled)  & N/A                                                       & $\times$                                                 & N/A            \\ \hline
-		GPU $\leftrightarrow$ Local GPU  (peer disabled) & $\times$                                                  & $\times$                                                 & $\times$       \\ \hline
-		GPU $\leftrightarrow$ Remote GPU (peer disabled) & \checkmark (Fig.~\ref{fig:minsky-explicit-nopeer-remote}) & \checkmark (Fig.~\ref{fig:explicit-ac922-nopeer-remote}) & $\times$       \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer enabled)  } & $\times$                                                  & $\times$                                                 & $\times$       \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer enabled)  } & N/A                                                       & $\times$                                                 & N/A            \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer disabled) } & $\times$                                                  & $\times$                                                 & $\times$       \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:minsky-explicit-nopeer-remote}) & \checkmark (Fig.~\ref{fig:explicit-ac922-nopeer-remote}) & $\times$       \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -677,7 +689,7 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
 	\centering
 	\caption[Transfer rate on Identical Links]{Transfer Rate on Identical Links}
 	\label{tab:explicit}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}                      \\ \hline 
 		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer enabled)  } & $\times$                                                            & $\times$                                                           & $\times$                                                  \\ \hline

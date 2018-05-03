@@ -301,7 +301,7 @@ The performance difference is much greater for intermediate transfers than large
 		Observed cases of device affinity affecting coherence bandwidth.
 	}
 	\label{tab:um-coherence-affinity}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}    & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
 		CPU $\rightarrow$     GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
@@ -332,7 +332,7 @@ Generally, local GPU-GPU transfers are able to saturate around 75\% of the theor
 		Observed cases of device affinity affecting prefetch bandwidth.
 	}
 	\label{tab:um-prefetch-affinity}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}    & \textbf{S822LC}                                        & \textbf{AC922}                                        & \textbf{DGX-1}                                      \\ \hline 
 		CPU $\rightarrow$     GPU & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
@@ -357,7 +357,7 @@ On AC922, Figure~\ref{fig:um-coherence-ac922-gpu-gpu} shows there is no anisotro
 		Cases where anisotropy is observed in coherence bandwidth.
 	}
 	\label{tab:um-coherence-anisotropy}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}             & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
 		CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
@@ -386,7 +386,7 @@ Neither of the other systems demonstrate any GPU-GPU prefetch anisotropy.
 		Cases where anisotropy is observed in prefetch bandwidth.
 	}
 	\label{tab:um-prefetch-anisotropy}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
 		\hline
 		\textbf{Transfer Kind}             & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
 		CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$ (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
@@ -497,7 +497,7 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
         e.g., NVLink for S822LC refers to two-lane NVLink 1.0.
     }
 	\label{tab:page-fault-latency}
-	\begin{tabular}{|c|c|c|c|}
+	\begin{tabular}{cccc}
         \hline
         \textbf{Page Fault}                  & \multicolumn{3}{c|}{\textbf{Latency ($\mu$s)}}    \\ \hline
 		\textbf{Type}                        & \textbf{S822LC} & \textbf{AC922} & \textbf{DGX-1} \\ \hline
