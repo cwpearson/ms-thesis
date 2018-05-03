@@ -9,7 +9,6 @@ This chapter examines the performance of explicit data transfers over logical co
 \end{itemize}
 It highlights cases where the observed logical communication performance deviates significantly from the symmetries present in the CUDA API, numactl API, and hardware.
 Those deviances take the form of different performance on identical links, anisotropic link performance, or performance affected by device affinity.
-Full results can be found in Appendix~\ref{ch:data}.
 
 \section{CPU / CPU Transfers}
 \label{sec:explicit-cpu-cpu}
@@ -124,7 +123,6 @@ The measurement is taken multiple times with varying $num\_workers$, for each $t
 The highest performing number of workers is highlighted at each transfer size.
 For smaller transfers, fewer workers may result in a faster transfer time as the overhead of entering the parallel region is not amortized effectively.
 
-\todo{redo discussion with new results}
 For both workloads, the achievable bandwidth for low transfer sizes is limited by the overhead introduced by the workload function calls and OpenMP runtime.
 For large transfer sizes, the performance flattens out as the elapsed time is dominated by the actual data transfer over the SMP bus, achieving $30$ GB/s in the read workload and $25$ GB/s in the write workload on S822LC.
 This is consistent with the theoretical 38.4 GB/s performance of the X bus on S822LC.
@@ -134,13 +132,13 @@ This is consistent with the theoretical 38.4 GB/s performance of the X bus on S8
 	\begin{subfigure}[b]{0.45\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-dst.pdf}
 		\caption{}
-		\label{fig:s822lc-cpu0-cpu1}
+		\label{fig:s822lc-cpu0-cpu1-dst}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.45\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu1-src.pdf}
 		\caption{}
-		\label{fig:s822lc-cpu0-cpu1}
+		\label{fig:s822lc-cpu0-cpu1-src}
 	\end{subfigure}
 	\\
 	\begin{subfigure}[b]{0.45\textwidth}
@@ -191,7 +189,7 @@ This section covers
 	\item Cases of differing performance on identical links (Section~\ref{sec:explicit-cpu-gpu-identical})
 \end{itemize}
 
-Algorithm~\ref{alg:explicit} is used to evaluate the achievable bandwidth when \texttt{cudaMemcpy} is used to transfer data between a GPU allocation and a pageable, pinned, or write-combining host allocation. 
+Algorithm~\ref{alg:explicit-cpu-gpu} is used to evaluate the achievable bandwidth when \texttt{cudaMemcpy} is used to transfer data between a GPU allocation and a pageable, pinned, or write-combining host allocation. 
 The same algorithm can be used for these cases, because the same \texttt{cudaMemcpy} CUDA API call to transfer data can be used on a pointer pointing to any of the allocation types.
 Depending on the source and destination types $src$ and $dst$, and the desired host allocation type, the corresponding CUDA or numactl APIs are called to bind later activities to the desired GPU or CPU.
 Then, the CUDA and system allocators are invoked to produce $devPtr$ (a pointer to the device allocation) and $srcPtr$ (a pointer to the CPU allocation).
@@ -237,7 +235,7 @@ For pageable transfers, a \texttt{cudaDeviceSynchronize} is also included in the
 	\caption[Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}]{
         Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}.
 	}
-	\label{alg:explicit}
+	\label{alg:explicit-cpu-gpu}
 \end{algorithm}
 
 \subsection{Comparison of Pageable, Pinned, and Write-Combining Host Allocations}
@@ -450,14 +448,14 @@ This section covers
 	\item Cases of differing performance on identical links (Section~\ref{sec:explicit-peer-identical})
 \end{itemize}
 
-Algorithm~\ref{alg:explicit} is used to evaluate the achievable GPU-GPU transfer bandwidth.
+Algorithm~\ref{alg:explicit-gpu-gpu} is used to evaluate the achievable GPU-GPU transfer bandwidth.
 First, peer access is enabled or disabled depending on the experimental configuration.
 Then, \texttt{cudaMalloc} is used to create allocations of $transfer\_size$ bytes pointed to by $srcPtr$ and $dstPtr$.
 Finally, the achievable bandwidth is measured using the wall time for $num\_iters$ iterations, and the minimum elapsed time is reported, to help remove jitter from the results.
 
 \begin{algorithm}
 	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth]{Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth}
-	\label{alg:explicit}
+	\label{alg:explicit-gpu-gpu}
 	\begin{algorithmic}[1]
 		\Statex
 		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$, $peer\_access$}

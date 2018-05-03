@@ -4,10 +4,10 @@
 The unified memory system (Sections~\ref{sec:unified-cc3} and \ref{sec:unified-cc6}) greatly simplifies the programmer interaction with CUDA memories and data transfer.
 Data tranfers in the unified memory system are created in two ways:
 \begin{itemize}
-	\item \textit{coherence} transfers, where data is migrated to ensure that the CPU and GPU have a consistent view of memory.
+	\item \textit{coherence} (or \textit{demand}) transfers, where data is migrated to ensure that the CPU and GPU have a consistent view of memory.
 	\item \textit{prefetch} transfers, where data is moved ahead of time, with the purpose of reducing future access times. 
 \end{itemize}
-This chapter comprises two sections, detailing performance of CPU-to-GPU transfers (Section~\ref{sec:um-cpu-gpu}), and GPU-GPU transfers (Section~\ref{sec:um-gpu-gpu}).
+This chapter comprises two sections, detailing performance of prefetch and coherence unified memory bandwidth (Section~\ref{sec:um-coherence-prefetch}), and page fault latency (Section~\ref{sec:um-page-fault}).
 In each section, transfer bandwidth for coherence and prefetch transfers is examined, as well as page-fault latency for demand transfers, where applicable.
 
 Algorithm~\ref{alg:um-coherence-bw} describes the approach to measure coherence bandwidth between any two CUDA devices in the unified memory system.
@@ -173,7 +173,11 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 	\end{algorithmic}
 \end{algorithm}
 
+%
+%
+%
 \section{Coherence vs Prefetch Bandwidth}
+\label{sec:um-coherence-prefetch}
 
 \begin{figure}[ht]
 	\centering
@@ -341,7 +345,7 @@ Generally, local GPU-GPU transfers are able to saturate around 75\% of the theor
 	\end{tabular}
 \end{table}
 
-\section{Observed Anisotropy in Coherence Bandwidth}
+\subsection{Observed Anisotropy in Coherence Bandwidth}
 
 Table~\ref{tab:um-coherence-anisotropy} describes instances of observed anisotropy in coherence bandwidth.
 Figure~\ref{fig:um-coherence-s822lc-cpu-gpu} shows that CPU-to-GPU coherence transfers are uniformly faster than GPU-to-CPU coherence transfers on S822LC.
@@ -396,7 +400,12 @@ Neither of the other systems demonstrate any GPU-GPU prefetch anisotropy.
 	\end{tabular}
 \end{table}
 
+%
+%
+%
+
 \section{Page Fault Latency}
+\label{sec:um-page-fault}
 
 Unified memory page fault latency is estimated by constructing a linked list in managed memory and traversing it.
 Algorithm~\ref{alg:um-latency} summarizes the measurement routine.
@@ -517,19 +526,19 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
 	\begin{subfigure}[b]{0.31\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/m2_coherence_latency.pdf}
 		\caption{}
-		\label{}
+		\label{fig:s822lc-page-fault}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.31\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/hal_coherence_latency.pdf}
 		\caption{}
-		\label{}
+		\label{fig:ac922-page-fault}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.31\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/dgx_coherence_latency.pdf}
 		\caption{}
-		\label{}
+		\label{fig:dgx-page-fault}
 	\end{subfigure}
 	\caption[Page Fault Latencies for S822LC, AC922, and DGX-1]{
         Linked-list traversal time vs number of strides for S822LC, AC922, and DGX-1.
@@ -539,10 +548,9 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
 	\label{fig:coherence-page-fault-latency}
 \end{figure}
 
-\section{Quirks}
+\section{Summary}
 
-The performance of the unified memory system deviates from expectations in substantial ways
-
+The performance of the unified memory system deviates from expectations in substantial ways:
 \begin{itemize}
 \item CPU-to-GPU coherence bandwidth is higher than prefetch bandwidth for small / intermediate transfer sizes.
 \item S822LC and AC922 exhibit faster remote GPU-GPU prefetch bandwidth than local GPU-GPU prefetch bandwidth.
@@ -552,3 +560,5 @@ The performance of the unified memory system deviates from expectations in subst
 \item AC922 and DGX-1 have better CPU-to-GPU coherence bandwidth for smaller transfers and better GPU-to-CPU coherence bandwidth for large cases, while S822LC always demonstrates better CPU-to-GPU than GPU-to-GPU coherence bandwidth.
 \item IBM CPU/GPU prefetch bandwidth is anisotropic and affected by affinity.
 \end{itemize}
+However, the performance of the unified memory system is no more surprising than that of the explicit transfer system, and with hints from the application developer, can achieve the same effective performance as the explicit system.
+In this way, the application developer is able to have the best of both worlds: detailed performance or simpler application development when desired.

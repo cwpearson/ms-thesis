@@ -456,7 +456,7 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
 \subsection{NVIDIA DGX-1}
 \label{sec:dgx1}
 
-\begin{table}[]
+\begin{table}[ht]
     \centering
     \caption[NVIDIA DGX-1 Architecture Summary]{NVIDIA DGX-1 Architecture Summary}
     \label{tab:dgx1}
@@ -477,10 +477,9 @@ Each CPU is connected to 256GB of DDR4 RAM, and each section makes up a Linux NU
 Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
 The sections are connected by an Intel 9.6GT/s QPI bus between the CPUs providing 38.4 GB/s of bidirectional bandwidth, as well as NVLinks between corresponding GPUs.
 The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
-Table~\ref{tab:dgx1} summarizes the hardware configuration.
-Figure \ref{fig:topo-dgx-simple} shows a simplified view of the topology.
+Table~\ref{tab:dgx1} and Figure \ref{fig:topo-dgx-simple} summarizes the hardware configuration.
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/dgx1-hardware.pdf}
     \caption[NVIDIA DGX-1 Architecture Schematic]{NVIDIA DGX-1 Architecture Schematic}
@@ -511,10 +510,9 @@ Each POWER8 CPU and associated memory make up a Linux NUMA node.
 Each POWER8 CPU is part of a fully-connected triad of one POWER8 CPU and two P100 GPUs.
 Each device in the triad is connected by a gang of two NVLink 1.0 lanes for a total bidirectional bandwidth of 80 GB/s.
 The two triads are connected at the POWER8 CPUs by an IBM SMP X bus with 38.4 GB/s of bidirectional bandwidth.
-Table~\ref{tab:minsky} summarizes the hardware configuration.
-Figure~\ref{fig:topo-minsky-simple} shows a simplified view of the topology.
+Table~\ref{tab:minsky} and Figure~\ref{fig:topo-minsky-simple} summarizes the hardware configuration.
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/minsky-hardware.pdf}
     \caption[IBM S822LC Architecture Schematic]{IBM S822LC Architecture Schematic}
@@ -529,13 +527,13 @@ Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is att
 Each POWER9 CPU is part of a fully-connected triad of one POWER9 CPU and two V100 GPUs.
 Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirection bandwidth of 150 GB/s.
 The two triads are connected at the POWER9 CPUs by an IBM SMP X bus with 64 GB/s bandwidth.
-Table~\ref{tab:minsky} summarizes the hardware configuration.
+Table~\ref{tab:ac922} and Figure~\ref{fig:topo-ac922-simple} summarize the hardware configuration
 Like the S822LC, each triad is a Linux NUMA node.
 
-\begin{table}[]
+\begin{table}[ht]
     \centering
     \caption[IBM AC922 Architecture Summary]{IBM AC922 Architecture Schematic}
-    \label{tab:hal}
+    \label{tab:ac922}
     \begin{tabular}{cc}
     \hline
     \textbf{}                      & \textbf{Specification}                           \\ \hline
@@ -551,7 +549,7 @@ Like the S822LC, each triad is a Linux NUMA node.
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/hal-hardware.pdf}
     \caption[IBM AC922 Architecture Schematic]{IBM AC922 Architecture Schematic}
-    \label{fig:topo-dgx-simple}
+    \label{fig:topo-ac922-simple}
 \end{figure}
 
 
