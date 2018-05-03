@@ -1,16 +1,16 @@
 series:
   - file: hal_coherence-bw.csv
     col: a
-  - label: CPU0 to GPU0
+  - label: CPU0 to GPU0 (local)
     file: hal_coherence-bw.csv
     col: v
-  - label: CPU0 to GPU2
+  - label: CPU0 to GPU2 (remote)
     file: hal_coherence-bw.csv
     col: x
-  - label: GPU0 to CPU0
+  - label: GPU0 to CPU0 (local)
     file: hal_coherence-bw.csv
     col: e
-  - label: GPU2 to CPU0
+  - label: GPU2 to CPU0 (remote)
     file: hal_coherence-bw.csv
     col: o
 yaxis:

@@ -1,16 +1,16 @@
 series:
   - file: dgx_coherence-bw.csv
     col: a
-  - label: CPU0 to GPU0
+  - label: CPU0 to GPU0 (local)
     file: dgx_coherence-bw.csv
     col: bv
-  - label: CPU0 to GPU2
+  - label: CPU0 to GPU2 (remote)
     file: dgx_coherence-bw.csv
     col: bx
-  - label: GPU0 to CPU0
+  - label: GPU0 to CPU0 (local)
     file: dgx_coherence-bw.csv
     col: i
-  - label: GPU2 to CPU0
+  - label: GPU2 to CPU0 (remote)
     file: dgx_coherence-bw.csv
     col: aa
 yaxis:

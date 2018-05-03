@@ -1,15 +1,15 @@
 generator: regplot
 file: hal_coherence-latency.csv
 ydata:
-  - label: GPU0 to GPU2
+  - label: GPU0 to GPU2 (remote)
     col: d
-  - label: GPU0 to GPU1
+  - label: GPU0 to GPU1 (local)
     col: b
     color: "0.25"
-  - label: CPU0 to GPU0
+  - label: CPU0 to GPU0 (local)
     col: ap
     color: "0.5"
-  - label: GPU0 to CPU0
+  - label: GPU0 to CPU0 (local)
     col: h
     color: "0.75"
 yaxis:
