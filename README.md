@@ -8,6 +8,7 @@
 
 * [Latest `master`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_master.pdf)
 * [Latest `develop`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_develop.pdf)
+* [v0.9](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.8.pdf) Sent to Wen-Mei on 5/9/2018. Moved plots in Ch4, Ch5, called out some plot features.
 * [v0.8](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.8.pdf) Sent to Wen-Mei on 5/3/2018.
 * [v0.6](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.6.pdf) Clean up ch4.
 * [v0.5](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.5.pdf) Draft ch1,2,3.
