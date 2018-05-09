@@ -15,6 +15,9 @@ series:
     col: w
 yaxis:
   label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 25000
 xaxis:
   scale: log
 title: DGX-1 Pageable CPU0-GPU Transfers

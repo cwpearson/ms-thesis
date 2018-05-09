@@ -15,6 +15,9 @@ series:
     col: l
 yaxis:
   label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 25000
 xaxis:
   scale: log
 title: AC922 Pageable CPU0-GPU Transfers

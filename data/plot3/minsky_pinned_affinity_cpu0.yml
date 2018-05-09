@@ -15,6 +15,9 @@ series:
     col: l
 yaxis:
   label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 70000
 xaxis:
   scale: log
 title: S822LC Pinned CPU0-GPU Transfers

@@ -311,22 +311,10 @@ This suggests that there is a different implementation for the two cases.
 There is a spike at itermediate sizes, which suggests that the copy can occur solely within the CPU cache.
 On DGX-1, there is a less pronounced spike.
 
+\subsection{Measurements}
 
-
-
-\subsection{Affinity}
-\label{sec:explicit-cpu-gpu-affinity}
-
-On systems with high-performance interconnects, CPU/GPU transfer performance is strongly correlated with device affinity.
-Furthermore, the high performance interconnects do tend to allow higher bandwidth transfers, but can also expose some surprising behavior.
-Figure~\ref{fig:cpu-gpu-affinity-direction} shows some cases where the device physical affinity affects the performance of the logical communication path.
-Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
-Figures \ref{fig:minsky_pageable_affinity}  show that affinity has a negligable effect on bandwidth for pagable transfers on S822LC.
-Figure~\ref{fig:hal_pageable_affinity} shows a large bandiwdth difference for small and large transfers from pageable allocations to the GPU on AC922.
-Figure~\ref{fig:dgx_pageable_affinity} shows that GPU-to-CPU pageable transfers on DGX are affected by affinity.
-Figure~\ref{fig:minsky_pinned_affinity} shows on S822LC, pinned bandwidth is affected both by affinity with local transfers at least $5$ GB/s faster than remote transfers at large sizes.
-Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affinity has a much stronger effect.
-Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned transfers for DGX-1.
+Figure~\ref{fig:cpu-gpu-affinity-direction} shows CPU/GPU bandwidth on a variety of logical paths for S822LC, AC922, and DGX-1.
+Transfers involving pinned and pageable allocations are shown.
 
 \begin{figure}[ht]
 	\centering
@@ -375,7 +363,28 @@ Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned tra
 	\label{fig:cpu-gpu-affinity-direction}
 \end{figure}
 
+In general, the bandwidth follows the same outline described in Section~\ref{sec:explicit-pageable-pinned-wc}, with overhead-dominated time for small transfers, bandwidth-dominated time for large transfers, and some other behavior between.
+There are some distinctive reocurring patterns in Figures~\ref{fig:cpu-gpu-affinity-direction} (a)-(c).
+For CPU-to-GPU pageable transfers on all systems, remote GPU-to-CPU transfers on S822LC, and local CPU-to-GPU transfers on AC922, intermediate transfer bandwidths show peaks of varying strengths.
+This may be due to the transfer from the pageable allocation to pinned buffer occuring within the cache, so the ultimate transfer bandwidth is limited by the interconnect bandwidth instead of the CPU single-threaded memory bandiwdth.
+There may also be some imbalance in the number and size of the pinned transfer buffers that prevents good overlapping of the host-device DMA and the host-host memory copy.
+AC922 also exhibits a strong peak, drop, and return to increased performance.
 
+Figures~\ref{fig:cpu-gpu-affinity-direction} (d)-(f) show the same transfers, but from pinned allocations.
+These transfers are all limited by the interconnect bandwidth, and do not show the same peaks.
+
+\subsection{Affinity}
+\label{sec:explicit-cpu-gpu-affinity}
+
+On systems with high-performance interconnects, CPU/GPU transfer performance is strongly correlated with device affinity.
+Furthermore, the high performance interconnects do tend to allow higher bandwidth transfers, but can also expose some surprising behavior.
+Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
+Figure~\ref{fig:minsky_pageable_affinity} show that affinity has a negligible effect on bandwidth for pagable transfers on S822LC.
+Figure~\ref{fig:hal_pageable_affinity} shows a large bandiwdth difference for small and large transfers from pageable allocations to the GPU on AC922.
+Figure~\ref{fig:dgx_pageable_affinity} shows that GPU-to-CPU pageable transfers on DGX are affected by affinity.
+Figure~\ref{fig:minsky_pinned_affinity} shows on S822LC, pinned bandwidth is affected both by affinity with local transfers at least $5$ GB/s faster than remote transfers at large sizes.
+Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affinity has a much stronger effect.
+Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned transfers for DGX-1.
 
 \begin{table}[ht]
 	\centering
@@ -383,17 +392,17 @@ Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned tra
 	\label{tab:cpu-gpu-affinity}
 	\begin{tabular}{cccc}
 		\hline
-		\textbf{Transfer Kind}     & \textbf{S822LC}                                                                  & \textbf{AC922}                                    & \textbf{DGX-1}                                  \\ \hline 
-		Pageable $\rightarrow$ GPU & $\times$ (Fig.~\ref{fig:minsky_pageable_affinity})                               & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & $\times$ (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
-		Pageable $\leftarrow$ GPU  & \makecell{ for intermediate \\ sizes (Fig.~\ref{fig:minsky_pageable_affinity}) } & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
-		Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})                               & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$  (Fig.~\ref{fig:dgx_pinned_affinity})  \\ \hline
-		Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})                               & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$ (Fig.~\ref{fig:dgx_pinned_affinity})   \\ \hline
+		\textbf{Transfer Kind}     & \textbf{S822LC}                                      & \textbf{AC922}                                    & \textbf{DGX-1}                                  \\ \hline 
+		Pageable $\rightarrow$ GPU & $\times$   (Fig.~\ref{fig:minsky_pageable_affinity}) & $\times$   (Fig.~\ref{fig:hal_pageable_affinity}) & $\times$ (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+		Pageable $\leftarrow$ GPU  & \checkmark (Fig.~\ref{fig:minsky_pageable_affinity}) & \checkmark (Fig.~\ref{fig:hal_pageable_affinity}) & \checkmark (Fig.~\ref{fig:dgx_pageable_affinity}) \\ \hline
+		Pinned $\rightarrow$ GPU   & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$  (Fig.~\ref{fig:dgx_pinned_affinity})  \\ \hline
+		Pinned $\leftarrow$ GPU    & \checkmark (Fig.~\ref{fig:minsky_pinned_affinity})   & \checkmark (Fig.~\ref{fig:hal_pinned_affinity})   & $\times$ (Fig.~\ref{fig:dgx_pinned_affinity})   \\ \hline
 	\end{tabular}
 \end{table}
 
 \subsection{Anisotropy}
 \label{sec:explicit-cpu-gpu-anisotropy}
-
+\textit{Anisotropy} is the property of being directionally-dependent, e.g., CPU/GPU link bandwidth is anisotropic if CPU-to-GPU bandwidth is different than GPU-to-CPU bandwidth. 
 Figure~\ref{fig:cpu-gpu-affinity-direction} highlights that systems with high-performance interconnects, link bandwidth exhibits significant anisotropy.
 Table~\ref{tab:explicit-anisotropy} summarizes the effects.
 Particularly for the pageable transfers shown in Figures~\ref{fig:minsky_pageable_affinity} and \ref{fig:hal_pageable_affinity}, corresponding transfers are shown to be highly anisotropic.
@@ -401,7 +410,7 @@ In the pinned transfers on S822LC (Fig.~\ref{fig:minsky_pinned_affinity}), all t
 For AC922, (Fig.~\ref{fig:hal_pinned_affinity}), local transfers show anisotropy only for intermediate transfer sizes, and remote transfers do generally.
 For DGX-1, pinned transfers all show 2 GB/s of anisotropy (Fig.~\ref{fig:dgx_pinned_affinity}), while the degree of anisotropy for transfers involving pageable allocations depends on the affinity (Fig.~\ref{fig:dgx_pageable_affinity}).
 
-\begin{table}[ht]
+\begin{table}[H]
 	\centering
 	\caption[Host-Device Transfer Anisotropy]{Host-Device Transfer Anisotropy}
 	\label{tab:explicit-anisotropy}
@@ -438,11 +447,11 @@ S822LC is the only system where this behavior is observed for CPU-GPU transfers.
 	\label{tab:explicit-identical}
 	\begin{tabular}{cccc}
 		\hline
-		\textbf{Transfer Kind}     & \textbf{S822LC}                                                    & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-		Pageable $\rightarrow$ GPU & fot intermediate sizes (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$       & $\times$       \\ \hline
-		Pageable $\leftarrow$ GPU  & $\times$                                                           & $\times$       & $\times$       \\ \hline
-		Pinned $\rightarrow$ GPU   & $\times$                                                           & $\times$       & $\times$       \\ \hline
-		Pinned $\leftarrow$ GPU    & $\times$                                                           & $\times$       & $\times$       \\ \hline
+		\textbf{Transfer Kind}     & \textbf{S822LC}                                        & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
+		Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$       & $\times$       \\ \hline
+		Pageable $\leftarrow$ GPU  & $\times$                                               & $\times$       & $\times$       \\ \hline
+		Pinned $\rightarrow$ GPU   & $\times$                                               & $\times$       & $\times$       \\ \hline
+		Pinned $\leftarrow$ GPU    & $\times$                                               & $\times$       & $\times$       \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -464,7 +473,7 @@ First, peer access is enabled or disabled depending on the experimental configur
 Then, \texttt{cudaMalloc} is used to create allocations of $transfer\_size$ bytes pointed to by $srcPtr$ and $dstPtr$.
 Finally, the achievable bandwidth is measured using the wall time for $num\_iters$ iterations, and the minimum elapsed time is reported, to help remove jitter from the results.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth]{Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth}
 	\label{alg:explicit-gpu-gpu}
 	\begin{algorithmic}[1]
@@ -507,16 +516,9 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
 
 Figure~\ref{fig:explicit-peer} shows the performance of a variety of GPU-GPU transfers with and without peer access.
 Generally, peer access has a large effect on the bandwidth of local GPU-GPU transfers.
-Figure~\ref{fig:explicit-s822lc-peer} shows that enabling peer access on S822LC improves the performance of local GPU-GPU transfers by \mytilde40\%.
-Likewise, ~\ref{fig:explicit-dgx-peer-nopeer-local} shows peer access roughly doubling performance on DGX-1.
 With peer access enabled, GPUs may do DMAs directly with their peer memory instead of copying through the host.
-Likewise, Figure~\ref{fig:explicit-hal-peer-local} shows similar behavior for AC922, with the much higher performance ceiling due to the increased bandwidth of NVLink 2.0.
-GPU2 and GPU3 show lower performance than GPU0 and GPU1 when peer access is disabled.
-This may be because the CUDA staging buffers needed during this transfer are allocated on a NUMA node remote to the GPUs, so the transfer must copy over the X bus unecessarily.
-For remote transfers on AC922, shown in Figure~\ref{fig:explicit-hal-peer-remote}, enabling peer access actually reduces the performance, though the effect is not very large.
-Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access affects transfer performance.
 
-\begin{figure}[ht]
+\begin{figure}[H]
 	\centering
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/minsky_memcpy_local.pdf}
@@ -543,7 +545,7 @@ Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access af
 	\end{subfigure}
 	
 	\caption[GPU-GPU \texttt{cudaMemcpy} bandwidth and peer access]{
-		Transfer bandwidth vs transfer size for various scenarios with peer access enabled or disabled.
+		GPU-GPU \texttt{cudaMemcpy} transfer bandwidth vs. transfer size for various scenarios with peer access enabled or disabled.
 		(a) shows a GPU0 to GPU1 transfer on S822LC with and without peer access,
 		(b) shows GPU to GPU local transfers on AC922.
 		(c) shows GPU to GPU remote transfers on AC922.
@@ -553,8 +555,14 @@ Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access af
 	\label{fig:explicit-peer}
 \end{figure}
 
+Figure~\ref{fig:explicit-s822lc-peer} shows that enabling peer access on S822LC improves the performance of local GPU-GPU transfers by \mytilde40\%, to over 75\% of the theoretical link bandwidth.
+Likewise, Figure~\ref{fig:explicit-dgx-peer-nopeer-local} shows peer access roughly doubling performance on DGX-1 and Figure~\ref{fig:explicit-hal-peer-local} shows similar behavior for AC922, with the much higher performance ceiling due to the increased bandwidth of NVLink 2.0.
+On AC922, GPU2 and GPU3 show lower performance than GPU0 and GPU1 when peer access is disabled.
+This may be because the CUDA staging buffers needed during this transfer are allocated on a NUMA node remote to the GPUs, so the transfer must copy over the X bus unecessarily.
+For remote transfers on AC922, shown in Figure~\ref{fig:explicit-hal-peer-remote}, enabling peer access actually reduces the performance, though the effect is not very large.
+Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access affects transfer bandwidth.
 
-\begin{table}[ht]
+\begin{table}[H]
 	\centering
 	\caption[Effect of Peer Access on Transfer Rate]{Effect of Peer Access on Transfer Rate}
 	\label{tab:explicit-peer-rate}
