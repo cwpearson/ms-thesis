@@ -11,11 +11,58 @@ This chapter comprises two sections, detailing performance of prefetch and coher
 In each section, transfer bandwidth for coherence and prefetch transfers is examined, as well as page-fault latency for demand transfers, where applicable.
 
 Algorithm~\ref{alg:um-coherence-bw} describes the approach to measure coherence bandwidth between any two CUDA devices in the unified memory system.
+
+\begin{algorithm}[H]
+	\caption{CPU-GPU Coherence Bandwidth}
+	\label{alg:um-coherence-bw}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
+				
+		\If{$src$ is CPU}
+		\State \texttt{numa\_bind($src$)} \Comment bind thread and children to $src$
+		\EndIf
+		\If{$dst$ is CPU}
+		\State \texttt{numa\_bind($dst$)}
+		\EndIf
+		\State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
+		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+				        
+				
+		\State $blockDim \gets [256,1,1]$
+		\State $transferStrides \gets floor(\frac{transfer\_size + stride - 1}{stride})$
+		\State $gridDim \gets [floor(\frac{transferStride + 255}{256}), 1, 1]$
+				
+		\If{$dst$ is GPU}
+		\State \texttt{cudaSetDevice($dst$)}
+		\EndIf
+		\State $elapsed \gets \infty$
+		\For{$i$ in $numIters$}
+				
+		\State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
+		\State \texttt{cudaDeviceSynchronize()}
+				
+		\State $start \gets$ walltime()
+		\If{$dst$ is GPU}
+		\State \texttt{gpu\_read\_8<<<$gridDim$,$blockDim$>>>($ptr$, $transfer\_size$, $stride$)}
+		\State \texttt{cudaDeviceSynchronize()}
+		\Else
+		\State \texttt{cpu\_write\_8($ptr$, $transfer\_size$, $stride$)}
+		\EndIf
+		\State $end \gets$ walltime()
+		\State $elapsed \gets$ min($elapsed$, $end-start$)
+		\EndFor
+		\State \Return $elapsed$
+		\EndFunction
+				
+	\end{algorithmic}
+\end{algorithm}
+
 First, if the source or destination device is a CPU, the application and worker threads are bound to that CPU.
-Then, if the destination is a GPU, that GPU is set as the active device, so future kernel executions will happen on that GPU.
 $transfer\_size$ bytes are allocated for the unified memory system, and touched by the CPU to ensure the allocation is actually backed by pages.
-Then, the CPU or GPU workload is executed on the destination device.
-That workload, shown in Listing~\ref{lst:cpu-write} and \ref{lst:gpu-write}, writes a single value to every $stride$ bytes in $transer_size$.
+Then, if the destination is a GPU, that GPU is set as the active device, so future kernel executions will happen on that GPU.
+The pages are prefetched to the source device, and the CPU or GPU workload is executed on the destination device.
+That workload, shown in Listing~\ref{lst:cpu-write} and \ref{lst:gpu-write}, writes a single value to every $stride$ bytes in $transfer\_size$.
 To minimize the extra work, $stride$ is set to the page size on the target system.
 This causes a single access to each page, and forces the unified memory system to migrate each page to the destination.
 \texttt{cudaDeviceSynchronize} is used to ensure the GPU kernel is finished.
@@ -24,6 +71,7 @@ The time for the CPU workload or GPU workload and synchronization is recorded, a
 Listing~\ref{lst:cpu-write} shows a simple function to write \texttt{sizeof(data\_type)} bytes to every \texttt{stride} byte in a \texttt{count}-byte region starting at \texttt{ptr}.
 OpenMP is used to statically partition the write loop, with each thread taking a contiguous chunk the loop iteration space.
 This ensures that the CPU is running enough threads to maximize demand on the unified memory system.
+When \texttt{stride} is the page size, each page is written only once, doing the minimal amount of work to force a page migraion.
 
 \begin{lstlisting}[language=c++, caption=\texttt{cpu\_write} function for Algorithm~\ref{alg:um-coherence-bw}, label=lst:cpu-write]
     template <typename data_type>
@@ -79,53 +127,9 @@ Since warps execute in lockstep, this ensures the broadest simultaneous demands 
     }
 \end{lstlisting}
 
-\begin{algorithm}
-	\caption{CPU-GPU Coherence Bandwidth}
-	\label{alg:um-coherence-bw}
-	\begin{algorithmic}[1]
-		\Statex
-		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-				
-		\If{$src$ is CPU}
-		\State \texttt{numa\_bind($src$)} \Comment bind thread and children to $src$
-		\EndIf
-		\If{$dst$ is CPU}
-		\State \texttt{numa\_bind($dst$)}
-		\EndIf
-		\State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
-		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
-				        
-				
-		\State $blockDim \gets [256,1,1]$
-		\State $transferStrides \gets floor(\frac{transfer\_size + stride - 1}{stride})$
-		\State $gridDim \gets [floor(\frac{transferStride + 255}{256}), 1, 1]$
-				
-		\If{$dst$ is GPU}
-		\State \texttt{cudaSetDevice($dst$)}
-		\EndIf
-		\State $elapsed \gets \infty$
-		\For{$i$ in $numIters$}
-				
-		\State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
-		\State \texttt{cudaDeviceSynchronize()}
-				
-		\State $start \gets$ walltime()
-		\If{$dst$ is GPU}
-		\State \texttt{gpu\_read\_8<<<$gridDim$,$blockDim$>>>($ptr$, $transfer\_size$, $stride$)}
-		\State \texttt{cudaDeviceSynchronize()}
-		\Else
-		\State \texttt{cpu\_write\_8($ptr$, $transfer\_size$, $stride$)}
-		\EndIf
-		\State $end \gets$ walltime()
-		\State $elapsed \gets$ min($elapsed$, $end-start$)
-		\EndFor
-		\State \Return $elapsed$
-		\EndFunction
-				
-	\end{algorithmic}
-\end{algorithm}
 
-Algorithm~\ref{alg:um-coherence-bw} describes the approach to measure prefetch bandwidth between two devices participating in the unified memory system.
+
+Algorithm~\ref{alg:um-coherence-bw} describes a similar approach for measure prefetch bandwidth between two devices participating in the unified memory system.
 First, if $src$ is a CPU, the application thread is bound to that CPU, or if $src$ is a GPU, that GPU is made active.
 $transfer\_size$ bytes are then allocated through \texttt{cudaMallocManaged}, and are associated with the source device thanks to the previous step.
 The benchmark loop is then
@@ -179,7 +183,9 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 \section{Coherence vs Prefetch Bandwidth}
 \label{sec:um-coherence-prefetch}
 
-\begin{figure}[ht]
+Figure~\ref{fig:um-cpu-gpu} compares CPU/GPU prefetch and coherence bandwidth on S822LC, AC922, and DGX-1.
+
+\begin{figure}[H]
 	\centering
 	\begin{subfigure}[b]{0.45\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/m2_prefetch_cpu-gpu.pdf}
@@ -223,18 +229,22 @@ The loop is run $num\_iters$ times, and the fastest observed time is reported.
 	\label{fig:um-cpu-gpu}
 \end{figure}
 
-The following figures compare prefetch and coherence bandwidth for CPU/GPU transfers;
-\begin{itemize}
-	\item Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-coherence-s822lc-cpu-gpu} on S822LC,
-	\item Figures \ref{fig:um-prefetch-ac922-cpu-gpu} and \ref{fig:um-coherence-ac922-cpu-gpu}   on AC922,
-	\item Figures \ref{fig:um-prefetch-dgx-cpu-gpu} and \ref{fig:um-coherence-dgx-cpu-gpu}       on DGX,
-\end{itemize}
-In general, the CPU/GPU prefetch bandwidth saturates at a higher fraction of the theoretical underlying link bandwidth.
+
+In general, the CPU/GPU prefetch bandwidth saturates at a higher fraction of the theoretical underlying link bandwidth than the coherence bandwidth.
 This is likely because the DMA associated with a prefetch is a simpler and higher-performance operation than the on-demand migration of pages.
 Coherence migrations can provide higher transfer bandwidth at small and intermediate transfer sizes.
 This suggests that the overhead of the prefetch transfer is higher than the coherence transfer.
+Notably, CPU-GPU transfers on AC922 show some unique performance degradation as transfer sizes get larger.
+Due to the construction of the benchmark, the number of GPU threads participating in the transfer grows linearly with the transfer size.
+Performance of the unified memory system on S822LC and AC922 may degrade with too many simultaneous pending transfers.
 
-\begin{figure}[ht]
+Figure~\ref{fig:um-gpu-gpu} compares GPU/GPU prefetch and coherence bandwidth on S822LC, AC922, and DGX-1.
+The GPU/GPU prefetch bandwidth also saturates at a higher bandwidth than the coherence transfers, and like the CPU/GPU transfers, the coherence bandwidth is higher for small and intermediate transfers.
+On S822LC and AC922, the achieved bandwidth drop as the transfer size gets larger (except for the S822LC remote case).
+This would be consistent with many parallel GPU threads generating too many concurrent page transfer demands.
+
+
+\begin{figure}[H]
 	\centering
 	\begin{subfigure}[b]{0.45\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/m2_prefetch_gpu-gpu.pdf}
@@ -272,24 +282,17 @@ This suggests that the overhead of the prefetch transfer is higher than the cohe
 		\label{fig:um-coherence-dgx-gpu-gpu}
 	\end{subfigure}
 	\caption[GPU/GPU Coherence and Prefetch Bandwidth]{
-		Measured GPU/GPU coherence and prefetch Bandwidth vs. transfer size for S822LC, AC922, and DGX-1.
-		Local and remote trasnfers in both directions for each pair of GPUs are shown.
+		Measured GPU/GPU coherence and prefetch bandwidth vs. transfer size for S822LC, AC922, and DGX-1.
+		Local and remote transfers in both directions for each pair of GPUs are shown.
 	}
 	\label{fig:um-gpu-gpu}
 \end{figure}
 
 
-The following figures compare prefetch and coherence bandwidth for GPU/GPU transfers;
-\begin{itemize}
-	\item Figures \ref{fig:um-prefetch-s822lc-gpu-gpu} and \ref{fig:um-coherence-s822lc-gpu-gpu} on S822LC,
-	\item Figures \ref{fig:um-prefetch-ac922-gpu-gpu} and \ref{fig:um-coherence-ac922-gpu-gpu}   on AC922,
-	\item Figures \ref{fig:um-prefetch-dgx-gpu-gpu} and \ref{fig:um-coherence-dgx-gpu-gpu}       on DGX,
-\end{itemize}
-The GPU/GPU prefetch bandwidth also saturates at a higher bandwidth than the coherence transfers, and like the CPU/GPU transfers, the coherence bandwidth is higher for small and intermediate transfers.
 
-\subsection{Effect of Device Affinity on Coherence Bandwidth}
+\subsection{Device Affinity and Coherence Bandwidth}
 
-Device affinity can affect the observed coherence transfer bandwidth.
+Device affinity affects the observed coherence transfer bandwidth.
 Table~\ref{tab:um-coherence-affinity} shows some cases where affinity affects transfer bandwidth.
 Figures \ref{fig:um-coherence-s822lc-cpu-gpu} and ~\ref{fig:um-coherence-ac922-cpu-gpu} shows no affinity effect for CPU to GPU coherence traffic.
 On AC922, the same is not true for GPU-to-CPU traffic, where local transfers saturate above 40GB/s while remote transfers are limited to around 30 GB/s.
@@ -315,7 +318,7 @@ The performance difference is much greater for intermediate transfers than large
 \end{table}
 
 
-\subsection{Effect of Device Affinity on Prefetch Bandwidth}
+\subsection{Device Affinity and on Prefetch Bandwidth}
 
 Device affinity can affect the observed prefetch bandwidth.
 Table~\ref{tab:um-prefetch-affinity} shows some cases where affinity affects prefetch transfer bandwidth.

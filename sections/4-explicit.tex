@@ -654,13 +654,6 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 
 Like CPU-GPU transfers, different performance is observed on identical GPU-GPU transfers when peer access is disabled.
 Figure~\ref{fig:explicit-nopeer-identical} show some example scenarios.
-Figure~\ref{fig:explicit-nopeer-identical-ac922-local} compares the bandwidth of transfers from GPU0 to GPU1 and GPU2 to GPU3 on AC922.
-These transfers are logically and physically identical: they have the same direction, between identical sub-topologies, and use the same CUDA APIs.
-Surprisingly, the achieved bandwidth varies by nearly a factor of two.
-Figure~\ref{fig:explicit-nopeer-identical-ac922-remote} shows similar behavior for remote transfers, though with a smaller magnitude of effect.
-Figures~\ref{fig:explicit-nopeer-identical-s822lc-local} and ~\ref{fig:explicit-nopeer-identical-s822lc-remote} show the same for S822LC.
-Figure~\ref{fig:explicit-nopeer-identical-dgx} shows how GPU0-GPU1, GPU2-GPU3, GPU4-GPU5, and GPU6-GPU7 transfers are slower than all other local transfers (GPU0-GPU2, for example).
-Table~\ref{tab:explicit-identical} summarizes the cases where differing performance is observed.
 
 \begin{figure}[ht]
 	\centering
@@ -702,6 +695,15 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
 	\label{fig:explicit-nopeer-identical}
 \end{figure}
 
+Figure~\ref{fig:explicit-nopeer-identical-ac922-local} compares the bandwidth of transfers from GPU0 to GPU1 and GPU2 to GPU3 on AC922.
+These transfers are logically and physically identical: they have the same direction, between identical sub-topologies, and use the same CUDA APIs.
+Surprisingly, the achieved bandwidth varies by nearly a factor of two.
+This may be due to intermediate buffers being allocated on a CPU remote to the GPU pair, forcing transfers to cross the X-bus.
+Figure~\ref{fig:explicit-nopeer-identical-ac922-remote} shows similar behavior for remote transfers, though with a smaller magnitude of effect.
+Figures~\ref{fig:explicit-nopeer-identical-s822lc-local} and ~\ref{fig:explicit-nopeer-identical-s822lc-remote} show the same for S822LC.
+Figure~\ref{fig:explicit-nopeer-identical-dgx} shows how GPU0-GPU1, GPU2-GPU3, GPU4-GPU5, and GPU6-GPU7 transfers are slower than all other local transfers (GPU0-GPU2, for example).
+Table~\ref{tab:explicit-identical} summarizes the cases where differing performance is observed.
+
 \begin{table}[ht]
 	\centering
 	\caption[Transfer rate on Identical Links]{Transfer Rate on Identical Links}
@@ -718,3 +720,6 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
 
 \section{Summary}
 
+The performance of \texttt{cudaMemcpy} transfers is highly dependent on device affinity, CPU allocation type, transfer direction, and underlying hardware performance.
+Transfers involving pageable host allocations are particularly unpredictable, with bandwidth peaking at intermediate transfer sizes, possibly due to pageable-to-pinned transfers occurring wholly in the CPU cache.
+In general, constraining communication to pinned buffers and local devices offers the best performance, though direction of the transfer still has a large impact.
