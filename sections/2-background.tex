@@ -45,7 +45,7 @@ From the software side, they demand explicit management through the NVIDIA Compu
 In a GPU-accelerated application, the CPU typically acts as a manager and ``offloads'' specialized compute tasks to the GPU.
 From the hardware perspective, GPUs are separated from the CPU and memory by an interconnect link.
 The GPU has its own local memory, which must be populated with data for the GPU to operate on.
-This work refers to a single chip multiprocessor as a ``CPU,'' the system memory associated with that CPU as the ``CPU memory'' or ``system memory'', and the GPU's local memory as ``GPU memory''.
+This work refers to the system memory associated with that CPU as the ``CPU memory'' or ``system memory'', and the GPU's local memory as ``GPU memory''.
 Finally, though not covered in this work, the GPU compute cores have dramatically different performance characteristics than CPU cores, and require specialized programming styles.
 
 \begin{figure}[ht]
@@ -157,20 +157,22 @@ The total bandwidth of the link depends on the PCIe revision and the number of l
 Figure~\ref{fig:pcie-cartoon} shows an example topology.
 The PCIe 3.0 specification~\cite{pcie30} was finalized in 2010, and the first NVIDIA GPUs to support it were some Kepler-architecture products released in 2012~\cite{nyland2012inside}.
 
-Physically, each PCIe 3.0 lane has four wires, divided into two differential signaling pairs.
-Each pair operates at 8 Gb/s.
+Table~\ref{tab:pcie-lane-rates} shows single-lane pCIe bandwidths from revision $1.0$ to $3.0$.
+Physically, each PCIe lane has four wires, divided into two differential signaling pairs.
 A PCIe 3.0 x16 interconnect therefore has 64 wires.
+In PCIe 3.0, each signaling pair operates at 8 Gb/s.
+With a 128b/130b encoding, this gives PCIe 3.0 x16 a 15.8 GB/s unidirectional bandwidth.
 
 \begin{table}[ht]
 	\centering
 	\caption[PCIe Lane Transfer Rates]{}
-	\label{tab:interconnect-overview}
+	\label{tab:pcie-lane-rates}
 	\begin{tabular}{cccc}
 		\hline
-		\textbf{PCIe Revision} & \textbf{Signaling Rate}   & \textbf{Encoding} & \textbf{Bandwidth} \\ \hline
-		\textbf{1.0}           &                           &                   & Tree                  \\ \hline
-		\textbf{2.0}           &                           &                   & Point-to-Point        \\ \hline
-		\textbf{3.0}           &                           &                   & Point-to-Point        \\ \hline
+		\textbf{PCIe Revision} & \textbf{Signaling Rate} & \textbf{Encoding} & \textbf{Line Bandwidth} \\ \hline
+		\textbf{1.0}           & $2.5$ GT/s                & $8$b/$10$b            & $250$   MB/s      \\ \hline
+		\textbf{2.0}           & $5.0$ GT/s                & $8$b/$10$b            & $500$   MB/s      \\ \hline
+		\textbf{3.0}           & $8.0$ GT/s                & $128$b/$130$b         & $984.6$ MB/s      \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -207,22 +209,19 @@ CUDA-capable hardware advertises a specific compute capability (CC) that defines
 Although the CUDA API may expose particular capability, the GPU may need a sufficiently high CC to take advantage of it.
 This section references both these version systems when discussing CUDA features.
 
-This work does not cover remote mapping or ``zero-copy'' memory, and they are not described in this section.
+This work focuses on the performance of explicit CUDA memory management and the CUDA unified memory system.
+There is a third set of transfer capabilities that fall under the umbrella of remote-mapping or ``zero-copy'' memory.
+These techniques are subsumed by Unified Memory, though making use of them typically requires hints to the CUDA system.
+Once the flexibility of the Unified memory system improves, it will be important to revisit the performance implications zero-copy memory.
 
 \subsection{Basic CUDA Memory and System Memory}
 
 Prior to the introduction of Unified Virtual Addressing (see Section~\ref{sec:uva}), the CUDA memory space was composed of multiple address spaces: one for the host, and one for each GPU~\cite{schroeder2011peer}.
-Data was explicitly allocated in and moved between those address spaces through the basic CUDA memory management runtime calls described in Table~\ref{tab:cuda-basic-apis}.
+Data was explicitly allocated in those address spaces through \texttt{cudaMalloc}.
 Standard C/C++ memory allocation techniques (\texttt{malloc}/\texttt{new}, \texttt{free}/\texttt{new}) are used for managing memory on the host.
-\texttt{cudaMemcpy} is used to move data between the host and device, or between devices.
+\texttt{cudaMemcpy} is used to move data between address spaces, whether the host and device or between devices.
 Since each device has a separate address space, the programmer explicitly instructs \texttt{cudaMemcpy} how to move data with \texttt{cudaMemcpyHostToDevice}, \texttt{cudaMemcpyDeviceToHost}, or \texttt{cudaMemcpyDeviceToDevice}.
-
-\texttt{cudaMemcpy} is only partially asynchronous with respect to the host(\cite{nvidia2014cuda60runtime}, ch. 1).
-It will return once the pageable source allocation is safe to modify, but possibly before the data has finished moving to the device.
-This impacts the design of the performance characterization routines in Chapter~\ref{ch:explicit}
-
-\texttt{cudaMemcpyPeer} initiates a DMA copy from one GPU to another, without involving the host.
-This can improve the bandwidth of the transfer between supported devices.
+Basic CUDA memory management runtime calls described in Table~\ref{tab:cuda-basic-apis}.
 
 \begin{table}[ht]
 	\centering
@@ -243,6 +242,13 @@ This can improve the bandwidth of the transfer between supported devices.
 		\texttt{new / malloc()}    & Allocate pageable memory on the system heap. \\ \hline
 	\end{tabular}
 \end{table}
+
+\texttt{cudaMemcpy} is only partially asynchronous with respect to the host(\cite{nvidia2014cuda60runtime}, ch. 1).
+It will return once the pageable source allocation is safe to modify, but possibly before the data has finished moving to the device.
+This impacts the design of the performance characterization routines in Chapter~\ref{ch:explicit}
+\texttt{cudaMemcpyPeer} initiates a DMA copy from one GPU to another, without involving the host.
+This can improve the bandwidth of the transfer between supported devices.
+The impact of this peer access is also described in Chapters~\ref{ch:explicit} and~\ref{ch:unified}.
 
 This API definition imposes the following basic structure on all CUDA programs, which remains essentially unchanged through CUDA 9.1.
 \begin{enumerate}
@@ -289,7 +295,7 @@ Overuse of page-locked memory on the host will degrade overall application perfo
 \end{table}
 
 \begin{sloppypar}
-\texttt{cudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable}, \texttt{cudaHostAllocMapped}, and \texttt{cudaHostAllocWriteCombined} flags.
+\texttt{cudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable} and \texttt{cudaHostAllocWriteCombined} flags.
 %3.2.4.2
 \texttt{cudaHostAllocWriteCombined} causes a pinned allocation to be write-combined.
 Writes to write-combined memory may be delayed and combined in a buffer to reduce the number of memory accesses.
@@ -300,11 +306,11 @@ Due to the possible lack of caching, this type of allocation makes sense for dat
 \end{sloppypar}
 
 %3.2.4.3 
-\begin{sloppypar}
-\texttt{cudaHostAllocMapped} introduces the ability to map the host allocation (in the host address space) into the device's address space.
-By using \texttt{cudaHostGetDevicePointer}, the corresponding pointer in the device address space may be obtained and directly used by CUDA kernels.
-In this case, the programmer does not need to explicitly allocate memory or copy data to the device, nor does the programmer need to use streams to overlap computation with communication.
-\end{sloppypar}
+% \begin{sloppypar}
+% \texttt{cudaHostAllocMapped} introduces the ability to map the host allocation (in the host address space) into the device's address space.
+% By using \texttt{cudaHostGetDevicePointer}, the corresponding pointer in the device address space may be obtained and directly used by CUDA kernels.
+% In this case, the programmer does not need to explicitly allocate memory or copy data to the device, nor does the programmer need to use streams to overlap computation with communication.
+% \end{sloppypar}
 
 \texttt{cudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
 This became the default with the introduction of unified virtual addressing.
@@ -424,8 +430,9 @@ It causes the page to be mapped in the device page table for as long as possible
 \subsection {Unified Memory with CC 7.0+ (Volta+) }
 Though not examined in this work, Volta GPUs contain the necessary hardware for more intelligent migration of pages.
 When support is added in the NVIDIA driver, access counters will be used to trigger page migrations of hot pages, instead of on each access.
-Furthermore, the CPU can directly access and cache GPU memory, and natively execute CPU-GPU atomics~\cite{sakharnykh2017unified}.
-The system will also detect thrashing, and temporarily prevent page faults from occuring to allow faster progress on each device.
+The system will also detect thrashing, and temporarily prevent page faults to allow faster progress on each device.
+On POWER9 systems, the CPU and GPU have access to each other's page translation hardware, allowing memory accesses on the CPU to be served from the GPU and cached on the CPU.
+Furthermore, the CPU can execute atomic operations on locations in GPU memory without a page migration~\cite{sakharnykh2017unified}).
 
 \section{Linux Non-Uniform Memory Access}
 \label{sec:numa}
@@ -434,6 +441,22 @@ Linux includes a system for exposing non-uniform memory access architectures (NU
 In NUMA systems, memory is devided into multiple \textit{nodes}\cite{numa2012}.
 Processors and devices have the same access characteristics when accessing memory in a particular node.
 Nodes have \textit{affinity} to processors and devices, indicating the processors and devices which can access that node with the best performance.
+
+This is particularly relevant on multi-socket systems, though some single-socket systems also feature NUMA characteristics.
+For example, every system considered by this work and described in Section~\ref{sec:system-descriptions} is a NUMA system.
+On the AC922 (Figure~\ref{fig:topo-ac922-simple}), GPU0 is directly connected to CPU0 and GPU2 is directly connected to CPU1.
+If an allocation on CPU0 were to be copied to GPU2, the data would traverse the CPU-CPU X bus, and then the CPU-to-GPU NVLink.
+On the other hand, if an allocation on CPU1 were to be copied to GPU2, that data would only have to traverse the NVLink.
+This can have a substantial effect on available bandwidth, as shown in Figure~\ref{fig:numa-bw-example}.
+Chapters~\ref{ch:explicit} and ~\ref{ch:unified} show these effects in more detail.
+
+\begin{figure}[H]
+    \centering
+	\includegraphics[width=0.5\textwidth]{figures/generated/ac922_numa-bw.pdf}
+    \caption[Example of NUMA Bandwidth Effects on AC922]{Example NUMA Bandwidth Effects on AC922}
+    \label{fig:numa-bw-example}
+\end{figure}
+
 Applications can leverage the numactl\cite{wickman2015numactl} library to affect their own NUMA execution policy.
 This policy controls on which CPUs processes may execute, and on which NUMA nodes memory is allocated.
 numactl is used in this work to ensure that data is allocated and programs execute on specific CPUs as needed to exercise different underlying hardware links.
@@ -443,9 +466,9 @@ numactl is used in this work to ensure that data is allocated and programs execu
 
 OpenMP is a shared-memory processing system that uses compiler directives and library functions to allow applications to implement shared-memory parallel processing techniques~\cite{openmp2013}.
 Among other more sophisticated approaches, OpenMP allows hint-assisted parallelization of nested loops through compiler directives.
-This work uses OpenMP to use multiple CPU threads while transfering data between the CPU and the GPU during the unified memory characterization in Chapter~\ref{ch:unified}. 
+This work uses OpenMP to use multiple CPU threads while transferring data between the CPU and the GPU during the unified memory characterization in Chapter~\ref{ch:unified}. 
+Multiple CPU threads are used to ensure that the CPU is generating sufficient memory traffic to saturate its memory controllers and make the maximal demands of the unified memory system.
 There is a runtime overhead of entering the parallelized region, which affects the design of the benchmarks.
-
 
 \section{Profiling Tooling}
 \label{sec:profiling}
