@@ -504,10 +504,7 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
 \begin{table}[ht]
     \centering
     \caption[Nvidia DGX-1 Architecture Summary]{
-		Nvidia DGX-1 System Architecture.
-		Interconnect legends are subtitled with theoretical maximum transfer rates.
-		Each of the four NVLink lanes on a GPU is used to connect it to one other GPU.
-		CPUs are connected to GPUs by PCIe 3.0 x16 interconnects.
+		Nvidia DGX-1 Architecture Summary.
 	}
     \label{tab:dgx1}
     \begin{tabular}{cc}
@@ -524,7 +521,12 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
 \begin{figure}[ht]
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/dgx1-hardware.pdf}
-    \caption[Nvidia DGX-1 Architecture Schematic]{Nvidia DGX-1 Architecture Schematic}
+    \caption[Nvidia DGX-1 Architecture Schematic]{
+		Nvidia DGX-1 Architecture Schematic.
+		Interconnect legends are subtitled with theoretical maximum transfer rates.
+		Each of the four NVLink lanes on a GPU is used to connect it to one other GPU.
+		CPUs are connected to GPUs by PCIe 3.0 x16 interconnects.
+	}
     \label{fig:topo-dgx-simple}
 \end{figure}
 
@@ -559,7 +561,11 @@ Every GPU is directly connected to all local GPUs in its cluster, as well as one
 \begin{figure}[ht]
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/minsky-hardware.pdf}
-    \caption[IBM S822LC Architecture Schematic]{IBM S822LC Architecture Schematic}
+    \caption[IBM S822LC Architecture Schematic]{
+		IBM S822LC Architecture Schematic.
+		Interconnect legends are subtitled with theoretical maximum transfer rates.
+		The four NVLink lanes on a GPU are bonded into two two-lane pairs to connect it to the neighboring CPU and GPU.
+	}
     \label{fig:topo-minsky-simple}
 \end{figure}
 
@@ -602,10 +608,10 @@ Like the S822LC, each triad is a Linux NUMA node.
 \begin{figure}
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/hal-hardware.pdf}
-    \caption[IBM AC922 Architecture Schematic]{IBM AC922 Architecture Schematic}
+    \caption[IBM AC922 Architecture Schematic]{
+		IBM AC922 Architecture Schematic.
+		Interconnect legends are subtitled with theoretical maximum transfer rates.
+		The six NVLink lanes on a GPU are bonded into two three-lane pairs to connect it to the neighboring CPU and GPU.
+	}
     \label{fig:topo-ac922-simple}
 \end{figure}
-
-
-
-
