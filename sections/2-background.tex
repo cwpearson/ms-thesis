@@ -503,11 +503,16 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
 
 \begin{table}[ht]
     \centering
-    \caption[Nvidia DGX-1 Architecture Summary]{Nvidia DGX-1 Architecture Summary}
+    \caption[Nvidia DGX-1 Architecture Summary]{
+		Nvidia DGX-1 System Architecture.
+		Interconnect legends are subtitled with theoretical maximum transfer rates.
+		Each of the four NVLink lanes on a GPU is used to connect it to one other GPU.
+		CPUs are connected to GPUs by PCIe 3.0 x16 interconnects.
+	}
     \label{tab:dgx1}
     \begin{tabular}{cc}
     \hline
-    \textbf{}                     & \textbf{Specification}                                      \\ \hline
+    \textbf{Component}                     & \textbf{Specification}                                      \\ \hline
     \textbf{CPU}                  & \makecell{2x Intel Xeon E5-2698 v4 \\ 40C / 80T \\ 2.2 GHz} \\ \hline
     \textbf{System Memory}        & 512 GB DDR4                                                 \\ \hline
 	\textbf{GPU}                  & 4 Nvidia P100                                               \\ \hline
@@ -516,20 +521,23 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
     \end{tabular}
 \end{table}
 
-The Nvidia DGX-1 machine consists of two symmetric sections\cite{nvidia2017dgx1}.
-Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
-Each CPU is connected to 256GB of DDR4 RAM, and each section makes up a Linux NUMA node.
-Each section has 4 Nvidia Tesla P100 GPUs coupled by single NVLinks.
-The sections are connected by an Intel 9.6GT/s QPI bus between the CPUs providing 38.4 GB/s of bidirectional bandwidth, as well as NVLinks between corresponding GPUs.
-The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
-Table~\ref{tab:dgx1} and Figure \ref{fig:topo-dgx-simple} summarizes the hardware configuration.
-
 \begin{figure}[ht]
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/dgx1-hardware.pdf}
     \caption[Nvidia DGX-1 Architecture Schematic]{Nvidia DGX-1 Architecture Schematic}
     \label{fig:topo-dgx-simple}
 \end{figure}
+
+Table~\ref{tab:dgx1} and Figure \ref{fig:topo-dgx-simple} summarizes the Nvidia DGX-1 system.
+The Nvidia DGX-1 machine consists of two symmetric sections\cite{nvidia2017dgx1}.
+Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
+Each CPU is connected to 256GB of DDR4 RAM, and each section makes up a Linux NUMA node.
+Each section has 4 Nvidia Tesla P100 GPUs coupled by single NVLinks.
+The sections are connected by an Intel 9.6GT/s QPI bus between the CPUs providing 38.4 GB/s of bidirectional bandwidth, as well as NVLinks between corresponding GPUs.
+The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
+
+
+
 
 \subsection{IBM S822LC for High Performance Computing}
 \label{sec:s822lc}
