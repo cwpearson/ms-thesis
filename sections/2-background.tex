@@ -2,17 +2,15 @@
 \label{ch:background}
 
 This work examines the relationship between system and application performance in the context of systems comprised of CPUs and NVIDIA GPUs.
-To that end, this section describes
-\begin{itemize}
-\item The relationship between software abstractions and the underlying system hardware (Section~\ref{sec:sys-abstraction}).
-\item How NVIDIA graphics processing units (GPUs) fit into the computing system architecture (Section~\ref{sec:gpu-sys-arch}).
-\item Common system interconnects used to couple GPUs to each other and the rest of the system (Section~\ref{sec:interconnects}).
-\item Communication-related components of CUDA, the NVIDIA GPU programming system (Section~\ref{sec:cuda}).
-\item the Linux non-uniform memory access (NUMA) system (Section~\ref{sec:numa}).
-\item the OpenMP multiprocessing system (Section~\ref{sec:openmp}).
-\item The Linux and CUDA components used in the proposed application profiler (Section~\ref{sec:profiling}).
-\item The heterogeneous systems used as case studies in this work (Section~\ref{sec:system-descriptions}).
-\end{itemize}
+To that end, 
+Section~\ref{sec:sys-abstraction}            describes the relationship between software abstractions and the underlying system hardware,
+Section~\ref{sec:gpu-sys-arch}               discusses how NVIDIA graphics processing units (GPUs) fit into the computing system architecture,
+Section~\ref{sec:interconnects}              describe the PCIe and NVLink interconnect systems used to couple GPUs to each other and the rest of the system,
+Section~\ref{sec:cuda}                       details communication-related components and APIs of CUDA, the NVIDIA GPU programming system,
+Sections~\ref{sec:numa} and~\ref{sec:openmp} describe the Linux non-uniform memory access (NUMA) and OpenMP multiprocessing systems,
+Section~\ref{sec:profiling}                  describes the Linux and CUDA components used in the proposed application profiler,
+and Section~\ref{sec:system-descriptions}    documents the heterogeneous systems used as case studies in this work.
+
 
 \section{System Communication Abstraction}
 \label{sec:sys-abstraction}
@@ -99,7 +97,7 @@ Figure~\ref{fig:p9-volta-bw} represents next-generation interconnect bandwidths 
 \label{sec:interconnects}
 
 Modern systems with discrete GPUs feature either NVLink or PCIe accelerator interconnects.
-These interconnects may couple the GPUs to the CPUs and/or other GPUs.
+These interconnects couple the GPUs to the CPUs and/or other GPUs.
 Table~\ref{tab:interconnect-overview} summarizes the theoretical bandwidth of common interconnect configurations.
 Figure~\ref{fig:interconnect-cartoon} shows example PCIe and NVLink topologies.
 Section~\ref{sec:cuda-peer} describes how these topologies affect parts of the CUDA peer-communication API.
@@ -108,13 +106,14 @@ Section~\ref{sec:cuda-peer} describes how these topologies affect parts of the C
 	\centering
 	\caption[Interconnect Performance Summary]{
 		Theoretical performance for common interconnect configurations.
-		Most PCIe 3.0-attached GPUs use 16 lanes, or PCIe x16.
+		Only NVLink configurations used in the case studies are shown below.
+		PCIe 3.0 x16 is included for reference, as most PCIe 3.0-attached GPUs use 16 lanes.
 	}
 	\label{tab:interconnect-overview}
 	\begin{tabular}{cccc}
 		\hline
 		\textbf{Interconnect}      & \textbf{Bandwidth}   & \textbf{Year} & \textbf{Architecture} \\ \hline
-		\textbf{PCIe 3.0}          & 15.8 GB/s (16 lanes) & 2010          & Tree                  \\ \hline
+		\textbf{PCIe 3.0}          & 15.8 GB/s (16 lanes) & 2012          & Tree                  \\ \hline
 		\textbf{NVLink 1.0 / NVHS} &   20 GB/s (1 lanes)  & 2016          & Point-to-Point        \\ \hline
 		\textbf{NVLink 1.0 / NVHS} &   40 GB/s (2 lanes)  & 2016          & Point-to-Point        \\ \hline
 		\textbf{NVLink 2.0 / NVHS} &   75 GB/s (3 lanes)  & 2017          & Point-to-Point        \\ \hline
@@ -147,7 +146,7 @@ The IBM AC922 system (Section~\ref{sec:ac922}) uses three NVLink 2.0 lanes to co
 
 \subsection{PCIe}
 
-Peripheral Component Interconnect Express (PCIe) is an expansion bus standard~\cite{pcie10a}.
+Peripheral Component Interconnect Express (PCIe) is an expansion bus standard~\cite{pcie10}.
 PCIe components form a tree, rooted at the \textit{root complex}.
 PCIe devices such as GPUs or SSDs are \textit{endpoints}, with a single upstream port and no downstream ports.
 Data is sent point-to-point between participating endpoints and/or the root complex via unique PCIe addresses.
@@ -156,6 +155,24 @@ Switches do not receive data packes, and are only used to extend the topology.
 Components are connected by PCIe \textit{links}, each of which consists of one to 32 lanes.
 The total bandwidth of the link depends on the PCIe revision and the number of lanes.
 Figure~\ref{fig:pcie-cartoon} shows an example topology.
+The PCIe 3.0 specification~\cite{pcie30} was finalized in 2010, and the first NVIDIA GPUs to support it were some Kepler-architecture products released in 2012~\cite{nyland2012inside}.
+
+Physically, each PCIe 3.0 lane has four wires, divided into two differential signaling pairs.
+Each pair operates at 8 Gb/s.
+A PCIe 3.0 x16 interconnect therefore has 64 wires.
+
+\begin{table}[ht]
+	\centering
+	\caption[PCIe Lane Transfer Rates]{}
+	\label{tab:interconnect-overview}
+	\begin{tabular}{cccc}
+		\hline
+		\textbf{PCIe Revision} & \textbf{Signaling Rate}   & \textbf{Encoding} & \textbf{Bandwidth} \\ \hline
+		\textbf{1.0}           &                           &                   & Tree                  \\ \hline
+		\textbf{2.0}           &                           &                   & Point-to-Point        \\ \hline
+		\textbf{3.0}           &                           &                   & Point-to-Point        \\ \hline
+	\end{tabular}
+\end{table}
 
 \subsection{NVLink}
 
@@ -167,6 +184,11 @@ Multiple links may connect devices, in which case the links are bonded and both 
 Figure~\ref{fig:nvlink-cartoon} shows an example topology.
 The NVLink 1.0 systems in this work allow each device to have four NVLink lane connections, with each lane running at 20 GB/s~\cite{nvidia2017dgx1}~\cite{nvidia2016p100}.
 The NVLink 2.0 systems in this work allow each device to have six NVLink lanes at 25 GB/s each~\cite{nvidia2017v100}.
+
+Physically, each bidirectional lane has 32 wires, divided evenly into two unidirectional sublinks of eight differential pairs~\cite{harris2016insidepascal}.
+Each pair operates at 20 Gb/s for NVLink 1.0 and 25 Gb/s for NVLink 2.0.
+This means a 2-lane NVLink 1.0 has 64 wires.
+The improved bandwidth of 2-lane NVLink 1.0 vs PCIe 3.0 is directly attributable to the signaling rate on the wires.
 
 \section{CUDA}
 \label{sec:cuda}
