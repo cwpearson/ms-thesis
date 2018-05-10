@@ -1,12 +1,12 @@
 \chapter{Background}
 \label{ch:background}
 
-This work examines the relationship between system and application performance in the context of systems comprised of CPUs and NVIDIA GPUs.
+This work examines the relationship between system and application performance in the context of systems comprised of CPUs and Nvidia GPUs.
 To that end, 
 Section~\ref{sec:sys-abstraction}            describes the relationship between software abstractions and the underlying system hardware,
-Section~\ref{sec:gpu-sys-arch}               discusses how NVIDIA graphics processing units (GPUs) fit into the computing system architecture,
+Section~\ref{sec:gpu-sys-arch}               discusses how Nvidia graphics processing units (GPUs) fit into the computing system architecture,
 Section~\ref{sec:interconnects}              describe the PCIe and NVLink interconnect systems used to couple GPUs to each other and the rest of the system,
-Section~\ref{sec:cuda}                       details communication-related components and APIs of CUDA, the NVIDIA GPU programming system,
+Section~\ref{sec:cuda}                       details communication-related components and APIs of CUDA, the Nvidia GPU programming system,
 Sections~\ref{sec:numa} and~\ref{sec:openmp} describe the Linux non-uniform memory access (NUMA) and OpenMP multiprocessing systems,
 Section~\ref{sec:profiling}                  describes the Linux and CUDA components used in the proposed application profiler,
 and Section~\ref{sec:system-descriptions}    documents the heterogeneous systems used as case studies in this work.
@@ -19,7 +19,7 @@ Application access to computing systems is made through a stack of abstractions.
 This work considers applications that interface with the system through CUDA, the Linux NUMA abstraction, and OpenMP.
 Those API calls are implemented in various libraries, such as \texttt{libcudart.so} on linux systems.
 In turn, those libraries make use of system calls provided by the operating system.
-The operating system interfaces with various drivers, including the NVIDIA GPU drivers and the interconnect drivers, to make use of the underlying hardware.
+The operating system interfaces with various drivers, including the Nvidia GPU drivers and the interconnect drivers, to make use of the underlying hardware.
 Figure~\ref{fig:app-abstraction} shows a schematic of this stack.
 
 \begin{figure}[ht]
@@ -40,8 +40,8 @@ Chapters \ref{ch:explicit} and \ref{ch:unified} and~ show how different uses of 
 \section{GPUs and System Architecture}
 \label{sec:gpu-sys-arch}
 
-NVIDIA GPUs used in high-performance computing are fully-discrete accelerators.
-From the software side, they demand explicit management through the NVIDIA Compute Unified Device Architecture (CUDA) programming system: a set of C++ language extensions and libraries.
+Nvidia GPUs used in high-performance computing are fully-discrete accelerators.
+From the software side, they demand explicit management through the Nvidia Compute Unified Device Architecture (CUDA) programming system: a set of C++ language extensions and libraries.
 In a GPU-accelerated application, the CPU typically acts as a manager and ``offloads'' specialized compute tasks to the GPU.
 From the hardware perspective, GPUs are separated from the CPU and memory by an interconnect link.
 The GPU has its own local memory, which must be populated with data for the GPU to operate on.
@@ -75,10 +75,10 @@ Finally, though not covered in this work, the GPU compute cores have dramaticall
     \end{subfigure}
 	\caption[Example System Interconnect Bandwidths]{
 		Representative interconnect bandwidths between CPU and system memory, GPU and GPU memory, and CPU to GPU.
-		(a) shows a c.2011 x86 system with an AMD Operton 6200 CPU~\cite{amd2012opteron6200} system, PCIe 2.0 x16, and NVIDIA K20 GPU.
-		(b) shows a c.2017 x86 system with an Intel Xeon Platinum 8180M~\cite{intel20188180m} CPU, PCIe 3.0 x16, and an NVIDIA P100 GPU.
-		(c) shows a c.2013 PowerPC system with an IBM Power8~\cite{stuechli2013power8} CPU, two-lane NVLink 1.0, and an NVIDIA P100 GPU.
-		(d) shows a c.2017 PowerPC system with an IBM Power9~\cite{thompto2016power9} CPU, three-lane NVLink 2.0, and an NVIDIA V100 GPU.
+		(a) shows a c.2011 x86 system with an AMD Operton 6200 CPU~\cite{amd2012opteron6200} system, PCIe 2.0 x16, and Nvidia K20 GPU.
+		(b) shows a c.2017 x86 system with an Intel Xeon Platinum 8180M~\cite{intel20188180m} CPU, PCIe 3.0 x16, and an Nvidia P100 GPU.
+		(c) shows a c.2013 PowerPC system with an IBM Power8~\cite{stuechli2013power8} CPU, two-lane NVLink 1.0, and an Nvidia P100 GPU.
+		(d) shows a c.2017 PowerPC system with an IBM Power9~\cite{thompto2016power9} CPU, three-lane NVLink 2.0, and an Nvidia V100 GPU.
 	}
     \label{fig:gpu-sys-arch}
 \end{figure}
@@ -140,7 +140,7 @@ Section~\ref{sec:cuda-peer} describes how these topologies affect parts of the C
     \label{fig:interconnect-cartoon}
 \end{figure}
 
-The NVIDIA DGX-1 system (Section~\ref{sec:dgx1}) uses PCIe to connect CPUs to GPUs, and single-lane NVLink 1.0 to connect amongst GPUs.
+The Nvidia DGX-1 system (Section~\ref{sec:dgx1}) uses PCIe to connect CPUs to GPUs, and single-lane NVLink 1.0 to connect amongst GPUs.
 The IBM S822LC system (Section~\ref{sec:s822lc}) uses two NVLink 1.0 lanes to connect pairs of devices, with each lane operating at 20 GB/s.
 The IBM AC922 system (Section~\ref{sec:ac922}) uses three NVLink 2.0 lanes to connect pairs of devices, with each lane operating at 25 GB/s.
 
@@ -155,7 +155,7 @@ Switches do not receive data packes, and are only used to extend the topology.
 Components are connected by PCIe \textit{links}, each of which consists of one to 32 lanes.
 The total bandwidth of the link depends on the PCIe revision and the number of lanes.
 Figure~\ref{fig:pcie-cartoon} shows an example topology.
-The PCIe 3.0 specification~\cite{pcie30} was finalized in 2010, and the first NVIDIA GPUs to support it were some Kepler-architecture products released in 2012~\cite{nyland2012inside}.
+The PCIe 3.0 specification~\cite{pcie30} was finalized in 2010, and the first Nvidia GPUs to support it were some Kepler-architecture products released in 2012~\cite{nyland2012inside}.
 
 Table~\ref{tab:pcie-lane-rates} shows single-lane pCIe bandwidths from revision $1.0$ to $3.0$.
 Physically, each PCIe lane has four wires, divided into two differential signaling pairs.
@@ -178,7 +178,7 @@ With a 128b/130b encoding, this gives PCIe 3.0 x16 a 15.8 GB/s unidirectional ba
 
 \subsection{NVLink}
 
-NVLink is a communication protocol developed by NVIDIA.
+NVLink is a communication protocol developed by Nvidia.
 Current NVLink implementations use a proprietary High-Speed Signaling interconnect called NVHS \cite{harris2016insidepascal}.
 Like PCIe, each NVLink connects two devices.
 Unlike PCIe, there is no concept of upstream or downstream ports, and devices may have multiple ports.
@@ -195,9 +195,9 @@ The improved bandwidth of 2-lane NVLink 1.0 vs PCIe 3.0 is directly attributable
 \section{CUDA}
 \label{sec:cuda}
 
-NVIDIA's CUDA (Compute Unified Device Architecture) is a programming system for enabling general-purpose computation on NVIDIA GPUs (graphics processing units).
+Nvidia's CUDA (Compute Unified Device Architecture) is a programming system for enabling general-purpose computation on Nvidia GPUs (graphics processing units).
 CUDA is a set of C extensions and libraries for interfacing with GPUs.
-NVIDIA provides a compiler, \texttt{nvcc} for generating CUDA-enabled binaries.
+Nvidia provides a compiler, \texttt{nvcc} for generating CUDA-enabled binaries.
 
 CUDA provides a set of runtime and driver APIs for the developer to manage the allocation and movement of data between the host and device memory.
 From its inception, CUDA provided comprehensive APIs for developers to mitigate application performance shortfalls stemming from the relatively limited performance of host-device communication links.
@@ -429,7 +429,7 @@ It causes the page to be mapped in the device page table for as long as possible
 
 \subsection {Unified Memory with CC 7.0+ (Volta+) }
 Though not examined in this work, Volta GPUs contain the necessary hardware for more intelligent migration of pages.
-When support is added in the NVIDIA driver, access counters will be used to trigger page migrations of hot pages, instead of on each access.
+When support is added in the Nvidia driver, access counters will be used to trigger page migrations of hot pages, instead of on each access.
 The system will also detect thrashing, and temporarily prevent page faults to allow faster progress on each device.
 On POWER9 systems, the CPU and GPU have access to each other's page translation hardware, allowing memory accesses on the CPU to be served from the GPU and cached on the CPU.
 Furthermore, the CPU can execute atomic operations on locations in GPU memory without a page migration~\cite{sakharnykh2017unified}).
@@ -494,32 +494,32 @@ Chapter~\ref{ch:future} describes how LD\_PRELOAD can be used to infer informati
 \section{System Descriptions}
 \label{sec:system-descriptions}
 
-Three high-performance heterogeneous systems are used in this work: an IBM S822LC for High Performance Computing~\cite{caldeira2016s822lc}, an IBM AC922~\cite{caldeira2018ac922}, and an NVIDIA DGX-1~\cite{nvidia2017dgx1}.
+Three high-performance heterogeneous systems are used in this work: an IBM S822LC for High Performance Computing~\cite{caldeira2016s822lc}, an IBM AC922~\cite{caldeira2018ac922}, and an Nivida DGX-1~\cite{nvidia2017dgx1}.
 All systems feature multiple GPUs and multiple socketed CPUs.
-Their key differences are in CPU architecture (64-bit little-endian PowerPC for S822LC and AC922, x86-64 for DGX-1), number of GPUs (4 for the IBM machines, 8 for NVIDIA), and GPU connection topology (NVLink 1.0 for S822LC, NVLink 2.0 for AC922, and hybrid PCIe 3.0 / NVLink 1.0 for DGX-1).
+Their key differences are in CPU architecture (64-bit little-endian PowerPC for S822LC and AC922, x86-64 for DGX-1), number of GPUs (4 for the IBM machines, 8 for Nvidia), and GPU connection topology (NVLink 1.0 for S822LC, NVLink 2.0 for AC922, and hybrid PCIe 3.0 / NVLink 1.0 for DGX-1).
 
-\subsection{NVIDIA DGX-1}
+\subsection{Nvidia DGX-1}
 \label{sec:dgx1}
 
 \begin{table}[ht]
     \centering
-    \caption[NVIDIA DGX-1 Architecture Summary]{NVIDIA DGX-1 Architecture Summary}
+    \caption[Nvidia DGX-1 Architecture Summary]{Nvidia DGX-1 Architecture Summary}
     \label{tab:dgx1}
     \begin{tabular}{cc}
     \hline
     \textbf{}                     & \textbf{Specification}                                      \\ \hline
     \textbf{CPU}                  & \makecell{2x Intel Xeon E5-2698 v4 \\ 40C / 80T \\ 2.2 GHz} \\ \hline
     \textbf{System Memory}        & 512 GB DDR4                                                 \\ \hline
-	\textbf{GPU}                  & 4 NVIDIA P100                                               \\ \hline
+	\textbf{GPU}                  & 4 Nvidia P100                                               \\ \hline
 	\textbf{CPU/GPU Interconnect} & NVLink 1.0 (1 lane) / PCIe 3.0                              \\ \hline
 	\textbf{CUDA}                 & 8.0, driver 384.125                                         \\ \hline
     \end{tabular}
 \end{table}
 
-The NVIDIA DGX-1 machine consists of two symmetric sections\cite{nvidia2017dgx1}.
+The Nvidia DGX-1 machine consists of two symmetric sections\cite{nvidia2017dgx1}.
 Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
 Each CPU is connected to 256GB of DDR4 RAM, and each section makes up a Linux NUMA node.
-Each section has 4 NVIDIA Tesla P100 GPUs coupled by single NVLinks.
+Each section has 4 Nvidia Tesla P100 GPUs coupled by single NVLinks.
 The sections are connected by an Intel 9.6GT/s QPI bus between the CPUs providing 38.4 GB/s of bidirectional bandwidth, as well as NVLinks between corresponding GPUs.
 The first CPU socket hosts the majority of the PCI devices on the system, including the network interfaces and the disks.
 Table~\ref{tab:dgx1} and Figure \ref{fig:topo-dgx-simple} summarizes the hardware configuration.
@@ -527,7 +527,7 @@ Table~\ref{tab:dgx1} and Figure \ref{fig:topo-dgx-simple} summarizes the hardwar
 \begin{figure}[ht]
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/dgx1-hardware.pdf}
-    \caption[NVIDIA DGX-1 Architecture Schematic]{NVIDIA DGX-1 Architecture Schematic}
+    \caption[Nvidia DGX-1 Architecture Schematic]{Nvidia DGX-1 Architecture Schematic}
     \label{fig:topo-dgx-simple}
 \end{figure}
 
@@ -543,13 +543,13 @@ Table~\ref{tab:dgx1} and Figure \ref{fig:topo-dgx-simple} summarizes the hardwar
     \textbf{}                     & \textbf{Specification}                         \\ \hline
     \textbf{CPU}                  & \makecell{2x IBM Power8 \\ 20C / 80T \\ 4 GHz} \\ \hline
     \textbf{System Memory}        & 512 GB DDR4                                    \\ \hline
-	\textbf{GPU}                  & 4 NVIDIA P100                                  \\ \hline
+	\textbf{GPU}                  & 4 Nvidia P100                                  \\ \hline
 	\textbf{CPU/GPU Interconnect} & NVLink 1.0 (2 lanes)                           \\ \hline
 	\textbf{CUDA}                 & 9.1, driver 390.31                             \\ \hline
     \end{tabular}
 \end{table}
 
-The IBM S822LC machine features two POWER8 CPUs and four NVIDIA P100 GPUs\cite{caldeira2016s822lc}.
+The IBM S822LC machine features two POWER8 CPUs and four Nvidia P100 GPUs\cite{caldeira2016s822lc}.
 Each POWER8 CPU has 10 cores, with 8-way simultaneous multithreading, and is attached to 256GB of DDR4 memory. for a total of 160 threads and 512 GB of memory.
 Each POWER8 CPU and associated memory make up a Linux NUMA node.
 Each POWER8 CPU is part of a fully-connected triad of one POWER8 CPU and two P100 GPUs.
@@ -567,7 +567,7 @@ Table~\ref{tab:minsky} and Figure~\ref{fig:topo-minsky-simple} summarizes the ha
 \subsection{IBM AC922}
 \label{sec:ac922}
 
-The IBM AC922 machine features two POWER9 CPUs and four NVIDIA V100 GPUs\cite{caldeira2018ac922}.
+The IBM AC922 machine features two POWER9 CPUs and four Nvidia V100 GPUs\cite{caldeira2018ac922}.
 Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory. for a total of 160 threads and 1TB of memory.
 Each POWER9 CPU is part of a fully-connected triad of one POWER9 CPU and two V100 GPUs.
 Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirection bandwidth of 150 GB/s.
@@ -584,7 +584,7 @@ Like the S822LC, each triad is a Linux NUMA node.
     \textbf{}                      & \textbf{Specification}                           \\ \hline
     \textbf{CPU}                   & \makecell{2x IBM Power9 \\ 40C 160T \\ 3.0 GHz } \\ \hline
     \textbf{System Memory}         & 1TB DDR4                                         \\ \hline
-	\textbf{GPU}                   & 4 NVIDIA V100                                    \\ \hline
+	\textbf{GPU}                   & 4 Nvidia V100                                    \\ \hline
 	\textbf{CPU/GPU Interconnect}  & NVLink 2.0 (3 lanes)                             \\ \hline
 	\textbf{CUDA}                  & 9.2, driver 396.15                               \\ \hline
     \end{tabular}

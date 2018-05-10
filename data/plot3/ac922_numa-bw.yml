@@ -1,0 +1,17 @@
+series:
+  - file: hal_pinned.csv
+    col: a
+  - label: Local (CPU0 to GPU0)
+    file: hal_pinned.csv
+    col: b
+  - label: Remote (CPU0 to GPU2)
+    file: hal_pinned.csv
+    col: d
+yaxis:
+  label: Transfer Bandwidth (MB/s)
+  lim:
+    - 0
+    - 70000
+xaxis:
+  scale: log
+title: CPU-GPU Transfer NUMA Effects on AC922

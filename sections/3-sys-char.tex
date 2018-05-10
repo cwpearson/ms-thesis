@@ -67,7 +67,7 @@ Processing elements and data storage elements serve as communication endpoints.
 
 \texttt{hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration.
 This tool can be executed on a target system to generate $G_s$ for that system.
-Thought \texttt{hwcomm} relies largely on exploring the PCIe device tree, it also uses information provided by the NVIDIA Management Library~\cite{nvidia2017nvml} (NVML) to discover NVLink devices, and build a graph of hardware components.
+Thought \texttt{hwcomm} relies largely on exploring the PCIe device tree, it also uses information provided by the Nvidia Management Library~\cite{nvidia2017nvml} (NVML) to discover NVLink devices, and build a graph of hardware components.
 The first step of generating $G_s$ is to discover the hardware components and connections through a multi-stage process.
 
 \textbf{Enumerate and Link CPU Sockets:}
@@ -82,9 +82,9 @@ Next, hwloc is used to traverse the PCI device tree.
 All PCI devices are added to $G_s$ and connected with PCI links of the appropriate type.
 Most attached storage, networking, and computing components are assigned an address in the PCI system and are discoverable in this step.
 
-\textbf{Update GPUs to NVIDIA GPUs as appropriate:}
+\textbf{Update GPUs to Nvidia GPUs as appropriate:}
 
-Next, NVML is used to enumerate all NVIDIA GPUs.
+Next, NVML is used to enumerate all Nvidia GPUs.
 Those GPUs are matched by PCI address with existing PCI devices previously added to $G_s$, and NVML is used to discover whether NVLink is supported on each GPU and which other device that NVLink terminates at.
 THis information is not provided by hwloc.
 The edges associated with those NVLinks are added to $G_s$.
@@ -133,8 +133,8 @@ In $G_s$, the vertices are connected by the discoverable edge types shown in Tab
     \textbf{Edge Type} & \textbf{Description} \\ \hline
     SMP Bus            & A symmetric multiprocessing bus connecting two CPU sockets. \\ \hline
     PCIe Bus           & A PCIe link connecting a PCIe Bidge and PCIe device or PCIe Hostbridge and PCIe bridge. \\ \hline
-    NVLink1            & A first-generation NVLink connecting two NVIDIA GPUs or an NVIDIA GPU and CPU \\ \hline
-    NVLink2            & A second-generation NVLink connecting two NVIDIA GPUs or an NVIDIA GPU and CPU \\ \hline
+    NVLink1            & A first-generation NVLink connecting two Nvidia GPUs or an Nvidia GPU and CPU \\ \hline
+    NVLink2            & A second-generation NVLink connecting two Nvidia GPUs or an Nvidia GPU and CPU \\ \hline
     SATA bus           & A Serial AT Attachment link conneting a host bus to a mass storage device. \\ \hline
     \end{tabularx}
 \end{table}
