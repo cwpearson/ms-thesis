@@ -36,5 +36,5 @@ figures:
 	$(MAKE) -C figures
 
 clean:
-	rm -f *.toc *.log *.lof *.lot *.aux *.bbl *.blg ecethesis.pdf sections/*.aux
+	rm -f *.toc *.log *.lof *.lot *.bcf *.loa *.lol *.aux *.bbl *.blg ecethesis.pdf sections/*.aux
 	$(MAKE) -C figures clean
