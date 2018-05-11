@@ -1,21 +1,18 @@
 \chapter{System Characterization}
 \label{ch:sys-char}
 
-Section~\ref{sec:sys-abstraction} described how applications interact with an abstraction of the system hardware presented by the operating system, and software.
 This chapter describes the approach for producing an empirical performance model of that performance.
 Chapters~\ref{ch:explicit}~and~\ref{ch:unified} present the results of a ``top-down'' characterization the logical communication capabilities presented by the system abstraction.
 Understanding the results of that characterization requires information about how the logical communication exercises the underlying hardware.
-To that end, this chapter is organized as follows:
-\begin{itemize}
-    \item Section~\ref{sec:abstraction-hardware} motivates a joint performance model of software abstractions and underlying hardware.
-    \item Section~\ref{sec:hardware-enumeration} describes an approach for enumerating hardware components and connections.
-\end{itemize}
+Section~\ref{sec:abstraction-hardware} motivates a joint performance model of software abstractions and underlying hardware.
+Section~\ref{sec:hardware-enumeration} describes an approach for enumerating hardware components and connections.
 
 \section{Joint Abstraction and Hardware Model}
 \label{sec:abstraction-hardware}
 
 Figure~\ref{fig:minsky-abstraction} shows two different communication abstractions of S822LC.
 Figure~\ref{fig:minsky-topo-numa} represents the Linux NUMA view of the system.
+As described in Section~\ref{sec:numa}, this view is accessible to the application through the libnuma library.
 Figure~\ref{fig:minsky-topo-cuda} represents the connectivity of the components through the CUDA API.
 Nodes in the graphs represent data storage locations or compute elements, and edges in the graph represent logical communication paths considered in this work.
 Both NUMA and CUDA present a different abstraction, which is again different from the system layout in Section~\ref{sec:s822lc}.
@@ -103,16 +100,16 @@ These make up the vertices of $G_s$.
         Some components may also serve as data endpoints.
         }
     \label{tab:topology-vertices}
-    \begin{tabular}{cc}
+    \begin{tabular}{ccc}
     \hline
-    \textbf{Hardware}       & \textbf{Data Endpoint} \\ \hline
-    CPU Socket              & \checkmark             \\ \hline
-    PCI Device              & \checkmark             \\ \hline
-    PCIe Hostbridge         & $\times$               \\ \hline
-    PCIe Bridge             & $\times$               \\ \hline
-    CUDA GPU                & \checkmark             \\ \hline
-    Linux Block Device      & \checkmark             \\ \hline
-    Linux Network Interface & \checkmark             \\ \hline
+    \textbf{Hardware}       & \textbf{Data Router} & \textbf{Data Endpoint} \\ \hline
+    CPU Socket              & \checkmark             & \checkmark             \\ \hline
+    PCI Device              & \checkmark             & \checkmark             \\ \hline
+    PCIe Hostbridge         & \checkmark             & $\times$               \\ \hline
+    PCIe Bridge             & \checkmark             & $\times$               \\ \hline
+    CUDA GPU                & \checkmark             & \checkmark             \\ \hline
+    Linux Block Device      & \checkmark             & \checkmark             \\ \hline
+    Linux Network Interface & \checkmark             & \checkmark             \\ \hline
     \end{tabular}
 \end{table}
 
@@ -149,5 +146,6 @@ The topologies of the S822LC, AC922, and DGX-1 systems are show in Appendix~\ref
 
 Once the system graph is established, the mapping between logical communication paths and system graph vertices and edges can be established by observing performance counters while benchmarking logical paths.
 For example, NVML provides access to NVLink performance counters.
-As known quantities of data are moved across the logical connections, hardware link activity can be observed to determine which links are used.
-This work takes the mapping as a-priori knowledge, but automatically determining this mapping is future work.
+As known quantities of data are moved across the logical connections, the hardware link performance counters can be observed to associate logical transfers with traffic across physical links.
+
+In this work, automatic determination of the mapping is not considered, instead, the mapping for the case study systems is known ahead of time.
