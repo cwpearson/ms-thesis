@@ -1,11 +1,10 @@
 \chapter{System Characterization}
 \label{ch:sys-char}
 
-This chapter describes the approach for producing an empirical performance model of that performance.
-Chapters~\ref{ch:explicit}~and~\ref{ch:unified} present the results of a ``top-down'' characterization the logical communication capabilities presented by the system abstraction.
-Understanding the results of that characterization requires information about how the logical communication exercises the underlying hardware.
-Section~\ref{sec:abstraction-hardware} motivates a joint performance model of software abstractions and underlying hardware.
-Section~\ref{sec:hardware-enumeration} describes an approach for enumerating hardware components and connections.
+This chapter describes and approach to produce an empirical performance model of hardware when an application invokes communication activities through the CUDA API functions.
+This performance model is needed for understanding the measured performance results to be presented in the rest of this thesis.
+In particular, this chapter motivates a joint performance model of software abstractions and underlying hardware.
+It then describes an approach for enumerating hardware components and connections.
 
 \section{Joint Abstraction and Hardware Model}
 \label{sec:abstraction-hardware}
@@ -41,7 +40,7 @@ In practice, the logical communication paths available to the system is the unio
 
 Despite many of the logical communication paths using the same physical links, they achieve different performance on those links.
 As demonstrated in Chapters~\ref{ch:explicit}~and~\ref{ch:unified}, some aspects of the empirical performance are determined by properties of the hardware links, while others are not.
-A communication performance model must therefore be based off of the empirical performance of the logical links, but also incorporate understanding of the underlying hardware, if the model is to be applicable to more than just the system it was developed on.
+A communication performance model must therefore not only be based off of the empirical performance of the logical links, but also incorporate understanding of the underlying hardware, if the model is to be applicable to more than just the system it was developed on.
 
 Ideally, while empirical communication performance is characterized, the mapping to underlying hardware should be automatically established.
 This work takes that mapping as a-priori, but the following section presents initial efforts to automate the process.
@@ -67,24 +66,24 @@ This tool can be executed on a target system to generate $G_s$ for that system.
 Thought \texttt{hwcomm} relies largely on exploring the PCIe device tree, it also uses information provided by the Nvidia Management Library~\cite{nvidia2017nvml} (NVML) to discover NVLink devices, and build a graph of hardware components.
 The first step of generating $G_s$ is to discover the hardware components and connections through a multi-stage process.
 
-\textbf{Enumerate and Link CPU Sockets:}
+\textbf{Stage 1: Enumerate and Link CPU Sockets:}
 
-First, the Portable Hardware Locality~\cite{broquedis2010hwloc} (hwloc) library is used to enumerate the present CPU sockets.
+The Portable Hardware Locality~\cite{broquedis2010hwloc} (hwloc) library is used to enumerate the present CPU sockets.
 As the test systems only have two sockets, all discovered sockets are considered to be directly connected by an SMP bus for the appropriate system type.
 The sockets and SMP buses are added to $G_s$.
 
-\textbf{Enumerate PCI devices:}
+\textbf{Stage 2: Enumerate PCI devices:}
 
-Next, hwloc is used to traverse the PCI device tree.
+The hwloc library is used to traverse the PCI device tree.
 All PCI devices are added to $G_s$ and connected with PCI links of the appropriate type.
 Most attached storage, networking, and computing components are assigned an address in the PCI system and are discoverable in this step.
 
-\textbf{Update GPUs to Nvidia GPUs as appropriate:}
+\textbf{Stage 3: Update GPUs to Nvidia GPUs as appropriate:}
 
 Next, NVML is used to enumerate all Nvidia GPUs.
-Those GPUs are matched by PCI address with existing PCI devices previously added to $G_s$, and NVML is used to discover whether NVLink is supported on each GPU and which other device that NVLink terminates at.
-THis information is not provided by hwloc.
-The edges associated with those NVLinks are added to $G_s$.
+The GPUs are matched by PCI address with existing PCI devices previously added to $G_s$, and NVML is used to discover whether NVLink is supported on each GPU and which other devices are connected to the GPU through NVLinks.
+This information is not provided by hwloc.
+The edges associated with the NVLinks are added to $G_s$.
 
 
 \subsection{Vertex Types}

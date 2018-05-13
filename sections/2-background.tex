@@ -35,7 +35,7 @@ Through these layers of abstraction, the underlying communication capabilities a
 For example, PCIe interconnects transfer data with packets, but the CUDA API does not expose the ability to create custom packets to send to the GPU.
 Furthermore, the performance of the hardware is modified.
 For example, when CUDA unified memory is used, some of the link bandwidth may be consumed by control signals that help ensure data coherence.
-Chapters \ref{ch:explicit} and \ref{ch:unified} and~ show how different uses of the CUDA API can achieve different performance on the same phyiscal hardware.
+Chapters \ref{ch:explicit} and \ref{ch:unified} and~ show how different uses of the CUDA API can achieve different performance on the same physical hardware.
 
 \section{GPUs and System Architecture}
 \label{sec:gpu-sys-arch}
@@ -45,7 +45,7 @@ From the software side, they demand explicit management through the Nvidia Compu
 In a GPU-accelerated application, the CPU typically acts as a manager and ``offloads'' specialized compute tasks to the GPU.
 From the hardware perspective, GPUs are separated from the CPU and memory by an interconnect link.
 The GPU has its own local memory, which must be populated with data for the GPU to operate on.
-This work refers to the system memory associated with that CPU as the ``CPU memory'' or ``system memory'', and the GPU's local memory as ``GPU memory''.
+For the rest of this thesis, we will refer to the system memory associated with that CPU as the ``CPU memory'' or ``system memory'', and the GPU's local memory as ``GPU memory''.
 Finally, though not covered in this work, the GPU compute cores have dramatically different performance characteristics than CPU cores, and require specialized programming styles.
 
 \begin{figure}[ht]
@@ -91,7 +91,7 @@ The vastly different link performance makes data placement extremely important f
 Figure~\ref{fig:x86-kepler-bw} is representative of a node of a supercomputer designed in 2012~\cite{ncsa2018bluewaters}.
 Figure~\ref{fig:x86-pascal-bw} represents a similar system, with components updated to 2017.
 Figure~\ref{fig:p8-pascal-bw} is a c.2013 system with an IBM Power8 CPU and NVLink 1.0.
-Figure~\ref{fig:p9-volta-bw} represents next-generation interconnect bandwidths present in the Summit~\cite{ornl2018summit} and Sierra~\cite{llnl2018sierra} supercomputers.
+Figure~\ref{fig:p9-volta-bw} represents next-generation interconnect bandwidths present in the Summit~\cite{ornl2018summit} and Sierra~\cite{llnl2018sierra} supercomputers delivered in 2018.
 
 \section{PCIe and NVLink Interconnects}
 \label{sec:interconnects}
@@ -153,11 +153,11 @@ Data is sent point-to-point between participating endpoints and/or the root comp
 The topology also may include \textit{switches}, components with a single upstream port and multiple downstream ports.
 Switches do not receive data packes, and are only used to extend the topology.
 Components are connected by PCIe \textit{links}, each of which consists of one to 32 lanes.
-The total bandwidth of the link depends on the PCIe revision and the number of lanes.
+The total bandwidth of the link depends on the PCIe generation and the number of lanes.
 Figure~\ref{fig:pcie-cartoon} shows an example topology.
 The PCIe 3.0 specification~\cite{pcie30} was finalized in 2010, and the first Nvidia GPUs to support it were some Kepler-architecture products released in 2012~\cite{nyland2012inside}.
 
-Table~\ref{tab:pcie-lane-rates} shows single-lane pCIe bandwidths from revision $1.0$ to $3.0$.
+Table~\ref{tab:pcie-lane-rates} shows single-lane PCIe bandwidths from generation $1.0$ to $3.0$.
 Physically, each PCIe lane has four wires, divided into two differential signaling pairs.
 A PCIe 3.0 x16 interconnect therefore has 64 wires.
 In PCIe 3.0, each signaling pair operates at 8 Gb/s.
@@ -182,7 +182,7 @@ NVLink is a communication protocol developed by Nvidia.
 Current NVLink implementations use a proprietary High-Speed Signaling interconnect called NVHS \cite{harris2016insidepascal}.
 Like PCIe, each NVLink connects two devices.
 Unlike PCIe, there is no concept of upstream or downstream ports, and devices may have multiple ports.
-Multiple links may connect devices, in which case the links are bonded and both contribute to the available bandwidth between devices.
+Multiple links may connect devices, in which case the links are combined to contribute to the available bandwidth between devices.
 Figure~\ref{fig:nvlink-cartoon} shows an example topology.
 The NVLink 1.0 systems in this work allow each device to have four NVLink lane connections, with each lane running at 20 GB/s~\cite{nvidia2017dgx1}~\cite{nvidia2016p100}.
 The NVLink 2.0 systems in this work allow each device to have six NVLink lanes at 25 GB/s each~\cite{nvidia2017v100}.
@@ -215,6 +215,7 @@ These techniques are subsumed by Unified Memory, though making use of them typic
 Once the flexibility of the Unified memory system improves, it will be important to revisit the performance implications zero-copy memory.
 
 \subsection{Basic CUDA Memory and System Memory}
+\label{sec:basic-cuda}
 
 Prior to the introduction of Unified Virtual Addressing (see Section~\ref{sec:uva}), the CUDA memory space was composed of multiple address spaces: one for the host, and one for each GPU~\cite{schroeder2011peer}.
 Data was explicitly allocated in those address spaces through \texttt{cudaMalloc}.
@@ -300,7 +301,7 @@ Overuse of page-locked memory on the host will degrade overall application perfo
 \texttt{cudaHostAllocWriteCombined} causes a pinned allocation to be write-combined.
 Writes to write-combined memory may be delayed and combined in a buffer to reduce the number of memory accesses.
 Additionally, the host may not cache this data in L1 or L2 cache, freeing up those resources for other applications.
-This may prevent unecessary cache invalidations from occuring during the DMA.
+This may prevent unnecessary cache invalidations from occurring during the DMA.
 Furthermore, coherency is not enforced, so data is not snooped on the PCIe bus, which can increase bandwidth by up to 40\% (\cite{nvidia2010cuda30}, 3.2.5.2).
 Due to the possible lack of caching, this type of allocation makes sense for data that is not frequently read by the CPU, for example, data written once by the CPU before being sent to a GPU.
 \end{sloppypar}
@@ -326,7 +327,7 @@ The \texttt{cudaMemcpyDefault} flag for \texttt{cudaMemcpy} instructs the CUDA s
 By examining the address of the pointers passed to \texttt{cudaMemcpy}, CUDA determines where which device the memory resides on and moves it accordingly.
 This simplifies the programmer's use of \texttt{cudaMemcpy}, as \texttt{cudaMemcpyDefault} may be used everywhere.
 There is also no need to call \texttt{cudaHostGetDevicePointer} for mapped allocations.
-Furthermore, all mapped allocations are autmatically portable between GPUs, not restricted to the GPU that was active at the time of the allocation.
+Furthermore, all mapped allocations are automatically accessible by all GPUs in the system, not restricted to the GPU that was active at the time of the allocation.
 \texttt{cudaMemcpyPeer} is no longer needed for device-to-device memory copies; \texttt{cudaMemcpy} may be used instead.
 
 \subsection{Peer Access and UVA}
@@ -336,9 +337,9 @@ Furthermore, all mapped allocations are autmatically portable between GPUs, not 
 
 Peer access was introduced with CUDA 4.0.
 \texttt{cudaDeviceEnablePeerAccess()} allows CC 2.0+ devices to address memory in another device's address space~(\cite{nvidia2011cudac40}, 3.2.6.4).
-For example, if GPU1 loads through a pointer to data on GPU0, the data will be directly fetched from GPU0 memory, at the cost of one PCIe transasction and one globably memory load, and be cached in the L2 of GPU0.
-Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit system~\cite{schroeder2011peer}.
-The availablility of peer access may rely on a combination of interconnect topology and system hardware, summarized in Table~\ref{tab:cuda-peer-topology}.
+For example, if GPU1 loads through a pointer to data on GPU0, the data will be directly fetched from GPU0 memory, at the cost of one PCIe transaction and one global memory load~\cite{schroeder2011peer}, and be cached in the L2 of GPU0.
+Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit system.
+The availability of peer access may rely on a combination of interconnect topology and system hardware, summarized in Table~\ref{tab:cuda-peer-topology}.
 When peer access is disabled, data transfers first pass through the host instead of allowing direct DMA between devices.
 
 \begin{table}[ht]
@@ -349,13 +350,13 @@ When peer access is disabled, data transfers first pass through the host instead
 	\label{tab:cuda-peer-topology}
 	\begin{tabular}{ccc}
 		\hline
-		\textbf{GPU Configuration}  & \textbf{System} &  \textbf{Peer Access} \\ \hline
-		shared PCIe switch          & DGX-1           &  \checkmark           \\ \hline
-		different PCIe switches     & DXG-1           &  $\times$             \\ \hline
-		direct NVLink connection    & S822LC          &  \checkmark           \\ \hline
-		no direct NVLink connection & S822LC          &  $\times$             \\ \hline
-		direct NVLink connection    & AC922           &  \checkmark           \\ \hline
-		no direct NVLink connection & AC922           &  \checkmark           \\ \hline
+		\textbf{Between GPUs with...}  & \textbf{System} &  \textbf{Peer Access} \\ \hline
+		...a shared PCIe switch        & DGX-1           &  \checkmark           \\ \hline
+		...different PCIe switches     & DXG-1           &  $\times$             \\ \hline
+		...a direct NVLink connection  & S822LC          &  \checkmark           \\ \hline
+		...no direct NVLink connection & S822LC          &  $\times$             \\ \hline
+		...a direct NVLink connection  & AC922           &  \checkmark           \\ \hline
+		...no direct NVLink connection & AC922           &  \checkmark           \\ \hline
 
 	\end{tabular}
 \end{table}
@@ -366,7 +367,7 @@ When peer access is disabled, data transfers first pass through the host instead
 The CUDA unified memory system was introduced with CUDA 6.0 and requires a GPU with SM architecture of 3.0 or higher~\cite{nvidia2014cuda60}.
 CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
 CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
-Like mapped memory, this simplifies programming by removing the need for spearate host and device allocations and explicit data transfers.
+Like mapped memory, this simplifies programming by removing the need for separate host and device allocations and explicit data transfers.
 A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 
 \begin{table}[ht]
@@ -408,14 +409,15 @@ With CUDA 8 and for GPUs with CC 6.0+, GPU page faulting provides a more fine-gr
 Instead of moving all managed allocations to the GPU prior to a kernel launch, the GPU will fault if it accesses a page that is not in its memory.
 The page is either migrated to the GPU to serve that access, or the page is mapped into the GPU address space to be accessed over the host-device interconnect.
 Unlike Unified Memory with CC 3.0, pages can migrate between GPUs on peer accesses (\cite{nvidia2017cuda80}, J.1.4).
-The GPU page faulting mechanism lifts all restrictions on simultenous access to data (\cite{nvidia2017cuda80}, J.2.2.1).
+The GPU page faulting mechanism lifts all restrictions on simultaneous access to data (\cite{nvidia2017cuda80}, J.2.2.1).
+However, intensive interleaving of CPU and GPU accesses to a page can cause excessive migrations and result in severe performance degradation.
 
 CC 6.0+ also brings 49-bit virtual addressing to cover the 48-bit virtual addressing of modern CPUs and the GPU memory.
 This allows CUDA to support managed allocations larger than the GPU memory.
 The total amount of managed allocations still cannot be larger than the system memory (\cite{nvidia2017cuda80}, J.1.3).
 
-\texttt{cudaMemPrefetchAsync()} hints to the unified memory system that a particular device will soon be accessing data.
-THis may cause the system to migrate the specific region of memory over to the referenced device.
+\texttt{cudaMemPrefetchAsync()} hints to the unified memory system that a particular device will soon be accessing a unified memory allocation.
+This may cause the system to migrate the specific region of memory over to the referenced device.
 This hint is used in Chapter~\ref{ch:explicit} in some of the unified memory characterizations.
 
 \texttt{cudaMemAdvise()} hints to the unified memory system how a particular region of memory can be used.
@@ -438,7 +440,7 @@ Furthermore, the CPU can execute atomic operations on locations in GPU memory wi
 \label{sec:numa}
 
 Linux includes a system for exposing non-uniform memory access architectures (NUMA) to applications.
-In NUMA systems, memory is devided into multiple \textit{nodes}\cite{numa2012}.
+In NUMA systems, memory is divided into multiple \textit{nodes}\cite{numa2012}.
 Processors and devices have the same access characteristics when accessing memory in a particular node.
 Nodes have \textit{affinity} to processors and devices, indicating the processors and devices which can access that node with the best performance.
 
