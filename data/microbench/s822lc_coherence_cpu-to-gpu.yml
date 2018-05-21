@@ -1,0 +1,18 @@
+series:
+  - label: CPU0 to GPU0
+    file: minsky1-NUMAUM_Coherence_HostToGPU-0-0.json
+  - label: CPU0 to GPU1
+    file: minsky1-NUMAUM_Coherence_HostToGPU-0-1.json
+  - label: CPU0 to GPU2
+    file: minsky1-NUMAUM_Coherence_HostToGPU-0-2.json
+  - label: CPU0 to GPU3
+    file: minsky1-NUMAUM_Coherence_HostToGPU-0-3.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 40_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: S822LC Coherence Bandwidth (CPU0 to GPUs)

@@ -17,7 +17,11 @@ def generator_old(fig, yaml_dir, plot_cfg):
     for s in plot_cfg["series"]:
         file_path = s["file"]
         label = s["label"]
-        regex = s["regex"]
+        if "regex" in s:
+            regex = s["regex"]
+        else:
+            regex = ".*"
+        print("Using regex:", regex)
         if not os.path.isabs(file_path):
             file_path = os.path.join(yaml_dir, file_path)
         print("reading", file_path)
@@ -32,9 +36,9 @@ def generator_old(fig, yaml_dir, plot_cfg):
         y = np.array([float(b["bytes_per_second"]) for b in means])
         e = np.array([float(b["bytes_per_second"]) for b in stddevs])
 
-        pp.pprint(means)
+        # pp.pprint(means)
 
-        ax.errorbar(x, y, e, capsize=3)
+        ax.errorbar(x, y, e, capsize=3, label=label)
 
     if "yaxis" in plot_cfg:
         axis_cfg = plot_cfg["yaxis"]
@@ -52,7 +56,7 @@ def generator_old(fig, yaml_dir, plot_cfg):
         if axis_cfg and "scale" in axis_cfg:
             scale = axis_cfg["scale"]
             print("setting xscale", scale)
-            ax.set_xscale(scale)
+            ax.set_xscale(scale, basex=2)
         if axis_cfg and "label" in axis_cfg:
             label = axis_cfg["label"]
             print("setting xlabel", label)
@@ -62,6 +66,8 @@ def generator_old(fig, yaml_dir, plot_cfg):
         title = plot_cfg["title"]
         print("setting title", title)
         ax.set_title(title)
+
+    ax.legend()
 
     return fig
 

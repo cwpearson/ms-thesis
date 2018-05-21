@@ -1,0 +1,18 @@
+series:
+  - label: CPU0 to GPU0 (local)
+    file: minsky1-NUMA_Memcpy_HostToGPU-0-0.json
+  - label: CPU0 to GPU2 (remote)
+    file: minsky1-NUMA_Memcpy_HostToGPU-0-2.json
+  - label: CPU1 to GPU0 (local)
+    file: minsky1-NUMA_Memcpy_HostToGPU-1-0.json
+  - label: CPU1 to GPU2 (remote)
+    file: minsky1-NUMA_Memcpy_HostToGPU-1-2.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 30_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: S822LC Pageable Bandwidth (CPUs to GPUs)
