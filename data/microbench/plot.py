@@ -26,7 +26,7 @@ def generator_old(fig, yaml_dir, plot_cfg):
             file_path = os.path.join(yaml_dir, file_path)
         print("reading", file_path)
         with open(file_path, "rb") as f:
-            j = json.loads(f.read())
+            j = json.loads(f.read().decode('utf-8'))
         
         pattern = re.compile(regex)
         matches = [b for b in j["benchmarks"] if pattern == None or pattern.search(b["name"])]
