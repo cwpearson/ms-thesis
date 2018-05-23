@@ -1,11 +1,11 @@
 series:
-  - label: CPU0 to GPU0
+  - label: CPU0 to GPU0 (local)
     file: minsky1-NUMAUM_Coherence_HostToGPU-0-0.json
-  - label: CPU0 to GPU1
+  - label: CPU0 to GPU1 (local)
     file: minsky1-NUMAUM_Coherence_HostToGPU-0-1.json
-  - label: CPU0 to GPU2
+  - label: CPU0 to GPU2 (remote)
     file: minsky1-NUMAUM_Coherence_HostToGPU-0-2.json
-  - label: CPU0 to GPU3
+  - label: CPU0 to GPU3 (remote)
     file: minsky1-NUMAUM_Coherence_HostToGPU-0-3.json
 yaxis:
   label: Transfer Bandwidth (B/s)

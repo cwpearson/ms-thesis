@@ -1,0 +1,18 @@
+series:
+  - label: CPU0 to GPU0 (local)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-0-0.json
+  - label: CPU0 to GPU2 (remote)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-0-2.json
+  - label: CPU1 to GPU0 (remote)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-8-0.json
+  - label: CPU1 to GPU2 (local)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-8-2.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 40_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: AC922 Pageable Bandwidth (CPUs to GPUs)
