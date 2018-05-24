@@ -3,10 +3,10 @@ series:
     file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_HostToGPU-0-0.json
   - label: CPU0 to GPU2 (remote)
     file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_HostToGPU-0-2.json
-  - label: GPU0 to CPU0 (local)
-    file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_GPUToHost-0-0.json
-  - label: GPU2 to CPU0 (remote)
-    file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_GPUToHost-0-2.json
+  - label: CPU1 to GPU0 (local)
+    file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_HostToGPU-8-0.json
+  - label: CPU1 to GPU2 (remote)
+    file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_HostToGPU-8-2.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
@@ -15,4 +15,4 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: AC922 CPU/GPU Prefetch Bandwidth
+title: AC922 SANITY Prefetch Bandwidth (CPU to GPU)
