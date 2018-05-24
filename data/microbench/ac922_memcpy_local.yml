@@ -1,0 +1,26 @@
+series:
+  - label: GPU0 to GPU1 (peer)
+    file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-0-1.json
+  - label: GPU1 to GPU0 (peer)
+    file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-1-0.json
+  - label: GPU2 to GPU3 (peer)
+    file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-2-3.json
+  - label: GPU3 to GPU2 (peer)
+    file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-2-3.json
+  - label: GPU0 to GPU1 (no peer)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-0-1.json
+  - label: GPU1 to GPU0 (no peer)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-1-0.json
+  - label: GPU2 to GPU3 (no peer)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-8-2-3.json
+  - label: GPU3 to GPU2 (no peer)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-8-2-3.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 40_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: AC922 GPU/GPU Local Transfers
