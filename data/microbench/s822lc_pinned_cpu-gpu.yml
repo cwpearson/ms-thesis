@@ -1,0 +1,18 @@
+series:
+  - label: CPU0 to GPU0
+    file: minsky1-NUMA_Memcpy_PinnedToGPU-0-0.json
+  - label: CPU0 to GPU2
+    file: minsky1-NUMA_Memcpy_PinnedToGPU-0-2.json
+  - label: GPU0 to CPU0
+    file: minsky1-NUMA_Memcpy_GPUToPinned-0-0.json
+  - label: GPU2 to CPU0
+    file: minsky1-NUMA_Memcpy_GPUToPinned-0-2.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 40_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: S822LC Pinned Bandwidth (CPU0 to GPUs)

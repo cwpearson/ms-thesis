@@ -8,12 +8,13 @@ import re
 import numpy as np
 import matplotlib.pyplot as plt
 import yaml
+import seaborn as sns
 
 pp = pprint.PrettyPrinter(indent=4)
 
-def generator_old(fig, yaml_dir, plot_cfg):
+def generator_errorbar(fig, yaml_dir, plot_cfg):
     ax = fig.add_subplot(111)
-    # build data frame from specified entries
+    
     for s in plot_cfg["series"]:
         file_path = s["file"]
         label = s["label"]
@@ -71,21 +72,76 @@ def generator_old(fig, yaml_dir, plot_cfg):
 
     return fig
 
+def generator_regplot(fig, yaml_dir, plot_cfg):
+
+    ax = fig.add_subplot(111)
+
+    series_cfgs = plot_cfg["series"]
+    for s_cfg in series_cfgs:
+        file_path = s_cfg["file"]
+        label = s_cfg["label"]
+        regex = s_cfg.get("regex", ".*")
+        print("Using regex:", regex)
+        if not os.path.isabs(file_path):
+            file_path = os.path.join(yaml_dir, file_path)
+        print("reading", file_path)
+        with open(file_path, "rb") as f:
+            j = json.loads(f.read().decode('utf-8'))
+        
+        pattern = re.compile(regex)
+        matches = [b for b in j["benchmarks"] if pattern == None or pattern.search(b["name"])]
+        means = [b for b in matches if b["name"].endswith("_mean")]
+        stddevs = [b for b in matches if b["name"].endswith("_stddev")]
+        x = np.array([int(b["bytes"]) for b in means])
+        y = np.array([float(b["bytes_per_second"]) for b in means])
+        e = np.array([float(b["bytes_per_second"]) for b in stddevs])
+
+        color = s_cfg.get("color", "black")
+        style = s_cfg.get("style", "-")
+
+        ax = sns.regplot(ax=ax, x=x_col, y=col, data=df,
+                         ci=68, label=label, color=color, line_kws={"linestyle": style})
+
+    # Set limits
+    ax.set_ylim([0, 1600])
+    ylabel = plot_cfg.get("yaxis", {}).get("label", "")
+    print ("set ylabel to:", ylabel)
+    ax.set_ylabel(ylabel)
+
+    # update labels
+    h, l = ax.get_legend_handles_labels()
+    for s_cfg in enumerate(series_cfgs):
+        # def get_linregress(series):
+        #     return scipy.stats.linregress(x=ax.get_lines()[series].get_xdata(), y=ax.get_lines()[series].get_ydata())
+        def get_polyfit(series):
+            x = ax.get_lines()[series].get_xdata()
+            y = ax.get_lines()[series].get_ydata()
+            z, cov = np.polyfit(x, y, 1, cov=True)
+            # print np.sqrt(np.diag(cov))
+            return z[0], z[1]
+        # slope, intercept, r_value, p_value, std_err = get_linregress(c)
+        slope, intercept = get_polyfit(c)
+        l[c] = l[c] + ": " + "{:.2f}".format(slope) + " us/fault"
+        print ("set label", c, "to:", l[c])
+    ax.legend(h, l)
+
+    title = plot_cfg.get("title", "")
+    ax.set_title(title)
+
+    return fig
 
 def generate_figure(plot_cfg, root_dir):
 
     fig = plt.figure()
 
     if "generator" in plot_cfg:
-        if plot_cfg["generator"] == "df":
-            fig = generator_df(fig, root_dir, plot_cfg)
-        elif plot_cfg["generator"] == "regplot":
+        if plot_cfg["generator"] == "regplot":
             fig = generator_regplot(fig, root_dir, plot_cfg)
         else:
             print("Unhandled generator!")
             assert False
     else:
-        fig = generator_old(fig, root_dir, plot_cfg)
+        fig = generator_errorbar(fig, root_dir, plot_cfg)
 
     return fig
 
