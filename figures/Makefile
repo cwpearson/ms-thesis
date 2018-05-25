@@ -23,6 +23,12 @@ PLOT3_YMLS = $(wildcard ../data/plot3/*.yml)
 PLOT3_PDFS = $(patsubst ../data/plot3/%.yml, $(GEN_DIR)/%.pdf, ${PLOT3_YMLS})
 TARGETS += $(PLOT3_PDFS)
 
+# Handle microbench YMLs
+MICRO_JSONS = $(wildcard ../data/microbench/*.json)
+MICRO_YMLS = $(wildcard ../data/microbench/*.yml)
+MICRO_PDFS = $(patsubst ../data/microbench/%.yml, $(GEN_DIR)/%.pdf, ${MICRO_YMLS})
+TARGETS += $(MICRO_PDFS)
+
 all: $(TARGETS)
 
 $(GEN_DIR):
@@ -40,6 +46,10 @@ $(GEN_DIR)/%.pdf: $(REGPLOT_DIR)/%.csv $(GEN_DIR) $(REGPLOT_DIR)/plot.py
 #plot3
 $(GEN_DIR)/%.pdf: ../data/plot3/%.yml $(GEN_DIR) ../data/plot3/plot.py $(PLOT3_CSVS)
 	python ../data/plot3/plot.py $@ $<
+
+#plot3
+$(GEN_DIR)/%.pdf: ../data/microbench/%.yml $(GEN_DIR) ../data/microbench/plot.py $(MICRO_JSONS)
+	python ../data/microbench/plot.py $@ $<
 
 clean:
 	rm -f $(TARGETS) $(GEN_DIR)/*.pdf
