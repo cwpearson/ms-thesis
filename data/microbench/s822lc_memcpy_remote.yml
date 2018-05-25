@@ -1,8 +1,12 @@
 series:
-  - label: Peer
-    file: minsky1-CUDA_Memcpy_GPUToGPU-0-1.json
-  - label: No Peer
-    file: minsky1-NUMA_Memcpy_GPUToGPU-0-0-1.json
+  - label: GPU0 to GPU2 (CPU0)
+    file: minsky1-NUMA_Memcpy_GPUToGPU-0-0-2.json
+  - label: GPU0 to GPU2 (CPU1)
+    file: minsky1-NUMA_Memcpy_GPUToGPU-1-0-2.json
+  - label: GPU2 to GPU0 (CPU0)
+    file: minsky1-NUMA_Memcpy_GPUToGPU-0-2-0.json
+  - label: GPU2 to GPU0 (CPU1)
+    file: minsky1-NUMA_Memcpy_GPUToGPU-1-2-0.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
@@ -11,4 +15,4 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: S822LC GPU0 to GPU1 Transfer
+title: S822LC GPU0 to GPU2 Transfer (No Peer)

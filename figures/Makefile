@@ -47,9 +47,9 @@ $(GEN_DIR)/%.pdf: $(REGPLOT_DIR)/%.csv $(GEN_DIR) $(REGPLOT_DIR)/plot.py
 $(GEN_DIR)/%.pdf: ../data/plot3/%.yml $(GEN_DIR) ../data/plot3/plot.py $(PLOT3_CSVS)
 	python ../data/plot3/plot.py $@ $<
 
-#plot3
+# microbench
 $(GEN_DIR)/%.pdf: ../data/microbench/%.yml $(GEN_DIR) ../data/microbench/plot.py $(MICRO_JSONS)
-	python ../data/microbench/plot.py $@ $<
+	../data/microbench/plot.py $@ $<
 
 clean:
 	rm -f $(TARGETS) $(GEN_DIR)/*.pdf

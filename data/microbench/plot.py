@@ -145,9 +145,30 @@ def generate_figure(plot_cfg, root_dir):
 
     return fig
 
+def generator_errorbar_deps(yaml_dir, plot_cfg):
+    deps = ""
+    
+    for s in plot_cfg["series"]:
+        file_path = s["file"]
+        if not os.path.isabs(file_path):
+            file_path = os.path.join(yaml_dir, file_path)
+        deps += file_path + " "
+
+    return deps
+
+def generate_deps(plot_cfg, root_dir):
+
+    if "generator" in plot_cfg:
+        print("Unhandled generator!")
+        assert False
+    else:
+        deps = generator_errorbar_deps(root_dir, plot_cfg)
+
+    return deps
+
 if __name__ == '__main__':
 
-    if len(sys.argv) == 3:
+    if len(sys.argv) >= 3:
         output_path = sys.argv[1]
         yaml_path = sys.argv[2]
     else:
@@ -159,9 +180,14 @@ if __name__ == '__main__':
     with open(yaml_path, 'rb') as f:
         cfg = yaml.load(f)
 
-    fig = generate_figure(cfg, root_dir)
 
-    # Save plot
-    print("saving to", output_path)
-    fig.savefig(output_path, bbox_inches="tight",
-                clip_on=False, transparent=True)
+    if "--deps" in sys.argv[1:]:
+        deps_str = generate_deps(cfg, root_dir)
+        print(output_path, ":", deps_str)
+    else:
+        fig = generate_figure(cfg, root_dir)
+
+        # Save plot
+        print("saving to", output_path)
+        fig.savefig(output_path, bbox_inches="tight",
+                    clip_on=False, transparent=True)

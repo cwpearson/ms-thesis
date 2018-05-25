@@ -1,0 +1,18 @@
+series:
+  - label: CPU0 to GPU0
+    file: minsky1-NUMAUM_Prefetch_HostToGPU-0-0.json
+  - label: CPU0 to GPU2
+    file: minsky1-NUMAUM_Prefetch_HostToGPU-0-2.json
+  - label: CPU1 to GPU0
+    file: minsky1-NUMAUM_Prefetch_HostToGPU-1-0.json
+  - label: CPU1 to GPU2
+    file: minsky1-NUMAUM_Prefetch_HostToGPU-1-2.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 40_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: S822LC Prefetch Bandwidth (CPUs to GPUs)

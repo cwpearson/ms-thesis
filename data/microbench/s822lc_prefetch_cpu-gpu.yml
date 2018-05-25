@@ -1,12 +1,12 @@
 series:
-  - label: CPU0 to GPU0
+  - label: CPU0 to GPU0 (local)
     file: minsky1-NUMAUM_Prefetch_HostToGPU-0-0.json
-  - label: CPU0 to GPU2
+  - label: CPU0 to GPU2 (remote)
     file: minsky1-NUMAUM_Prefetch_HostToGPU-0-2.json
-  - label: CPU1 to GPU0
-    file: minsky1-NUMAUM_Prefetch_HostToGPU-1-0.json
-  - label: CPU1 to GPU2
-    file: minsky1-NUMAUM_Prefetch_HostToGPU-1-2.json
+  - label: GPU0 to CPU0 (lcaol)
+    file: minsky1-NUMAUM_Prefetch_GPUToHost-0-0.json
+  - label: GPU2 to CPU0 (remote)
+    file: minsky1-NUMAUM_Prefetch_GPUToHost-0-2.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
@@ -15,4 +15,4 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: S822LC Prefetch Bandwidth (CPUs to GPUs)
+title: S822LC Prefetch Bandwidth (CPU0, GPU0, and GPU2)

@@ -1,0 +1,17 @@
+series:
+  - label: GPU2 to CPU1
+    file: minsky1-NUMA_Memcpy_GPUToPinned-1-2.json
+  - label: CPU0 to GPU2
+    file: minsky1-NUMA_Memcpy_PinnedToGPU-0-2.json
+
+  # - label: CPU0 to CPU1
+  #   file: 
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 40_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: S822LC GPU2 to GPU0 Path Transfer

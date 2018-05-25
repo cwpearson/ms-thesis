@@ -311,13 +311,13 @@ Transfers involving pinned and pageable allocations are shown.
 \begin{figure}[ht]
 	\centering
 	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/minsky_pageable_affinity.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_pageable_affinity.pdf}
 		\caption{}
 		\label{fig:minsky_pageable_affinity}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_pageable_affinity.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_pageable_affinity.pdf}
 		\caption{}
 		\label{fig:hal_pageable_affinity}
 	\end{subfigure}
@@ -329,13 +329,13 @@ Transfers involving pinned and pageable allocations are shown.
 	\end{subfigure}
 	\\
 	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/minsky_pinned_affinity_cpu0.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_pinned_affinity_cpu0.pdf}
 		\caption{}
 		\label{fig:minsky_pinned_affinity}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_pinned_affinity.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_pinned_affinity.pdf}
 		\caption{}
 		\label{fig:hal_pinned_affinity}
 	\end{subfigure}
@@ -508,19 +508,19 @@ With peer access enabled, GPUs may do DMAs directly with their peer memory inste
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/minsky_memcpy_local.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_memcpy_local.pdf}
 		\caption{}
 		\label{fig:explicit-s822lc-peer}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_peer_local.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_memcpy_local.pdf}
 		\caption{}
 		\label{fig:explicit-hal-peer-local}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_peer_remote.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_memcpy_remote.pdf}
 		\caption{}
 		\label{fig:explicit-hal-peer-remote}
 	\end{subfigure}
@@ -581,25 +581,25 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 \begin{figure}[ht]
 	\centering
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/minsky_nopeer_remote.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_memcpy_remote.pdf}
 		\caption{}
 		\label{fig:minsky-explicit-nopeer-remote}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/minsky_path_gpu0-gpu2.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_path_gpu0-gpu2.pdf}
 		\caption{}
 		\label{fig:minsky-explicit-path-gpu0-gpu2}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/minsky_path_gpu2-gpu0.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_path_gpu2-gpu0.pdf}
 		\caption{}
 		\label{fig:minsky-explicit-path-gpu2-gpu0}
 	\end{subfigure}
 	\\
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/hal_nopeer_remote.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_nopeer_remote.pdf}
 		\caption{}
 		\label{fig:explicit-ac922-nopeer-remote}
 	\end{subfigure}

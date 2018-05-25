@@ -1,0 +1,18 @@
+series:
+  - label: GPU0 to GPU2 (CPU0)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-0-2.json
+  - label: GPU0 to GPU2 (CPU1)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-8-0-2.json
+  - label: GPU2 to GPU0 (CPU0)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-2-0.json
+  - label: GPU2 to GPU0 (CPU1)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-8-2-0.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 80_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: AC922 GPU0 to GPU2 Transfer (No Peer)
