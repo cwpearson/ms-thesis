@@ -1,14 +1,14 @@
 series:
   - label: GPU0 to GPU1 (CPU0)
     file: minsky1-NUMA_Memcpy_GPUToGPU-0-0-1.json
-  - label: GPU0 to GPU1 (CPU1)
-    file: minsky1-NUMA_Memcpy_GPUToGPU-1-0-1.json
+  - label: GPU2 to GPU3 (CPU1)
+    file: minsky1-NUMA_Memcpy_GPUToGPU-1-2-3.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
     - 0
-    - 40_000_000_000
+    - 30_000_000_000
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: S822LC GPU-GPU memcpy (nopeer)
+title: S822LC Local Transfers on Identical Links (No Peer) 
