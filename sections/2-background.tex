@@ -463,15 +463,6 @@ Applications can leverage the numactl\cite{wickman2015numactl} library to affect
 This policy controls on which CPUs processes may execute, and on which NUMA nodes memory is allocated.
 numactl is used in this work to ensure that data is allocated and programs execute on specific CPUs as needed to exercise different underlying hardware links.
 
-\section{OpenMP}
-\label{sec:openmp}
-
-OpenMP is a shared-memory processing system that uses compiler directives and library functions to allow applications to implement shared-memory parallel processing techniques~\cite{openmp2013}.
-Among other more sophisticated approaches, OpenMP allows hint-assisted parallelization of nested loops through compiler directives.
-This work uses OpenMP to use multiple CPU threads while transferring data between the CPU and the GPU during the unified memory characterization in Chapter~\ref{ch:unified}. 
-Multiple CPU threads are used to ensure that the CPU is generating sufficient memory traffic to saturate its memory controllers and make the maximal demands of the unified memory system.
-There is a runtime overhead of entering the parallelized region, which affects the design of the benchmarks.
-
 \section{Profiling Tooling}
 \label{sec:profiling}
 
@@ -492,6 +483,66 @@ If a function definition is present in a pre-loaded shared object, it will overr
 When combined with \texttt{dlsym()}~\cite{kerrisk2017dlysm}, it can be used to inject code into the entry of library calls in dynamically-linked binaries.
 Chapter~\ref{ch:future} describes how LD\_PRELOAD can be used to infer information about application activity based on generic library calls.
 
+
+\section{Benchmark Library}
+\label{sec:benchmark}
+
+This work makes use of the Google Benchmark library~\cite{google2018benchmark} as a harness for the developed custom microbenchmarks.
+Benchmark supports manual or automatic timing, multithreaded benchmarks, and some control over code optimization.
+The microbenchmarks developed for this thesis make use of all of those features.
+
+Some of the microbenchmarks in this work make use of CUDA events to accurately measure the time taken by various CUDA operations.
+
+
+
+Benchmark allows microbenchmarks to be specified in C++ using the following pattern:
+
+\begin{lstlisting}[language=C++, caption=Benchmark structure, label=lst:benchmark-automatic]
+#include <benchmark/benchmark.h>
+
+static void BM_StringCreation(benchmark::State& state) {
+  for (auto _ : state)
+	std::string empty_string;
+}
+// Register the function as a benchmark
+BENCHMARK(BM_StringCreation);
+
+// Define another benchmark
+static void BM_StringCopy(benchmark::State& state) {
+  std::string x = "hello";
+  for (auto _ : state)
+	std::string copy(x);
+}
+BENCHMARK(BM_StringCopy);
+
+BENCHMARK_MAIN();
+
+\end{lstlisting}
+
+\begin{lstlisting}[language=C++, caption=Benchmark structure, label=lst:benchmark-manual]
+static void BM_ManualTiming(benchmark::State& state) {
+	int microseconds = state.range(0);
+	std::chrono::duration<double, std::micro> sleep_duration {
+	  static_cast<double>(microseconds)
+	};
+  
+	for (auto _ : state) {
+	  auto start = std::chrono::high_resolution_clock::now();
+	  // Simulate some useful workload with a sleep
+	  std::this_thread::sleep_for(sleep_duration);
+	  auto end   = std::chrono::high_resolution_clock::now();
+  
+	  auto elapsed_seconds =
+		std::chrono::duration_cast<std::chrono::duration<double>>(
+		  end - start);
+  
+	  state.SetIterationTime(elapsed_seconds.count());
+	}
+}
+BENCHMARK(BM_ManualTiming)->Range(1, 1<<17)->UseManualTime();
+\end{lstlisting}
+
+\todo{More words here.}
 
 \section{System Descriptions}
 \label{sec:system-descriptions}

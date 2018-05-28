@@ -6,14 +6,17 @@ In particular, it focuses on CPU/CPU transfers, CPU/GPU transfers, and GPU/GPU t
 It highlights cases where the observed logical communication performance deviates significantly from the symmetries present in the CUDA API, numactl API, and hardware.
 Those deviations take the form of different performance on identical links, anisotropic link performance, or performance affected by device affinity.
 
+The microbenchmarks used in this section are available in the \texttt{microbench} project~\cite{pearson2018microbench}.
+That project also includes benchmarks of other aspects of CUDA performance, including CUDA primitives like kernel launches, and CUDA libraries such as cuBLAS and cuDNN.
+
 \section{CPU / CPU Transfers}
 \label{sec:explicit-cpu-cpu}
 
 This section begins by examining CPU-CPU transfer performance by using multiple threads to read remote data in an attempt to saturate the SMP bus and memory controllers.
-This attempts to simulate the maximum possible performance that the CUDA API could achieve while sending data between sockets for CPU-to-GPU transfers.
+This attempts to simulate the maximum possible performance that could be achieved while sending data between sockets for CPU-to-GPU transfers.
 Such a transfer would occur when data is sent from a CPU A to a GPU attached to another CPU B.
 The data would traverse the SMP bus between CPU A and CPU B, and the bandwidth of that bus could limit the overall performance of the transfer.
-Algorithm~\ref{alg:explicit-cpu-cpu} describes the approach.
+Algorithm~\ref{alg:explicit-cpu-cpu} describes the measurement approach.
 
 Two types of traffic are measured, in \texttt{read\_bandwidth} and \texttt{write\_bandwidth}.
 In the \texttt{read} operation (Listing~\ref{lst:explicit-cpu-cpu-cpuread}), source-to-destination bandwidth is measured by a set of worker threads on the destination CPU generating loads from locations in an allocation on the source CPU.
