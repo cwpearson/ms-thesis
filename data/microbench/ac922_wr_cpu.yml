@@ -1,0 +1,22 @@
+series:
+  - label: (1T)
+    file: hal000.ncsa.illinois.edu-NUMA_WR-0-8.json
+    regex: threads:1
+  - label: (2T)
+    file: hal000.ncsa.illinois.edu-NUMA_WR-0-8.json
+    regex: threads:2
+  - label: (4T)
+    file: hal000.ncsa.illinois.edu-NUMA_WR-0-8.json
+    regex: threads:4
+  - label: (8T)
+    file: hal000.ncsa.illinois.edu-NUMA_WR-0-8.json
+    regex: threads:8
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  # lim:
+  #   - 0
+  #   - 80_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: AC922 CPU0 Write to CPU1
