@@ -1,12 +1,20 @@
 series:
   - label: GPU0 to CPU0 (local)
     file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-0-0.json
+  - label: GPU1 to CPU0 (local)
+    file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-0-1.json
   - label: GPU2 to CPU0 (remote)
     file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-0-2.json
+  - label: GPU3 to CPU0 (remote)
+    file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-0-3.json
   - label: GPU0 to CPU1 (remote)
     file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-8-0.json
+  - label: GPU1 to CPU1 (remote)
+    file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-8-1.json
   - label: GPU2 to CPU1 (local)
     file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-8-2.json
+  - label: GPU3 to CPU1 (local)
+    file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-8-3.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
@@ -15,4 +23,4 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: AC922 Coherence Bandwidth (GPU to CPU)
+title: AC922 SANITY Coherence Bandwidth (GPUs to CPUs)

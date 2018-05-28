@@ -6,7 +6,15 @@ series:
   - label: CPU0 to GPU2 (remote)
     file: minsky1-NUMAUM_Coherence_HostToGPU-0-2.json
   - label: CPU0 to GPU3 (remote)
-    file: minsky1-NUMAUM_Coherence_HostToGPU-0-3.json
+    file: minsky1-NUMAUM_Coherence_HostToGPU-0-2.json
+  - label: CPU1 to GPU0 (local)
+    file: minsky1-NUMAUM_Coherence_HostToGPU-1-0.json
+  - label: CPU1 to GPU1 (local)
+    file: minsky1-NUMAUM_Coherence_HostToGPU-1-1.json
+  - label: CPU1 to GPU2 (remote)
+    file: minsky1-NUMAUM_Coherence_HostToGPU-1-2.json
+  - label: CPU1 to GPU3 (remote)
+    file: minsky1-NUMAUM_Coherence_HostToGPU-1-2.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
@@ -15,4 +23,4 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: S822LC Coherence Bandwidth (CPU0 to GPUs)
+title: S822LC SANITY Coherence Bandwidth (CPUs to GPUs)
