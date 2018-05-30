@@ -360,24 +360,37 @@ Transfers involving pinned and pageable allocations are shown.
 
 In general, the bandwidth follows the same outline described in Section~\ref{sec:explicit-pageable-pinned-wc}, with overhead-dominated time for small transfers, bandwidth-dominated time for large transfers, and some other behavior between.
 There are some distinctive reoccurring patterns in Figures~\ref{fig:cpu-gpu-affinity-direction} (a)-(c).
-For CPU-to-GPU pageable transfers on all systems, remote GPU-to-CPU transfers on S822LC, and local CPU-to-GPU transfers on AC922, intermediate transfer bandwidths show peaks of varying strengths.
-This may be due to the transfer from the pageable allocation to pinned buffer occurring within the cache, so the ultimate transfer bandwidth is limited by the interconnect bandwidth instead of the CPU single-threaded memory bandwidth.
-There may also be some imbalance in the number and size of the pinned transfer buffers that prevents good overlapping of the host-device DMA and the host-host memory copy.
-AC922 also exhibits a strong peak, drop, and return to increased performance.
+
+CPU-to-GPU pageable transfers on all systems exhibit peaks in transfer bandwidth at intermediate transfer sizes.
+The shape of this curve suggests some insight into the copy implementation.
+For example, consider the S822LC CPU0 to GPU0 curve.
+This is a local transfer, so the expected process is that a pageable allocation on CPU0 is copied to one or more pinned allocations on CPU0, which are then accessed by GPU0's DMA engine.
+The fact that the peak bandwidth at intermediate transfer sizes surpasses the measured bandwidth for single-threaded inter-CPU transfers (section~\ref{}) suggests that the pageable-to-pinned copy is indeed occurring within a single CPU, and not across CPUs.
+When the transfer occurs within the same CPU, the bandwidth will be higher when that transfer can fit within the CPU cache.
+The same shape is present in the CPU0 to GPU2 curve, where it would be plausible for the pageable allocation to be on CPU0 and the pinned allocation on CPU1.
+\todo{compare to CPU-CPU intra-node bandwidth when available}.
+For S822LC and DGX, as the transfer grows larger, the bandwidth reaches a steady-state value that is the same as the single-threaded inter-CPU memory access bandwidth.
+In AC922, we see a large change in the transfer bandwidth, suggesting that some other implementation is chosen at those sizes.
+The drop before reaching that bandwidth suggests some system performance bug, like imbalance in the number and size of the pinned transfer buffers that prevents good overlapping of the host-device DMA and the host-host memory copy.
 
 Figures~\ref{fig:cpu-gpu-affinity-direction} (d)-(f) show the same transfers, but from pinned allocations.
-These transfers are all limited by the interconnect bandwidth, and do not show the same peaks.
+These transfers are all ultimately limited by the interconnect bandwidth, and do not show the same peaks.
+These transfers typically achieve \mytilde70\% or more of the theoretical link bandwidth.
 
 \subsection{Affinity}
 \label{sec:explicit-cpu-gpu-affinity}
 
-On systems with high-performance interconnects, CPU/GPU transfer performance is strongly correlated with device affinity.
-Furthermore, the high performance interconnects do tend to allow higher bandwidth transfers, but can also expose some surprising behavior.
+On systems with high-performance interconnects, transfers from GPU allocations to pageable CPU allocations are strongly correlated with device affinity.
+Transfers involving pinned CPU allocations demonstrate a strong effect in both CPU-to-GPU and GPU-to-CPU directions.
+The presence of high-performance interconnects further exposes any performance differences, since bandwidth is less likely to be limited by underlying link bandwidth and more likely to be limited by performance bugs or single-threaded memory copies.
 Table~\ref{tab:cpu-gpu-affinity} summarizes the effects.
-Figure~\ref{fig:minsky_pageable_affinity} show that affinity has a negligible effect on bandwidth for pageable transfers on S822LC.
-Figure~\ref{fig:hal_pageable_affinity} shows that small and large transfer sizes from GPU to pageable allocations on AC922 are much faster for local transfers than remote transfers.
+
+Figure~\ref{fig:minsky_pageable_affinity} shows that affinity has a small effect on bandwidth for pageable transfers on S822LC for transfers in both directions.
+For transfers larger than 4 MB, the GPU to CPU remote transfer is faster than the GPU to CPU local transfer.
+Transfer bandwidths fall well below the NVLink and X bus transfer capacities (40 GB/s and 38.4 GB/s respectively), so this likely reflects a driver or firmware performance bug.
+Figure~\ref{fig:hal_pageable_affinity} local GPU to CPU pageable transfers on AC922 are much faster than their remote counterparts, except for large transfers, where remote performance is higher.
 Figure~\ref{fig:dgx_pageable_affinity} shows that GPU-to-CPU pageable transfers on DGX are affected by affinity.
-Figure~\ref{fig:minsky_pinned_affinity} shows on S822LC, pinned bandwidth is affected both by affinity with local transfers at least $5$ GB/s faster than remote transfers at large sizes.
+Figure~\ref{fig:minsky_pinned_affinity} shows on S822LC, pinned bandwidth is affected strongly by affinity, particularly in the GPU to CPU direction.
 Figure~\ref{fig:hal_pinned_affinity} shows for pinned transfers on AC922, affinity has a much stronger effect.
 Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned transfers for DGX-1.
 
@@ -716,3 +729,8 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
 The performance of \texttt{cudaMemcpy} transfers is highly dependent on device affinity, CPU allocation type, transfer direction, and underlying hardware performance.
 Transfers involving pageable host allocations are particularly unpredictable, with bandwidth peaking at intermediate transfer sizes, possibly due to pageable-to-pinned transfers occurring wholly in the CPU cache.
 In general, constraining communication to pinned buffers and local devices offers the best performance, though direction of the transfer still has a large impact.
+
+\begin{itemize}
+	\item S822LC GPU to CPU pageable transfers are faster for remote than local.
+	\item AC922 GPU to CPU pageable transfers: local is faster than remove for small, remote is faster than local for large.
+\end{itemize}
