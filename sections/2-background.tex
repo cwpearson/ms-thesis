@@ -472,6 +472,28 @@ This work uses OpenMP to use multiple CPU threads while transferring data betwee
 Multiple CPU threads are used to ensure that the CPU is generating sufficient memory traffic to saturate its memory controllers and make the maximal demands of the unified memory system.
 There is a runtime overhead of entering the parallelized region, which affects the design of the benchmarks.
 
+Many microbenchmarks in this work rely on execution of threads on particular NUMA nodes.
+The \texttt{numa\_bind($node$)} function binds the current process and all child processes to the provided node, but OpenMP does not necessarily implement worker threads as children of the current thread.
+Algorithm~\ref{alg:omp-numa-bind} is used to bind all OpenMP threads to a NUMA node.
+A full OpenMP thread team is created, and each of those threads individually binds itself to the provided NUMA node.
+
+\begin{algorithm}
+	\caption[test]{
+		Algorithm to bind all OpenMP threads to a NUMA node.
+	}
+	\label{alg:omp-numa-bind}
+	\begin{algorithmic}[1]
+		\Statex
+        \Function{omp\_numa\_bind\_node}{$dev$}
+        \State \texttt{bind\_cpu($dev$)}
+        \For{all worker threads}
+        \State \texttt{bind\_cpu($dev$)}
+        \EndFor
+        \EndFunction
+		
+	\end{algorithmic}
+\end{algorithm}
+
 \section{Profiling Tooling}
 \label{sec:profiling}
 
@@ -508,19 +530,30 @@ Microbenchmarks using Benchmark are written in C++, and have a setup phase, an i
 #include <benchmark/benchmark.h>
 
 static void BM_Foo(benchmark::State& state) {
-  for (auto _ : state)
-	foo();
+  for (auto _ : state) {
+	  state.PauseTiming();
+	  ... // this time will not be counted
+	  state.ResumeTiming();
+	  foo();
+	}
 }
 BENCHMARK(BM_Foo);
 \end{lstlisting}
 
-Lines 3-6 define a Benchmark function, which is registered to be run in line 7.
-The loop body in line 5 is executed and timed automatically by the framework, and the average time is recorded.
-The number of loop iterations is automatically determined.
+Lines $3$-$10$ define a Benchmark function, which is registered to be run in line $11$.
+The loop body in lines $5$ through $9$ are executed and timed automatically by the framework, and the average time is recorded.
+Any part of the loop body that should not be timed can be wrapped in \texttt{state.PauseTiming()} and \texttt{state.ResumeTiming()}.
+This allows for per-iteration setup code to not be timed.
+The number of loop iterations is automatically controlled by the benchmark suite based on the number of arguments and desired run time.
 
 Some of the microbenchmarks in this work make use of CUDA events to accurately measure the time taken by various CUDA operations.
 Benchmark supports this by allowing each microbenchmark to record and report their own iteration time.
 For example, consider Listing~\ref{lst:benchmark-manual}.
+
+Benchmark provides a \texttt{DoNotOptimize(<expr>)} function, which forces the result of \texttt{<expr>} to be placed in a register.
+It does not prevent any optimization of \texttt{<expr>}, including replacing it with a statically-known value.
+Benchmark also provides a \texttt{ClobberMemory()} function, which forces all pending global memory writes to be completed.
+Through these two functions, the microbenchmarks can ensure that specific memory operations are completed and not optimized away.
 
 \begin{lstlisting}[language=C++, caption=Benchmark with manual timing., label=lst:benchmark-manual, numbers=left]
 #include <benchmark/benchmark.h>
