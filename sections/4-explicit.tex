@@ -25,40 +25,42 @@ First, an allocation is created on the source CPU
 Then, the worker threads are bound to the desired CPU, and the \texttt{cpu\_read} or \texttt{cpu\_write} workload is executed.
 The read and write operations are executed on 8-byte elements (size of a double-precision floating-point number) of the allocation, to reflect the 8-byte payload on the X bus~\cite{caldeira2016s822lc}.
 
-\begin{lstlisting}[language=C++, caption=CPU-CPU Read Function, label=lst:explicit-cpu-cpu-cpuread]
-void cpu_read(double *__restrict__ dummy,
-                double *__restrict__ ptr,
-                const size_t count,
-                const size_t stride) {
-    const size_t numElems = count / sizeof(double);
-    const size_t elemsPerStride = stride / sizeof(double);
-    double acc = 0;
-#pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < numElems; i += elemsPerStride) {
-        acc += ptr[i];
-    }
-    *dummy += acc;
+\begin{lstlisting}[language=C++, caption=CPU-CPU Read Function, label=lst:explicit-cpu-cpu-cpuread, numbers=left]
+void rd_8(char *ptr, 
+          const size_t count, 
+          const size_t stride) {
+  int64_t *dp = reinterpret_cast<int64_t*>(ptr);
+	
+  const size_t numElems = count / sizeof(int64_t);
+  const size_t elemsPerStride = stride / sizeof(int64_t);
+	
+  int64_t acc = 0;
+#pragma omp parallel for schedule(static) private(acc)
+  for (size_t i = 0; i < numElems; i += elemsPerStride) {
+    benchmark::DoNotOptimize(acc += dp[i]);
+  }
 }
 \end{lstlisting}
 
 
-\begin{lstlisting}[language=C++, caption=CPU-CPU Write Function, label=lst:explicit-cpu-cpu-cpuwrite]
-void cpu_write(double *__restrict__ ptr, 
-                 const size_t count, 
-                 const size_t stride) {
-    const size_t numElems = count / sizeof(double);
-    const size_t elemsPerStride = stride / sizeof(double);
+\begin{lstlisting}[language=C++, caption=CPU-CPU Write Function, label=lst:explicit-cpu-cpu-cpuwrite, numbers=left]
+void wr_8(char *ptr, 
+          const size_t count, 
+          const size_t stride) {
+  int64_t *dp = reinterpret_cast<int64_t*>(ptr);
+  const size_t numElems = count / sizeof(int64_t);
+  const size_t elemsPerStride = stride / sizeof(int64_t);
 #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < numElems; i += elemsPerStride) {
-        ptr[i] = i * 31ul + 7ul;
-    }
+  for (size_t i = 0; i < numElems; i += elemsPerStride) {
+    benchmark::DoNotOptimize(dp[i] = i);
+    benchmark::ClobberMemory();
+  }
 }
 \end{lstlisting}
 
-For both the \texttt{cpu\_read} and \texttt{cpu\_write} operations, \texttt{ptr} is the allocation that is being read or written,
+For both the \texttt{rd\_8} and \texttt{wr\_8} operations, \texttt{ptr} is the allocation that is being read or written,
 \texttt{count} is the number of bytes in that allocation, and \texttt{stride} is the number of bytes between every read or write.
-Since memory loads in isolation are side-effect free, \texttt{cpu\_read} need to be designed to avoid being optimized away by the compiler.
-This is accomplished by giving the data read loop a ``side-effect'' as far as the compiler is concerned: the array values are accumulated and the sum is written out through the \texttt{dummy} argument.
+Since memory loads in isolation are side-effect free, \texttt{DoNotOptimize} and \texttt{ClobberMemory} are used to prevent loads from being optimized away by the compiler.
 The accumulation in the loop and the write through the dummy argument in the loop take a small amount of time that is incorrectly attributed to the elapsed bandwidth time.
 For both operations, OpenMP is used to evenly distribute the read or write operations amongst the cores of the executing CPU.
 Entering and exiting the parallel region incurs some cost, which is counted in the bandwidth computation.
@@ -66,60 +68,53 @@ Entering and exiting the parallel region incurs some cost, which is counted in t
 \begin{algorithm}
 	\caption[test]{
 		Algorithm to measure CPU-CPU Bandwidth.
-		\texttt{cpu\_read} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuread} and \texttt{cpu\_write} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}.
-		\texttt{bind\_cpu} binds the executing thread to the provided NUMA node.
-		\texttt{walltime} returns the current wall time.
+		\texttt{rd\_8} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuread} and \texttt{wr\_8} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}.
 	}
 	\label{alg:explicit-cpu-cpu}
 	\begin{algorithmic}[1]
-		\Statex
-        
-        \Function{numa\_bind}{$dev$}
-        \State \texttt{bind\_cpu($dev$)}
-        \For{all worker threads}
-        \State \texttt{bind\_cpu($dev$)}
-        \EndFor
-        \EndFunction
-
         \Statex
 		\Function{read\_bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
 		\State \texttt{omp\_set\_num\_threads($num\_workers$)}
-		\State \texttt{numa\_bind($src$)}
-        \State $srcPtr \gets$ \texttt{malloc($transfer\_size$)}
-        \State \texttt{memset($srcPtr$, 0, $transfer\_size$)}
-		
-		\State \texttt{numa\_bind($dst$)}
+		\State \texttt{omp\_numa\_bind($src$)}
+        \State $ptr \gets$ \texttt{malloc($transfer\_size$)}
+        \State \texttt{memset($ptr$, 0, $transfer\_size$)}
 		\Statex
-
-		\State $start \gets$ walltime()
-		\State \texttt{cpu\_read($dst$, $transfer\_size$, $8$)}
-		\State $end \gets$ walltime()
-        \State $elapsed \gets$ $end-start$
-		\State \Return $elapsed$
+		\For{state}
+		\State state.PauseTiming()
+		\State \texttt{omp\_numa\_bind($src$)}
+		\State \texttt{memset($ptr$, 0, $transfer\_size$)}
+		\State DoNotOptimize($ptr$)
+		\State ClobberMemory($ptr$)
+		\State \texttt{omp\_numa\_bind($dst$)}
+		\State state.ResumeTiming()
+		\State rd\_8($ptr$, $transfer\_size$, 8)
+        \EndFor
 		\EndFunction
         
         \Statex
 		\Function{write\_bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-		\State \texttt{numa\_bind($dst$)}
-		\State $srcPtr \gets$ \texttt{malloc($transfer\_size$)}
-		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)}
-		
-		\State \texttt{numa\_bind($src$)}
 		\State \texttt{omp\_set\_num\_threads($num\_workers$)}
+		\State \texttt{omp\_numa\_bind($dst$)}
+        \State $ptr \gets$ \texttt{malloc($transfer\_size$)}
+        \State \texttt{memset($ptr$, 0, $transfer\_size$)}
 		\Statex
-		
-		\State $start \gets$ walltime()
-		\State \texttt{cpu\_write($src$, $transfer\_size$, 8)}
-		\State $end \gets$ walltime()
-        \State $elapsed \gets$ $end-start$
-		\State \Return $elapsed$
+		\For{state}
+		\State state.PauseTiming()
+		\State \texttt{omp\_numa\_bind($dst$)}
+		\State \texttt{memset($ptr$, 0, $transfer\_size$)}
+		\State DoNotOptimize($ptr$)
+		\State ClobberMemory($ptr$)
+		\State \texttt{omp\_numa\_bind($src$)}
+		\State state.ResumeTiming()
+		\State wr\_8($ptr$, $transfer\_size$, 8)
+        \EndFor
 		\EndFunction
 		
 	\end{algorithmic}
 \end{algorithm}
 
 
-Figure~\ref{fig:cpu0-cpu1} shows the performance achieved by the \texttt{cpu\_read} and \texttt{cpu\_write} workloads.
+Figure~\ref{fig:cpu0-cpu1} shows the performance achieved by the \texttt{rd\_8} and \texttt{wr\_8} workloads.
 The measurement is taken multiple times with varying $num\_workers$, for each $transfer\_size$, and the maximum observed bandwidth at each transfer size is reported.
 The highest performing number of workers is highlighted at each transfer size.
 For smaller transfers, fewer workers may result in a faster transfer time as the overhead of entering the parallel region is not amortized effectively.
@@ -170,6 +165,7 @@ This is consistent with the theoretical 38.4 GB/s performance of the X bus on S8
 		The bandwidth achieved by one through 16 simultaneous worker threads is shown, with the maximum observed bandwidth across the number of threads highlighted.
 		(a,c,e) show multi-threaded reads from CPU1 of an allocation on CPU0's NUMA node on S822LC, AC922, and DGX-1.
 		(b,d,f) show multi-threaded writes from CPU0 to an allocation on CPU1's NUMA Node on S822LC, AC922, and DGX-1.
+		Whiskers at each point show the standard deviation measured over 10 repetitions.
 	}
 	\label{fig:cpu0-cpu1}
 \end{figure}
@@ -183,21 +179,50 @@ The host allocation may be pageable (created by \texttt{malloc} or \texttt{new})
 The device allocation is created by \texttt{cudaMalloc}.
 This section compares bandwidth achievable from pinned, pageable, and write-combining host allocations, with particular emphasis on how device affinity affects transfer-performance and cases where transfers are anisotropic.
 
-Algorithm~\ref{alg:explicit-cpu-gpu} is used to evaluate the achievable bandwidth for \texttt{cudaMemcpy} transfers between a GPU allocation and a pageable, pinned, or write-combining host allocation. 
-The same algorithm can be used for these cases, because the same \texttt{cudaMemcpy} CUDA API call to transfer data can be used on a pointer pointing to any of the allocation types.
-Depending on the source and destination types $src$ and $dst$, and the desired host allocation type, the corresponding CUDA or numactl APIs are called to bind later activities to the desired GPU or CPU.
-Then, the CUDA and system allocators are invoked to produce $devPtr$ (a pointer to the device allocation) and $srcPtr$ (a pointer to the CPU allocation).
-Then, \texttt{cudaMemcpy} is invoked $num\_iters$ times, and the fastest result is reported.
-This helps remove any jitter from the results.
-Time is recorded by wrapping \texttt{cudaMemcpy} in calls to the operating system clock.
-Consequently, the reported time includes the actual transfers, as well as any overhead for invoking the transfer.
-For pageable transfers, a \texttt{cudaDeviceSynchronize} is also included in the time, as cudaMemcpy may return before the device DMA is finished (Section~\ref{sec:basic-cuda}).
-
+Algorithm~\ref{alg:host-allocators} shows the different kind of host allocation strategies used in microbenchmarks that need CUDA host allocations on particular NUMA nodes.
+\texttt{AllocPageable} simply defers to \texttt{malloc}, which will return memory allocation on a previously-pinned NUMA node.
+\texttt{AllocPinned} defers to \texttt{malloc} to get a NUMA allocations, and then uses \texttt{cudaHostRegister} to pin that memory.
+\texttt{AllocWriteCombined} uses the \texttt{cudaHostAlloc} CUDA library call with the \texttt{cudaHostAllocWriteCombined} flag to request that CUDA allocate write-combining memory.
 
 \begin{algorithm}[H]
 	\begin{algorithmic}[1]
 		\Statex
-		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$}
+		\Function{AllocPageable}{$bytes$}
+		\State $ptr \gets 0$
+		\State malloc($ptr$, $bytes$)
+		\Return $ptr$
+		\EndFunction
+		\Statex
+		\Function{AllocPinned}{$bytes$}
+		\State $ptr \gets 0$
+		\State malloc($ptr$, $bytes$)
+		\State cudaHostRegister($ptr$, $bytes$, cudaHostRegisterPortable)
+		\Return $ptr$
+		\EndFunction
+		\Statex
+		\Function{AllocWriteCombined}{$bytes$}
+		\State $ptr \gets 0$
+		\State cudaHostAlloc($ptr$, $bytes$, cudaHostAllocWriteCombined)
+		\Return $ptr$
+		\EndFunction
+		
+	\end{algorithmic}
+	\caption[Pageable, Pinned, and Write-Combining Host Allocators.]{
+        Pageable, Pinned, and Write-Combining Host Allocators.
+	}
+	\label{alg:host-allocators}
+\end{algorithm}
+
+Algorithm~\ref{alg:explicit-cpu-gpu} is used to evaluate the achievable bandwidth for \texttt{cudaMemcpy} transfers between a GPU allocation and a pageable, pinned, or write-combining host allocation. 
+The same algorithm can be used for these cases, because the same \texttt{cudaMemcpy} CUDA API call to transfer data can be used on a pointer pointing to any of the allocation types.
+Depending on the source and destination types $src$ and $dst$, and the desired host allocation type, the corresponding CUDA or numactl APIs are called to bind later activities to the desired GPU or CPU.
+Then, the CUDA or host allocators are invoked to produce $devPtr$ (a pointer to the device allocation) and $hostPtr$ (a pointer to the CPU allocation).
+The main benchmark loop uses the \texttt{cudaMemcpy} time as the iteration time that should be reported.
+
+\begin{algorithm}[H]
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $bytes$, $num\_iters$}
 		\If{$src$ is GPU}
 		\State \texttt{cudaSetDevice($src$)}
 		\Else \Comment{$src$ is CPU}
@@ -209,17 +234,27 @@ For pageable transfers, a \texttt{cudaDeviceSynchronize} is also included in the
 		\State \texttt{numa\_bind($dst$)}
 		\EndIf
 		
-		\State $devPtr \gets$ \texttt{cudaMalloc($transfer\_size$)} \Comment{device allocation}
-		\State $srcPtr \gets$ \texttt{malloc($transfer\_size$)} \Comment{or cudaHostAlloc()}
-		
-		\State $elapsed \gets infinity$ \Comment{minimum of $num\_iters$ observations}
-		\For{$i \gets 1 \textrm{ to } num\_iters$}
-		\State $start \gets$ walltime()
-		\State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
-		\State \texttt{cudaDeviceSynchronize()}
-		\State $end \gets$ walltime()
-		\State $elapsed \gets$ min($elapsed$, $end-start$)
-		\EndFor
+		\State $devPtr \gets$ \texttt{cudaMalloc($bytes$)} \Comment{device allocation}
+		\State $hostPtr \gets$ hostAllocate($bytes$) \Comment{appropriate host allocator}
+
+		\If{$src$ is GPU}
+		\State $srcPtr \gets devPtr$
+		\State $dstPtr \gets hostPtr$
+		\Else \Comment{$src$ is CPU}
+		\State $srcPtr \gets hostPtr$
+		\State $dstPtr \gets devPtr$
+		\EndIf
+
+		\State $start \gets$ \texttt{cudaEventCreate()}
+		\State $end \gets$ \texttt{cudaEventCreate()}
+
+		\For{state}
+		\State \texttt{cudaEventRecord($start$)}
+		\State \texttt{cudaMemcpy($dstPtr$, $srcPtr$, $bytes$, cudaMemcpyDefault)}
+		\State \texttt{cudaEventRecord($stop$)}
+		\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
+		\State state.SetIterationTime($millis$ / $1000$)
+        \EndFor
 		
 		\Return $elapsed$
 		\EndFunction
@@ -365,7 +400,7 @@ CPU-to-GPU pageable transfers on all systems exhibit peaks in transfer bandwidth
 The shape of this curve suggests some insight into the copy implementation.
 For example, consider the S822LC CPU0 to GPU0 curve.
 This is a local transfer, so the expected process is that a pageable allocation on CPU0 is copied to one or more pinned allocations on CPU0, which are then accessed by GPU0's DMA engine.
-The fact that the peak bandwidth at intermediate transfer sizes surpasses the measured bandwidth for single-threaded inter-CPU transfers (section~\ref{}) suggests that the pageable-to-pinned copy is indeed occurring within a single CPU, and not across CPUs.
+The fact that the peak bandwidth at intermediate transfer sizes surpasses the measured bandwidth for single-threaded inter-CPU transfers (Figure~\ref{fig:cpu0-cpu1}) suggests that the pageable-to-pinned copy is indeed occurring within a single CPU, and not across CPUs.
 When the transfer occurs within the same CPU, the bandwidth will be higher when that transfer can fit within the CPU cache.
 The same shape is present in the CPU0 to GPU2 curve, where it would be plausible for the pageable allocation to be on CPU0 and the pinned allocation on CPU1.
 \todo{compare to CPU-CPU intra-node bandwidth when available}.
