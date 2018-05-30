@@ -1,16 +1,16 @@
 series:
   - label: (1T)
     file: minsky1-NUMA_WR-0-1.json
-    regex: threads:1
+    regex: 1/\d+/\d+/\d+
   - label: (2T)
     file: minsky1-NUMA_WR-0-1.json
-    regex: threads:2
+    regex: 2/\d+/\d+/\d+
   - label: (4T)
     file: minsky1-NUMA_WR-0-1.json
-    regex: threads:4
+    regex: 4/\d+/\d+/\d+
   - label: (8T)
     file: minsky1-NUMA_WR-0-1.json
-    regex: threads:8
+    regex: 8/\d+/\d+/\d+
 yaxis:
   label: Transfer Bandwidth (B/s)
   # lim:
