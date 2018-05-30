@@ -463,6 +463,15 @@ Applications can leverage the numactl\cite{wickman2015numactl} library to affect
 This policy controls on which CPUs processes may execute, and on which NUMA nodes memory is allocated.
 numactl is used in this work to ensure that data is allocated and programs execute on specific CPUs as needed to exercise different underlying hardware links.
 
+\section{OpenMP}
+\label{sec:openmp}
+
+OpenMP is a shared-memory processing system that uses compiler directives and library functions to allow applications to implement shared-memory parallel processing techniques~\cite{openmp2013}.
+Among other more sophisticated approaches, OpenMP allows hint-assisted parallelization of nested loops through compiler directives.
+This work uses OpenMP to use multiple CPU threads while transferring data between the CPU and the GPU during the unified memory characterization in Chapter~\ref{ch:unified}. 
+Multiple CPU threads are used to ensure that the CPU is generating sufficient memory traffic to saturate its memory controllers and make the maximal demands of the unified memory system.
+There is a runtime overhead of entering the parallelized region, which affects the design of the benchmarks.
+
 \section{Profiling Tooling}
 \label{sec:profiling}
 
@@ -488,61 +497,59 @@ Chapter~\ref{ch:future} describes how LD\_PRELOAD can be used to infer informati
 \label{sec:benchmark}
 
 This work makes use of the Google Benchmark library~\cite{google2018benchmark} as a harness for the developed custom microbenchmarks.
-Benchmark supports manual or automatic timing, multithreaded benchmarks, and some control over code optimization.
-The microbenchmarks developed for this thesis make use of all of those features.
+Benchmark automatically determines the number of iterations to run based on the number of inputs and the desired CPU time.
+Benchmark allows repeated runs, and can report individual and aggregated statistics.
+This work makes uses of repeated runs, and presents results in terms of mean values and standard deviations.
+Benchmark also supports manual or automatic timing.
+An example of the basic layout of an automatic timing benchmark is shown in Listing~\ref{lst:benchmark-automatic}.
+Microbenchmarks using Benchmark are written in C++, and have a setup phase, an interation phase, and a teardown phase.
 
-Some of the microbenchmarks in this work make use of CUDA events to accurately measure the time taken by various CUDA operations.
-
-
-
-Benchmark allows microbenchmarks to be specified in C++ using the following pattern:
-
-\begin{lstlisting}[language=C++, caption=Benchmark structure, label=lst:benchmark-automatic]
+\begin{lstlisting}[language=C++, caption=Benchmark with automatic timing., label=lst:benchmark-automatic, numbers=left]
 #include <benchmark/benchmark.h>
 
-static void BM_StringCreation(benchmark::State& state) {
+static void BM_Foo(benchmark::State& state) {
   for (auto _ : state)
-	std::string empty_string;
+	foo();
 }
-// Register the function as a benchmark
-BENCHMARK(BM_StringCreation);
-
-// Define another benchmark
-static void BM_StringCopy(benchmark::State& state) {
-  std::string x = "hello";
-  for (auto _ : state)
-	std::string copy(x);
-}
-BENCHMARK(BM_StringCopy);
-
-BENCHMARK_MAIN();
-
+BENCHMARK(BM_Foo);
 \end{lstlisting}
 
-\begin{lstlisting}[language=C++, caption=Benchmark structure, label=lst:benchmark-manual]
-static void BM_ManualTiming(benchmark::State& state) {
-	int microseconds = state.range(0);
-	std::chrono::duration<double, std::micro> sleep_duration {
-	  static_cast<double>(microseconds)
-	};
-  
-	for (auto _ : state) {
-	  auto start = std::chrono::high_resolution_clock::now();
-	  // Simulate some useful workload with a sleep
-	  std::this_thread::sleep_for(sleep_duration);
-	  auto end   = std::chrono::high_resolution_clock::now();
-  
-	  auto elapsed_seconds =
-		std::chrono::duration_cast<std::chrono::duration<double>>(
-		  end - start);
-  
-	  state.SetIterationTime(elapsed_seconds.count());
-	}
+Lines 3-6 define a Benchmark function, which is registered to be run in line 7.
+The loop body in line 5 is executed and timed automatically by the framework, and the average time is recorded.
+The number of loop iterations is automatically determined.
+
+Some of the microbenchmarks in this work make use of CUDA events to accurately measure the time taken by various CUDA operations.
+Benchmark supports this by allowing each microbenchmark to record and report their own iteration time.
+For example, consider Listing~\ref{lst:benchmark-manual}.
+
+\begin{lstlisting}[language=C++, caption=Benchmark with manual timing., label=lst:benchmark-manual, numbers=left]
+#include <benchmark/benchmark.h>
+
+static void BM_Foo(benchmark::State& state) {
+  cudaEvent_t start, stop;
+  cudaEventCreate(start);
+  cudaEventCreate(stop);
+  float msec;
+
+  for (auto _ : state) {
+    cudaEventRecord(start, NULL);
+    ... // cuda operation to benchmark
+    cudaEventRecord(stop, NULL);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&msec, start, stop);
+    state.SetIterationTime(msec / 1000);
+  }
 }
-BENCHMARK(BM_ManualTiming)->Range(1, 1<<17)->UseManualTime();
+
+BENCHMARK(BM_Foo)->UseManualTime();
 \end{lstlisting}
 
-\todo{More words here.}
+Now, when the benchmark is registered in line 20, the framework is informed that the benchmark loop iteration will report its own time.
+Instead of the framework timing the loop body in lines 11-16, some CUDA code is included to measure the operation time.
+The iteration time is manually set in line 16.
+
+Although Benchmark also supports multithreaded benchmarking, the microbenchmarks developed for this work do not use it.
+Benchmark does not directly support thread synchronization within each benchmark iteration, which is needed to accurately measure the performance of using mutiple threads to move memory.
 
 \section{System Descriptions}
 \label{sec:system-descriptions}
