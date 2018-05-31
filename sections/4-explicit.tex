@@ -113,15 +113,41 @@ Entering and exiting the parallel region incurs some cost, which is counted in t
 	\end{algorithmic}
 \end{algorithm}
 
+\begin{figure}[ht]
+	\centering
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu0.pdf}
+		\caption{}
+		\label{fig:explicit-s822lc-cpu0-cpu0}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_cpu0-cpu0.pdf}
+		\caption{}
+		\label{fig:explicit-ac922-cpu0-cpu0}
+	\end{subfigure}
+	~
+	% \begin{subfigure}[b]{0.31\textwidth}
+	% 	\includegraphics[width=\textwidth]{figures/generated/dgx_pageable_affinity.pdf}
+	% 	\caption{}
+	% 	\label{fig:dgx_pageable_affinity}
+	% \end{subfigure}
+	\caption[Intra-CPU \texttt{cudaMemcpy} Bandwidth]{
+        \texttt{cudaMemcpy} CPU0-to-CPU0 bandwidth measured through several means.
+		1T RD and 8T RD refer to one-thread and eight-thread methods described in Algorithm~\ref{alg:explicit-cpu-cpu}.
+		cudaMemcpy refers to a \texttt{cudaMemcpy} between a pageable allocation and pinned allocation on CPU0.
+		(a) shows results for S822LC.
+		(b) shows results for AC922.
+		\todo{(c) shows results for DGX-1}
+    }
+	\label{fig:explicit-cpu0-cpu0}
+\end{figure}
 
-Figure~\ref{fig:cpu0-cpu1} shows the performance achieved by the \texttt{rd\_8} and \texttt{wr\_8} workloads.
-The measurement is taken multiple times with varying $num\_workers$, for each $transfer\_size$, and the maximum observed bandwidth at each transfer size is reported.
-The highest performing number of workers is highlighted at each transfer size.
-For smaller transfers, fewer workers may result in a faster transfer time as the overhead of entering the parallel region is not amortized effectively.
-
-For both workloads, the achievable bandwidth for low transfer sizes is limited by the overhead introduced by the workload function calls and OpenMP runtime.
-For large transfer sizes, the performance flattens out as the elapsed time is dominated by the actual data transfer over the SMP bus, achieving $30$ GB/s in the read workload and $25$ GB/s in the write workload on S822LC.
-This is consistent with the theoretical 38.4 GB/s performance of the X bus on S822LC.
+Figure~\ref{fig:explicit-cpu0-cpu0} shows intra-CPU0 memcpy performance on S822LC, AC922, and DGX-1.
+``1T RD'' and ``8T RD'' refer to single-thread and eight-threaded invocations of Algorithm~\ref{alg:explicit-cpu-cpu}.
+``cudaMemcpy'' refers to a \texttt{cudaMemcpy} between a pageable allocation and pinned allocation on CPU0.
+``cudaMemcpy'' typically achieves higher bandwidth than the single-thread implementation, probably thanks to an optimized copy implementation.
+For large sizes, the ``8T'' invocation's multiple threads are better able to saturate the CPU memory and cache controllers.
 
 \begin{figure}[H]
 	\centering
@@ -169,6 +195,15 @@ This is consistent with the theoretical 38.4 GB/s performance of the X bus on S8
 	}
 	\label{fig:cpu0-cpu1}
 \end{figure}
+
+Figure~\ref{fig:cpu0-cpu1} shows the inter-CPU performance achieved by the \texttt{rd\_8} and \texttt{wr\_8} workloads.
+The measurement is taken multiple times with varying $num\_workers$, for each $transfer\_size$, and the maximum observed bandwidth at each transfer size is reported.
+The highest performing number of workers is highlighted at each transfer size.
+For smaller transfers, fewer workers may result in a faster transfer time as the overhead of entering the parallel region is not amortized effectively.
+
+For both workloads, the achievable bandwidth for low transfer sizes is limited by the overhead introduced by the workload function calls and OpenMP runtime.
+For large transfer sizes, the performance flattens out as the elapsed time is dominated by the actual data transfer over the SMP bus, achieving $30$ GB/s in the read workload and $25$ GB/s in the write workload on S822LC.
+This is consistent with the theoretical 38.4 GB/s performance of the X bus on S822LC.
 
 
 \section{CPU / GPU Transfers}
@@ -326,21 +361,11 @@ A comparison of Figure~\ref{fig:pinned-cpu0-gpu0}~and~\ref{fig:wc-cpu0-gpu0} sho
 
 Section~\ref{sec:pinned-memory} describes how \texttt{cudaMemcpy} from a pageable allocation to the GPU actually causes two data copies: one from the pageable allocation application to a pinned buffer, and a second copy, a DMA from the pinned buffer to the GPU.
 When pinned memory transfers are faster than pageable memory, we can infer that the CPU memory copy from pageable allocation to pinned buffer is limiting the performance.
-Figure~\ref{fig:explicit-pageable-cpu} tries to isolate the effect of the pageable-to-pinned copy by using \texttt{cudaMemcpy} to only do a copy from a pageable allocation to a pinned allocation.
+Figure~\ref{fig:explicit-cpu0-cpu0} shows the performance of using \texttt{cudaMemcpy} to only do a copy from a pageable allocation to a pinned allocation.
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=\textwidth]{figures/generated/host_to_pinned.pdf}
-	\caption[Intra-CPU \texttt{cudaMemcpy} Bandwidth]{
-        \texttt{cudaMemcpy} Bandwidth between same-CPU Pageable and Pinned Allocation
-    }
-	\label{fig:explicit-pageable-cpu}
-\end{figure}
-
-On S822LC and AC922, the pageable-to-GPU transfer for large transfer sizes is actually faster than the pageable-to-pinned transfer that is should be limited by.
+On AC922, the pageable-to-GPU transfer for large transfer sizes is actually faster than the pageable-to-pinned transfer that is should be limited by.
 This suggests that there is a different implementation for the two cases.
-There is a spike at itermediate sizes, which suggests that the copy can occur solely within the CPU cache.
-On DGX-1, there is a less pronounced spike.
+Bandiwdth spikes at intermediate sizes suggest that the GPU DMA may directly access data from the CPU cache when the transfer can fit in the cache.
 
 \subsection{Measurements}
 
