@@ -18,8 +18,9 @@ Such a transfer would occur when data is sent from a CPU A to a GPU attached to 
 The data would traverse the SMP bus between CPU A and CPU B, and the bandwidth of that bus could limit the overall performance of the transfer.
 Algorithm~\ref{alg:explicit-cpu-cpu} describes the measurement approach.
 First, an allocation is created on the source CPU and destination CPU.
+During the benchmark iterations, the $dst$ cache is invalidated (if the $src$ is different from the $dst$) by accessing that data from the $src$.
 Then, \texttt{cudaMemcpy} is invoked to transfer data between those allocations.
-CUDA events are used to 
+CUDA events are used to measure the time of the memory copy.
 
 \begin{algorithm}
 	\caption[Measure \texttt{cudaMemcpy} CPU-CPU Bandwidth]{
@@ -39,6 +40,9 @@ CUDA events are used to
 
 		\Statex
 		\For{state}
+		\State \texttt{numa\_bind($src$)} 
+		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment invalidate $dst$ cache
+		\State \texttt{numa\_bind($dst$)}
 		\State $start \gets$ cudaEventRecord()
 		\State \begin{varwidth}[t]{\linewidth}
 			cudaMemcpy(\par
@@ -52,62 +56,8 @@ CUDA events are used to
         \EndFor
 		\EndFunction
 
-		
 	\end{algorithmic}
 \end{algorithm}
-
-
-Figure~\ref{fig:explicit-cpu0-cpu0} shows intra-CPU0 memcpy performance on S822LC, AC922, and DGX-1.
-``1T RD'' and ``8T RD'' refer to single-thread and eight-threaded invocations of Algorithm~\ref{alg:explicit-cpu-cpu}.
-``cudaMemcpy'' refers to a \texttt{cudaMemcpy} between a pageable allocation and pinned allocation on CPU0.
-``cudaMemcpy'' typically achieves higher bandwidth than the single-thread implementation, probably thanks to an optimized copy implementation.
-For large sizes, the ``8T'' invocation's multiple threads are better able to saturate the CPU memory and cache controllers.
-
-\begin{figure}[H]
-	\centering
-	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu-cpu.pdf}
-		\caption{}
-		\label{fig:s822lc-cpu0-cpu1-dst}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/ac922_cpu-cpu.pdf}
-		\caption{}
-		\label{fig:s822lc-cpu0-cpu1-dst}
-	\end{subfigure}
-	~
-	% \begin{subfigure}[b]{0.31\textwidth}
-	% 	\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu_cpu.pdf}
-	% 	\caption{}
-	% 	\label{fig:s822lc-cpu0-cpu1-dst}
-	% \end{subfigure}
-	% ~
-	\caption[CPU to CPU transfer bandwidth]{
-		CPU to CPU transfer bandwidth vs. transfer size.
-		Each transfer is measured using Algorithm~\ref{alg:explicit-cpu-cpu}.
-		Whiskers at each point show the standard deviation measured over 5 repetitions.
-	}
-	\label{fig:cpu0-cpu1}
-\end{figure}
-
-Figure~\ref{fig:cpu0-cpu1} shows the inter-CPU performance achieved by the \texttt{rd\_8} and \texttt{wr\_8} workloads.
-The measurement is taken multiple times with varying $num\_workers$, for each $transfer\_size$, and the maximum observed bandwidth at each transfer size is reported.
-The highest performing number of workers is highlighted at each transfer size.
-For smaller transfers, fewer workers may result in a faster transfer time as the overhead of entering the parallel region is not amortized effectively.
-
-For both workloads, the achievable bandwidth for low transfer sizes is limited by the overhead introduced by the workload function calls and OpenMP runtime.
-For large transfer sizes, the performance flattens out as the elapsed time is dominated by the actual data transfer over the SMP bus, achieving $30$ GB/s in the read workload and $25$ GB/s in the write workload on S822LC.
-This is consistent with the theoretical 38.4 GB/s performance of the X bus on S822LC.
-
-
-\section{CPU / GPU Transfers}
-\label{sec:explicit-cpu-gpu}
-
-Explicit CPU-GPU transfers are caused by the \texttt{cudaMemcpy} family of functions being invoked on one pointer to a host allocation and one pointer to a device allocation.
-The host allocation may be pageable (created by \texttt{malloc} or \texttt{new}), or be created by \texttt{cudaMallocHost} or \texttt{cudaHostAlloc}.
-The device allocation is created by \texttt{cudaMalloc}.
-This section compares bandwidth achievable from pinned, pageable, and write-combining host allocations, with particular emphasis on how device affinity affects transfer-performance and cases where transfers are anisotropic.
 
 Algorithm~\ref{alg:host-allocators} shows the different kind of host allocation strategies used in microbenchmarks that need CUDA host allocations on particular NUMA nodes.
 \texttt{AllocPageable} simply defers to \texttt{malloc}, which will return memory allocation on a previously-pinned NUMA node.
@@ -142,6 +92,47 @@ Algorithm~\ref{alg:host-allocators} shows the different kind of host allocation 
 	}
 	\label{alg:host-allocators}
 \end{algorithm}
+
+Figure~\ref{fig:explicit-cpu-cpu} shows intra- and inter-CPU \texttt{cudaMemcpy} performance on S822LC, AC922, and DGX-1.
+For small transfers, the bandwidth is limited by overhead of invoking the transfer.
+At intermediate sizes, the overhead is amortized, and the performance peaks due to the transfer size fitting in the cache.
+At larger sizes, the bandwidth reduces to that of the memory bandwidth that can be generated by a single CPU thread.
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu-cpu.pdf}
+		\caption{}
+		\label{fig:s822lc-cpu0-cpu1-dst}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_cpu-cpu.pdf}
+		\caption{}
+		\label{fig:s822lc-cpu0-cpu1-dst}
+	\end{subfigure}
+	~
+	% \begin{subfigure}[b]{0.31\textwidth}
+	% 	\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu_cpu.pdf}
+	% 	\caption{}
+	% 	\label{fig:s822lc-cpu0-cpu1-dst}
+	% \end{subfigure}
+	% ~
+	\caption[CPU to CPU transfer bandwidth]{
+		CPU to CPU transfer bandwidth vs. transfer size.
+		Each transfer is measured using Algorithm~\ref{alg:explicit-cpu-cpu}.
+		Whiskers at each point show the standard deviation measured over 5 repetitions.
+	}
+	\label{fig:explicit-cpu-cpu}
+\end{figure}
+
+\section{CPU / GPU Transfers}
+\label{sec:explicit-cpu-gpu}
+
+Explicit CPU-GPU transfers are caused by the \texttt{cudaMemcpy} family of functions being invoked on one pointer to a host allocation and one pointer to a device allocation.
+The host allocation may be pageable (created by \texttt{malloc} or \texttt{new}), or be created by \texttt{cudaMallocHost} or \texttt{cudaHostAlloc}, as shown in Algorithm~\ref{alg:host-allocators}.
+The device allocation is created by \texttt{cudaMalloc}.
+This section compares bandwidth achievable from pinned, pageable, and write-combining host allocations, with particular emphasis on how device affinity affects transfer-performance and cases where transfers are anisotropic.
 
 Algorithm~\ref{alg:explicit-cpu-gpu} is used to evaluate the achievable bandwidth for \texttt{cudaMemcpy} transfers between a GPU allocation and a pageable, pinned, or write-combining host allocation. 
 The same algorithm can be used for these cases, because the same \texttt{cudaMemcpy} CUDA API call to transfer data can be used on a pointer pointing to any of the allocation types.
@@ -206,8 +197,7 @@ These performance curves exhibit features common throughout this chapter:
 	\item For small transfer sizes, the time is dominated by overhead introduced by the abstraction layer.
 	\item For large transfer sizes, the time is dominated by bandwidth limits on the exercised physical link.
 	\item The performance may vary smoothly across intermediate transfer sizes, or exhibit more complicated behavior.
-	For example, in the AC922 transfer show in Figure~\ref{fig:pageable-cpu0-gpu0}, there is a peak in bandwidth for intermediate transfer sizes before the performance drops for larger transfers.
-	Other curves do not show this behavior.
+	For example, in the AC922 transfer show in Figure~\ref{fig:pageable-cpu0-gpu0}, there is a peak in bandwidth for intermediate transfer sizes before the performance drops, and then recovers before larger transfers.
 \end{itemize}
 
 \begin{figure}[H]
@@ -258,19 +248,22 @@ These performance curves exhibit features common throughout this chapter:
 \end{figure}
 
 
-The curves for transfers from a pinned allocation on CPU0 to GPU0 shown in Figure~\ref{fig:pinned-cpu0-gpu0} share a similar shape: the transfer bandwidth is low for small sizes, and eventually saturates once transfers become large enough.
+The curves for transfers from a pinned allocation on CPU0 to GPU0 shown in Figures~\ref{fig:pageable-pinned-wc}(b,c,e,f) share a similar shape: the transfer bandwidth is low for small sizes, and eventually saturates once transfers become large enough.
 For small transfer sizes, the elapsed time is dominated by overhead from invoking the transfer (and the device synchronization for the pageable transfer).
 This causes the upward slope as transfer size increases.
 For larger transfers, the time is dominated by the actual cost of moving the data, and the performance saturates.
 Both S822LC and AC922 achieve \mytilde 75\% of the theoretical performance allowed by the relevant interconnects, and DGX-1 achieves around 50\%.
 
-In contrast, Figure~\ref{fig:pageable-cpu0-gpu0} shows transfers from pageable host allocations to GPU0.
-The achievable bandwidth for large transfer sizes on S822LC is reduced to approximately $50\%$ of the theoretical $40$ GB/s bandwidth provided by the link.
-On AC922 the performance is actually even lower, at only $15$ GB/s or $20\%$ of the theoretical bandwidth.
-AC922 also shows a transfer bandwidth peak at intermediate sizes that is not present on the other machines.
-Similar peaks show up during other pageable transfers later in this section, 
+In contrast, Figure~\ref{fig:pageable-pinned-wc}a,d show transfers involving pageable allocations.
+The achievable bandwidth for large transfer sizes on S822LC is reduced to approximately $25\%$ of the theoretical $40$ GB/s bandwidth provided by the link.
+On AC922 the performance is nearly $50\%$ of the theoretical bandwidth.
+AC922 CPU to GPU transfers also show a high bandwidth achieved for large CPU to GPU transfers, but not for GPU to CPU transfers.
 For large transfers, DGX-1 drops by $20\%$ to $8$ GB/s out of a theoretical maximum $20$ GB/s for one-lane NVLink 1.0.
-A comparison of Figure~\ref{fig:pinned-cpu0-gpu0}~and~\ref{fig:wc-cpu0-gpu0} shows that write-combining pinned allocations do not have a measurable performance impact on the testest systems.
+
+At intermediate-size pageable transfers, there is a small peak in bandwidth.
+This peak is also present in the CPU-CPU transfers shown in Figure~\ref{fig:explicit-cpu-cpu}, and suggests that the pageable-to-pinned transfers are taking advantage of the CPU cache.
+Similar peaks show up during other pageable transfers later in this section, 
+
 
 Section~\ref{sec:pinned-memory} describes how \texttt{cudaMemcpy} from a pageable allocation to the GPU actually causes two data copies: one from the pageable allocation application to a pinned buffer, and a second copy, a DMA from the pinned buffer to the GPU.
 When pinned memory transfers are faster than pageable memory, we can infer that the CPU memory copy from pageable allocation to pinned buffer is limiting the performance.
@@ -280,6 +273,8 @@ Surprisingly, on AC922, the pageable-to-GPU transfer for large transfer sizes is
 This suggests that there is a different implementation for the two cases.
 Bandwidth spikes at intermediate sizes suggest that the GPU DMA may directly access data from the CPU cache when the transfer can fit in the cache.
 This is further reinforced by the lack of difference between Pinned and write-combining transfer bandwidth, which suggests that caching or lack thereof on these systems does not influence the DMA engine.
+
+
 
 \subsection{Measurements}
 
@@ -340,13 +335,12 @@ CPU-to-GPU pageable transfers on all systems exhibit peaks in transfer bandwidth
 The shape of this curve suggests some insight into the copy implementation.
 For example, consider the S822LC CPU0 to GPU0 curve.
 This is a local transfer, so the expected process is that a pageable allocation on CPU0 is copied to one or more pinned allocations on CPU0, which are then accessed by GPU0's DMA engine.
-The fact that the peak bandwidth at intermediate transfer sizes surpasses the measured bandwidth for single-threaded inter-CPU transfers (Figure~\ref{fig:cpu0-cpu1}) suggests that the pageable-to-pinned copy is indeed occurring within a single CPU, and not across CPUs.
-When the transfer occurs within the same CPU, the bandwidth will be higher when that transfer can fit within the CPU cache.
-The same shape is present in the CPU0 to GPU2 curve, where it would be plausible for the pageable allocation to be on CPU0 and the pinned allocation on CPU1.
-\todo{compare to CPU-CPU intra-node bandwidth when available}.
+The fact that the peak bandwidth at intermediate transfer sizes surpasses the measured bandwidth for single-threaded inter-CPU transfers (Figure~\ref{fig:explicit-cpu-cpu}) suggests that the pageable-to-pinned copy is indeed occurring within a single CPU, and not across CPUs.
+The same shape is even present in the CPU0 to GPU2 curve, where it would be plausible for the pageable allocation to be on CPU0 and the pinned allocation on CPU1.
 For S822LC and DGX, as the transfer grows larger, the bandwidth reaches a steady-state value that is the same as the single-threaded inter-CPU memory access bandwidth.
 In AC922, we see a large change in the transfer bandwidth, suggesting that some other implementation is chosen at those sizes.
 The drop before reaching that bandwidth suggests some system performance bug, like imbalance in the number and size of the pinned transfer buffers that prevents good overlapping of the host-device DMA and the host-host memory copy.
+Finally, on AC922, the local GPU to CPU transfer is actually faster than the corresponding intra-CPU \texttt{cudaMemcpy}, again suggesting some difference in implementation when a GPU is involved.
 
 Figures~\ref{fig:cpu-gpu-affinity-direction} (d)-(f) show the same transfers, but from pinned allocations.
 These transfers are all ultimately limited by the interconnect bandwidth, and do not show the same peaks.
@@ -391,8 +385,7 @@ Table~\ref{tab:explicit-anisotropy} summarizes the effects.
 Particularly for the pageable transfers shown in Figures~\ref{fig:minsky_pageable_affinity} and \ref{fig:hal_pageable_affinity}, corresponding transfers are shown to be highly anisotropic.
 In the pinned transfers on S822LC (Fig.~\ref{fig:minsky_pinned_affinity}), all transfers show some degree of anisotropy, with a larger effect over remote transfers.
 For transfers where there is a difference, CPU $\rightarrow$ GPU transfers tend to be faster.
-\todo{Can this be explained by cache effects? Check write-combined bandwidth}.
-For AC922, (Fig.~\ref{fig:hal_pinned_affinity}), local transfers show anisotropy only for intermediate transfer sizes, and remote transfers do generally.
+For AC922, (Fig.~\ref{fig:hal_pinned_affinity}), remote transfers generally show anisotropy, and local transfers show anisotropy only for intermediate transfer sizes, 
 For DGX-1, pinned transfers all show 2 GB/s of anisotropy (Fig.~\ref{fig:dgx_pinned_affinity}), while the degree of anisotropy for transfers involving pageable allocations depends on the affinity (Fig.~\ref{fig:dgx_pageable_affinity}).
 
 \begin{table}[H]

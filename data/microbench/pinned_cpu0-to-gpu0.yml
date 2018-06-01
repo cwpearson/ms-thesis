@@ -3,8 +3,6 @@ series:
     file: minsky1-NUMA_Memcpy_PinnedToGPU-0-0.json
   - label: AC922
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-0.json
-  # - label: DGX
-  #   file: minsky1-NUMA_Memcpy_PinnedToGPU-1-0.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
@@ -13,4 +11,4 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: Pinned CPU0 Allocation to GPU0 Allocation
+title: Pinned CPU0 Allocation to GPU0

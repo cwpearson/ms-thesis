@@ -1,7 +1,7 @@
 series:
-  - label: S822LC (CPU to GPU)
+  - label: S822LC
     file: minsky1-NUMA_Memcpy_HostToGPU-0-0.json
-  - label: AC922 (CPU to GPU)
+  - label: AC922
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-0-0.json
   # - label: DGX
   #   file: minsky1-NUMA_Memcpy_PinnedToGPU-1-0.json
@@ -13,4 +13,4 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: Pageable CPU0/GPU0 Transfers
+title: Pageable CPU0 Allocation to GPU0

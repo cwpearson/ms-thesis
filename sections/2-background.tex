@@ -611,8 +611,8 @@ BENCHMARK(BM_Foo)->UseManualTime();
 \end{lstlisting}
 
 Now, when the benchmark is registered in line 20, the framework is informed that the benchmark loop iteration will report its own time.
-Instead of the framework timing the loop body in lines 11-16, some CUDA code is included to measure the operation time.
-The iteration time is manually set in line 16.
+Instead of the framework timing the loop body in lines 10-15, CUDA events are used to measure the operation time.
+The iteration time is manually set in line 15.
 
 Although Benchmark also supports multithreaded benchmarking, the microbenchmarks developed for this work do not use it.
 Benchmark does not directly support thread synchronization within each benchmark iteration, which is needed to accurately measure the performance of using mutiple threads to move memory.
