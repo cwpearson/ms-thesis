@@ -19,6 +19,7 @@ The data would traverse the SMP bus between CPU A and CPU B, and the bandwidth o
 Algorithm~\ref{alg:explicit-cpu-cpu} describes the measurement approach.
 First, an allocation is created on the source CPU and destination CPU.
 Then, \texttt{cudaMemcpy} is invoked to transfer data between those allocations.
+CUDA events are used to 
 
 \begin{algorithm}
 	\caption[Measure \texttt{cudaMemcpy} CPU-CPU Bandwidth]{

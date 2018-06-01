@@ -478,7 +478,7 @@ Algorithm~\ref{alg:omp-numa-bind} is used to bind all OpenMP threads to a NUMA n
 A full OpenMP thread team is created, and each of those threads individually binds itself to the provided NUMA node.
 
 \begin{algorithm}
-	\caption[test]{
+	\caption[Bind OpenMP threads to a NUMA node]{
 		Algorithm to bind all OpenMP threads to a NUMA node.
 	}
 	\label{alg:omp-numa-bind}
@@ -496,6 +496,39 @@ A full OpenMP thread team is created, and each of those threads individually bin
 
 \section{Profiling Tooling}
 \label{sec:profiling}
+
+\subsection{CUDA Events}
+
+An event is a special kind of operation that is performed in a CUDA stream.
+CUDA events allow the CUDA runtime to set and query noteworthy milestones in the sequence of stream operations without stalling the stream.
+These events may be used as a lightweight method for measuring how much time CUDA operations take without also measuring the time taken to synchronize the stream.
+Events are created with \texttt{cudaEventCreate()}, destroyed with \texttt{cudaEventDestroy()}, and inserted into a stream with \texttt{cudaEventRecord()}.
+\texttt{cudaEventSynchronize()} blocks the calling thread until a particular event has been completed in the stream.
+\texttt{cudaEventElapsedTime()} returns the number of milliseconds that have elapsed between two completed events.
+Listing~\ref{lst:cuda-events} shows an example of measuring time of hypothetical CUDA operation \texttt{cudaSomeOperation()} taking place in the default stream (represented by the \texttt{NULL} argument to \texttt{cudaEventRecord}.
+
+\begin{lstlisting}[language=C++, caption=Measuring time with CUDA events., label=lst:cuda-events, numbers=left]
+	// Declare variables
+	float millis;
+	cudaEvent_t start, stop;
+
+	// Create events
+	cudaEventCreate(start);
+	cudaEventCreate(stop);
+
+	// Insert events into stream
+	cudaEventRecord(start, NULL);
+	cudaSomeOperation(..., NULL);
+	cudaEventRecord(stop);
+
+	// Wait for events to finish before computing time
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&millis, start, stop);
+\end{lstlisting}
+
+Lines $6$ and $7$ create the events that will wrap the operation to be timed.
+Lines $10$ and $12$ insert the \texttt{start} and \texttt{stop} events around the operation to be timed.
+Line $15$ blocks until the events have finished, and then line $16$ produces the number of milliseconds elapsed between the \texttt{start} and \texttt{stop} events.
 
 \subsection{CUDA Profiling Tools Interface}
 \label{sec:cupti}
