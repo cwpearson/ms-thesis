@@ -1,0 +1,14 @@
+series:
+  - label: S822LC
+    file: minsky1-NUMA_Memcpy_GPUToPinned-0-0.json
+  - label: AC922
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToPinned-0-0.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 80_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: Pinned GPU0 Allocation to CPU0 Allocation

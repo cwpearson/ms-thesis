@@ -12,63 +12,17 @@ That project also includes benchmarks of other aspects of CUDA performance, incl
 \section{CPU / CPU Transfers}
 \label{sec:explicit-cpu-cpu}
 
-This section begins by examining CPU-CPU transfer performance by using multiple threads to read remote data in an attempt to saturate the SMP bus and memory controllers.
-This attempts to simulate the maximum possible performance that could be achieved while sending data between sockets for CPU-to-GPU transfers.
+This section begins by examining CPU-CPU transfer performance through \texttt{cudaMemcpy}.
+This attempts to provide insight into the CUDA performance when sending data from one CPU socket to another.
 Such a transfer would occur when data is sent from a CPU A to a GPU attached to another CPU B.
 The data would traverse the SMP bus between CPU A and CPU B, and the bandwidth of that bus could limit the overall performance of the transfer.
 Algorithm~\ref{alg:explicit-cpu-cpu} describes the measurement approach.
-
-Two types of traffic are measured, in \texttt{read\_bandwidth} and \texttt{write\_bandwidth}.
-In the \texttt{read} operation (Listing~\ref{lst:explicit-cpu-cpu-cpuread}), source-to-destination bandwidth is measured by a set of worker threads on the destination CPU generating loads from locations in an allocation on the source CPU.
-In the \texttt{write} operation (Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}), bandwidth is measured by worker threads on the source CPU writing to an allocation on the destination CPU.
-First, an allocation is created on the source CPU
-Then, the worker threads are bound to the desired CPU, and the \texttt{cpu\_read} or \texttt{cpu\_write} workload is executed.
-The read and write operations are executed on 8-byte elements (size of a double-precision floating-point number) of the allocation, to reflect the 8-byte payload on the X bus~\cite{caldeira2016s822lc}.
-
-\begin{lstlisting}[language=C++, caption=CPU-CPU Read Function, label=lst:explicit-cpu-cpu-cpuread, numbers=left]
-void rd_8(char *ptr, 
-          const size_t count, 
-          const size_t stride) {
-  int64_t *dp = reinterpret_cast<int64_t*>(ptr);
-	
-  const size_t numElems = count / sizeof(int64_t);
-  const size_t elemsPerStride = stride / sizeof(int64_t);
-	
-  int64_t acc = 0;
-#pragma omp parallel for schedule(static) private(acc)
-  for (size_t i = 0; i < numElems; i += elemsPerStride) {
-    benchmark::DoNotOptimize(acc += dp[i]);
-  }
-}
-\end{lstlisting}
-
-
-\begin{lstlisting}[language=C++, caption=CPU-CPU Write Function, label=lst:explicit-cpu-cpu-cpuwrite, numbers=left]
-void wr_8(char *ptr, 
-          const size_t count, 
-          const size_t stride) {
-  int64_t *dp = reinterpret_cast<int64_t*>(ptr);
-  const size_t numElems = count / sizeof(int64_t);
-  const size_t elemsPerStride = stride / sizeof(int64_t);
-#pragma omp parallel for schedule(static)
-  for (size_t i = 0; i < numElems; i += elemsPerStride) {
-    benchmark::DoNotOptimize(dp[i] = i);
-    benchmark::ClobberMemory();
-  }
-}
-\end{lstlisting}
-
-For both the \texttt{rd\_8} and \texttt{wr\_8} operations, \texttt{ptr} is the allocation that is being read or written,
-\texttt{count} is the number of bytes in that allocation, and \texttt{stride} is the number of bytes between every read or write.
-Since memory loads in isolation are side-effect free, \texttt{DoNotOptimize} and \texttt{ClobberMemory} are used to prevent loads from being optimized away by the compiler.
-The accumulation in the loop and the write through the dummy argument in the loop take a small amount of time that is incorrectly attributed to the elapsed bandwidth time.
-For both operations, OpenMP is used to evenly distribute the read or write operations amongst the cores of the executing CPU.
-Entering and exiting the parallel region incurs some cost, which is counted in the bandwidth computation.
+First, an allocation is created on the source CPU and destination CPU.
+Then, \texttt{cudaMemcpy} is invoked to transfer data between those allocations.
 
 \begin{algorithm}
 	\caption[test]{
-		Algorithm to measure CPU-CPU Bandwidth.
-		\texttt{rd\_8} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuread} and \texttt{wr\_8} is defined in Listing~\ref{lst:explicit-cpu-cpu-cpuwrite}.
+		Algorithm to measure \texttt{cudaMemcpy} CPU-CPU Bandwidth.
 	}
 	\label{alg:explicit-cpu-cpu}
 	\begin{algorithmic}[1]
@@ -113,35 +67,6 @@ Entering and exiting the parallel region incurs some cost, which is counted in t
 	\end{algorithmic}
 \end{algorithm}
 
-\begin{figure}[ht]
-	\centering
-	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu0-cpu0.pdf}
-		\caption{}
-		\label{fig:explicit-s822lc-cpu0-cpu0}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/ac922_cpu0-cpu0.pdf}
-		\caption{}
-		\label{fig:explicit-ac922-cpu0-cpu0}
-	\end{subfigure}
-	~
-	% \begin{subfigure}[b]{0.31\textwidth}
-	% 	\includegraphics[width=\textwidth]{figures/generated/dgx_pageable_affinity.pdf}
-	% 	\caption{}
-	% 	\label{fig:dgx_pageable_affinity}
-	% \end{subfigure}
-	\caption[Intra-CPU \texttt{cudaMemcpy} Bandwidth]{
-        \texttt{cudaMemcpy} CPU0-to-CPU0 bandwidth measured through several means.
-		1T RD and 8T RD refer to one-thread and eight-thread methods described in Algorithm~\ref{alg:explicit-cpu-cpu}.
-		cudaMemcpy refers to a \texttt{cudaMemcpy} between a pageable allocation and pinned allocation on CPU0.
-		(a) shows results for S822LC.
-		(b) shows results for AC922.
-		\todo{(c) shows results for DGX-1}
-    }
-	\label{fig:explicit-cpu0-cpu0}
-\end{figure}
 
 Figure~\ref{fig:explicit-cpu0-cpu0} shows intra-CPU0 memcpy performance on S822LC, AC922, and DGX-1.
 ``1T RD'' and ``8T RD'' refer to single-thread and eight-threaded invocations of Algorithm~\ref{alg:explicit-cpu-cpu}.
@@ -151,47 +76,28 @@ For large sizes, the ``8T'' invocation's multiple threads are better able to sat
 
 \begin{figure}[H]
 	\centering
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/s822lc_rd_cpu.pdf}
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu-cpu.pdf}
 		\caption{}
 		\label{fig:s822lc-cpu0-cpu1-dst}
 	\end{subfigure}
 	~
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/s822lc_wr_cpu.pdf}
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_cpu-cpu.pdf}
 		\caption{}
-		\label{fig:s822lc-cpu0-cpu1-src}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/ac922_rd_cpu.pdf}
-		\caption{}
-		\label{fig:ac922-cpu0-cpu1-dst}
+		\label{fig:s822lc-cpu0-cpu1-dst}
 	\end{subfigure}
 	~
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/ac922_wr_cpu.pdf}
-		\caption{}
-		\label{fig:ac922-cpu0-cpu1-src}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/dgx_cpu0-cpu1-dst.pdf}
-		\caption{}
-		\label{fig:dgx-cpu0-cpu1-dst}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.45\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/dgx_cpu0-cpu1-src.pdf}
-		\caption{}
-		\label{fig:dgx-cpu0-cpu1-src}
-	\end{subfigure}
-	\caption[CPU0 to CPU1 transfer bandwidth]{
-		CPU0 to CPU1 transfer bandwidth vs. transfer size.
-		The bandwidth achieved by one through 16 simultaneous worker threads is shown, with the maximum observed bandwidth across the number of threads highlighted.
-		(a,c,e) show multi-threaded reads from CPU1 of an allocation on CPU0's NUMA node on S822LC, AC922, and DGX-1.
-		(b,d,f) show multi-threaded writes from CPU0 to an allocation on CPU1's NUMA Node on S822LC, AC922, and DGX-1.
-		Whiskers at each point show the standard deviation measured over 10 repetitions.
+	% \begin{subfigure}[b]{0.31\textwidth}
+	% 	\includegraphics[width=\textwidth]{figures/generated/s822lc_cpu_cpu.pdf}
+	% 	\caption{}
+	% 	\label{fig:s822lc-cpu0-cpu1-dst}
+	% \end{subfigure}
+	% ~
+	\caption[CPU to CPU transfer bandwidth]{
+		CPU to CPU transfer bandwidth vs. transfer size.
+		Each transfer is measured using Algorithm~\ref{alg:explicit-cpu-cpu}.
+		Whiskers at each point show the standard deviation measured over 5 repetitions.
 	}
 	\label{fig:cpu0-cpu1}
 \end{figure}
@@ -318,21 +224,39 @@ These performance curves exhibit features common throughout this chapter:
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/pinned_cpu0-gpu0.pdf}
-		\caption{}
-		\label{fig:pinned-cpu0-gpu0}
-	\end{subfigure}
-	~
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/pageable_cpu0-gpu0.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/pageable_cpu0-to-gpu0.pdf}
 		\caption{}
 		\label{fig:pageable-cpu0-gpu0}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/wc_cpu0-gpu0.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/pinned_cpu0-to-gpu0.pdf}
+		\caption{}
+		\label{fig:pinned-cpu0-gpu0}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/wc_cpu0-to-gpu0.pdf}
 		\caption{}
 		\label{fig:wc-cpu0-gpu0}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/pageable_gpu0-to-cpu0.pdf}
+		\caption{}
+		\label{fig:pageable-gpu0-cpu0}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/pinned_gpu0-to-cpu0.pdf}
+		\caption{}
+		\label{fig:pinned-gpu0-cpu0}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/wc_gpu0-to-cpu0.pdf}
+		\caption{}
+		\label{fig:wc-gpu0-cpu0}
 	\end{subfigure}
 	\caption[\texttt{cudaMemcpy} bandwidth for CPU0-GPU0 transfers.]{
 		\texttt{cudaMemcpy} bandwidth vs transfer size for CPU0 to GPU0 transfers from 
@@ -361,11 +285,12 @@ A comparison of Figure~\ref{fig:pinned-cpu0-gpu0}~and~\ref{fig:wc-cpu0-gpu0} sho
 
 Section~\ref{sec:pinned-memory} describes how \texttt{cudaMemcpy} from a pageable allocation to the GPU actually causes two data copies: one from the pageable allocation application to a pinned buffer, and a second copy, a DMA from the pinned buffer to the GPU.
 When pinned memory transfers are faster than pageable memory, we can infer that the CPU memory copy from pageable allocation to pinned buffer is limiting the performance.
-Figure~\ref{fig:explicit-cpu0-cpu0} shows the performance of using \texttt{cudaMemcpy} to only do a copy from a pageable allocation to a pinned allocation.
-
-On AC922, the pageable-to-GPU transfer for large transfer sizes is actually faster than the pageable-to-pinned transfer that is should be limited by.
+For comparison, consider Figure~\ref{fig:explicit-cpu-cpu}, which shows the performance of using \texttt{cudaMemcpy} to only do a copy from a pageable allocation to a pinned allocation.
+For S822LC, the pageable-to-GPU transfer show in Figure~\ref{fig:pageable-cpu0-gpu0} is approximately the same performance as the pageable-to-pinned transfer show in Figure~\ref{fig:explicit-cpu-cpu}.
+Surprisingly, on AC922, the pageable-to-GPU transfer for large transfer sizes is substantially faster than the pageable-to-pinned transfer that is should be limited by.
 This suggests that there is a different implementation for the two cases.
-Bandiwdth spikes at intermediate sizes suggest that the GPU DMA may directly access data from the CPU cache when the transfer can fit in the cache.
+Bandwidth spikes at intermediate sizes suggest that the GPU DMA may directly access data from the CPU cache when the transfer can fit in the cache.
+This is further reinforced by the lack of difference between Pinned and write-combining transfer bandwidth, which suggests that caching or lack thereof on these systems does not influence the DMA engine.
 
 \subsection{Measurements}
 
@@ -471,11 +396,13 @@ Figure~\ref{fig:dgx_pinned_affinity} shows no effect from affinity on pinned tra
 
 \subsection{Anisotropy}
 \label{sec:explicit-cpu-gpu-anisotropy}
-\textit{Anisotropy} is the property of being directionally-dependent, e.g., CPU/GPU link bandwidth is anisotropic if CPU-to-GPU bandwidth is different than GPU-to-CPU bandwidth. 
-Figure~\ref{fig:cpu-gpu-affinity-direction} highlights that systems with high-performance interconnects, link bandwidth exhibits significant anisotropy.
+\textit{Anisotropy} refers to the property of being directionally-dependent, e.g., CPU/GPU link bandwidth is anisotropic if CPU-to-GPU bandwidth is different than GPU-to-CPU bandwidth. 
+Figure~\ref{fig:cpu-gpu-affinity-direction} highlights that link bandwidth exhibits significant anisotropy in systems with high-performance interconnects.
 Table~\ref{tab:explicit-anisotropy} summarizes the effects.
 Particularly for the pageable transfers shown in Figures~\ref{fig:minsky_pageable_affinity} and \ref{fig:hal_pageable_affinity}, corresponding transfers are shown to be highly anisotropic.
 In the pinned transfers on S822LC (Fig.~\ref{fig:minsky_pinned_affinity}), all transfers show some degree of anisotropy, with a larger effect over remote transfers.
+For transfers where there is a difference, CPU $\rightarrow$ GPU transfers tend to be faster.
+\todo{Can this be explained by cache effects? Check write-combined bandwidth}.
 For AC922, (Fig.~\ref{fig:hal_pinned_affinity}), local transfers show anisotropy only for intermediate transfer sizes, and remote transfers do generally.
 For DGX-1, pinned transfers all show 2 GB/s of anisotropy (Fig.~\ref{fig:dgx_pinned_affinity}), while the degree of anisotropy for transfers involving pageable allocations depends on the affinity (Fig.~\ref{fig:dgx_pageable_affinity}).
 
