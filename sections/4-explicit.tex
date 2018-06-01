@@ -21,48 +21,36 @@ First, an allocation is created on the source CPU and destination CPU.
 Then, \texttt{cudaMemcpy} is invoked to transfer data between those allocations.
 
 \begin{algorithm}
-	\caption[test]{
+	\caption[Measure \texttt{cudaMemcpy} CPU-CPU Bandwidth]{
 		Algorithm to measure \texttt{cudaMemcpy} CPU-CPU Bandwidth.
+		AllocPinned and AllocPageable are defined in Algorithm~\ref{alg:host-allocators}.
 	}
 	\label{alg:explicit-cpu-cpu}
 	\begin{algorithmic}[1]
         \Statex
-		\Function{read\_bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-		\State \texttt{omp\_set\_num\_threads($num\_workers$)}
-		\State \texttt{omp\_numa\_bind($src$)}
-        \State $ptr \gets$ \texttt{malloc($transfer\_size$)}
-        \State \texttt{memset($ptr$, 0, $transfer\_size$)}
+		\Function{bandwidth}{$dst$, $src$, $transfer\_size$}
+		\State \texttt{numa\_bind($src$)}
+        \State $srcPtr \gets$ \texttt{AllocPageable($transfer\_size$)}
+		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)}
+		\State \texttt{numa\_bind($dst$)}
+        \State $dstPtr \gets$ \texttt{AllocPinned($transfer\_size$)}
+		\State \texttt{memset($dstPtr$, 0, $transfer\_size$)}
+
 		\Statex
 		\For{state}
-		\State state.PauseTiming()
-		\State \texttt{omp\_numa\_bind($src$)}
-		\State \texttt{memset($ptr$, 0, $transfer\_size$)}
-		\State DoNotOptimize($ptr$)
-		\State ClobberMemory($ptr$)
-		\State \texttt{omp\_numa\_bind($dst$)}
-		\State state.ResumeTiming()
-		\State rd\_8($ptr$, $transfer\_size$, 8)
+		\State $start \gets$ cudaEventRecord()
+		\State \begin{varwidth}[t]{\linewidth}
+			cudaMemcpy(\par
+			\hskip\algorithmicindent $dstPtr$, $srcPtr$, $transfer\_size$, \par 
+			\hskip\algorithmicindent cudaMemcpyHostToHost)
+		\end{varwidth}
+		\State $stop \gets$ cudaEventRecord()
+		\State cudaEventSynchronize($stop$)
+		\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
+		\State state.SetIterationTime($\frac{millis}{1000}$)
         \EndFor
 		\EndFunction
-        
-        \Statex
-		\Function{write\_bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-		\State \texttt{omp\_set\_num\_threads($num\_workers$)}
-		\State \texttt{omp\_numa\_bind($dst$)}
-        \State $ptr \gets$ \texttt{malloc($transfer\_size$)}
-        \State \texttt{memset($ptr$, 0, $transfer\_size$)}
-		\Statex
-		\For{state}
-		\State state.PauseTiming()
-		\State \texttt{omp\_numa\_bind($dst$)}
-		\State \texttt{memset($ptr$, 0, $transfer\_size$)}
-		\State DoNotOptimize($ptr$)
-		\State ClobberMemory($ptr$)
-		\State \texttt{omp\_numa\_bind($src$)}
-		\State state.ResumeTiming()
-		\State wr\_8($ptr$, $transfer\_size$, 8)
-        \EndFor
-		\EndFunction
+
 		
 	\end{algorithmic}
 \end{algorithm}
