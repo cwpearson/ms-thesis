@@ -1,7 +1,18 @@
 \chapter{Future Work: Application Characterization and Combined Modeling}
 \label{ch:future}
 
+\section{Measuring Additional Communication Capabilities}
+
+The microbenchmarks presented in Chapters~\ref{ch:explicit}~and~\ref{ch:unified} cover CUDA transfers with the unified memory system and \texttt{cudaMemcpy}.
+There are two additional CUDA communication capabilities that are not measured in this thesis: direct peer access and system atomics.
+Expanding the benchmarks to measure those methods would provide a more complete view of CUDA communication performance.
+THe benchmarks could also be expanded to examine interaction between CUDA and other system components.
+One such opportunity is the \tocite{GPUDirect} capability, where supported non-GPU devices can communicate with CUDA GPUs through DMA.
+Another opportunity is to investigate the effect of contention on the communication performance.
+Such contention could occur in bi-directional data transfers, or when multiple devices are simultaneously communicating.
+
 \section{Mapping Logical Communication to Underlying Links}
+\label{sec:map-underlying}
 
 Previous sections described the approach and results of creating a performance model of the logical communication paths.
 Those models took some knowledge of the underlying system configuration as \textit{a priori} knowledge, but in general this process should be automated.

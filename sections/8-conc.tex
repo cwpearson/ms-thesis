@@ -1,48 +1,24 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
 
-The conclusions drawn from the study are given in the last chapter.
-The last chapter also can include discussions of the advantages and limitations of the results obtained, comparisons with previous work, possible applications for the results, and suggestions for future work.
+This thesis examines the data-movement performance available to applications running on multi-GPU non-uniform memory access (NUMA) systems through a comprehensive series of microbenchmarks.
+Three different systems are used as case studies: an IBM S822LC with two POWER8 CPUs and four P100 GPUs (Section~\ref{sec:s822lc}), an IBM AC922 with two POWER9 CPUs, four V100 GPUs, and NVLink 2.0 (Section~\ref{sec:ac922}), and an NVIDIA DGX-1 with two Intel (Section~\ref{sec:dgx1}), eight P100 GPUs, and hybrid PCIe and NVLink 1.0.
+These three systems cover the common component for high-performance multi-GPU NUMA systems, with multiple CPUs, NVLink and PCIe 3.0 x16, and Pascal- or Volta-architecture GPUs.
+The performance of the underlying hardware (Section~\ref{sec:interconnects}) in these systems is made available to applications through software abstractions (Section~\ref{sec:sys-abstraction}) like CUDA and numactl.
+CUDA provides a variety of methods for moving data between system components (Section~\ref{sec:cuda}), where different choices have different performance effects due to different uses of the underlying hardware.
 
-\outline{
+The core of this thesis are performance measurements of explicit(Chapter~\ref{ch:explicit}) and unified-memory (Chapter!\ref{ch:unified}) data-movement systems in CUDA.
+These measurements are generated using a new series of microbenchmarks available at \texttt{https://github.com/rai-project/microbench}.
+Generally, these benchmarks reveal that the CUDA method used to move data has a substantial impact on the actual performance available to the application, in some cases up to \todo{choose an example}.
+More specifically, performance is frequently anisotropic and highly correlated with device affinity.
+In the case of unified memory, data prefetching allows higher bandwidth for large transfer sizes, but coherence demands to pages allows higher bandwidth for smaller accesses.
+These results can be used to inform communication and allocation choices during application development, or allow an automated system to make the appropriate data-movement decision to provide the best performance.
 
-Possible future work:
+In addition to the core performance measurements, this thesis also introduced a tool for enumerating the different communication hardware present in the system.
+This tool is meant to serve as a foundational component of future systems research.
+Any system that needs to make communication or scheduling performance decisions will need information about the underlying hardware that can be provided by this tool.
+The system abstraction available through CUDA, the performance measurements, and the underlying hardware topology together provide the raw information for a detailed system model.
 
-    Library interface for moving data
-
-    Characterizing direct peer access
-    Monitoring application direct peer access
-    More communication links {ethernet}
-    Proper characterization of multiple paths when available
-    Multi-node system model
-    Proper SMP bus topology  detection
-    CUDA system atomics characterization?
-    non-compressible data for cuda memcpy?
-
-    Investigating the hardware topology scheduling problem
-    Simulation and Replay of Profiles
-}
-
-\todo{Investigating performance details (radare2, callgrind)?}
-
-Hardware level measurement, and software measurement, and connect base on measurements.
-
-For thesis, mention that the C path could involve multiple hops in A, and this could be measured, we take this as a-priori.
-
-More interesting to use some example, b/w pascals in this p8 system, this is what we measured.
-
-Sprinkle some plot results in to the background examples
-
-contention on hardware links
-
-effect of contention at any level
-
-possible to actually determine SMP bus topology?
-
-extend hardware enumeration to linux network and block devices
-
-bind to cpu in peer-to-peer
-
-caption ensures that figure is interpretable, but message should be in the text.
-
-explain why these observations are what they are
+To complete the model, it will be necessary to automatically correlation communication abstractions to the underlying hardware (Section:~\ref{sec:map-underlying}).
+This thesis also describes a corresponding application model (Section~\ref{sec:app-model}) that can be coupled with the system model.
+Together these models should provide enough information to create an automatically-tuned high-performance heterogeneous memory management capability for multi-GPU NUMA systems.
