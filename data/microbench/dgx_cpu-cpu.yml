@@ -1,8 +1,8 @@
 series:
   - label: CPU0 to CPU0
-    file: minsky1-NUMA_Memcpy_HostToPinned-0-0.json
+    file: dgx-1-NUMA_Memcpy_HostToPinned-0-0.json
   - label: CPU0 to CPU1
-    file: minsky1-NUMA_Memcpy_HostToPinned-0-1.json
+    file: dgx-1-NUMA_Memcpy_HostToPinned-0-1.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
@@ -11,4 +11,4 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: S822LC CPU to CPU Transfer
+title: DGX-1 CPU to CPU Transfer
