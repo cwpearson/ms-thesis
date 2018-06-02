@@ -1,20 +1,20 @@
 series:
   - label: GPU0 to GPU2 (peer)
     file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-0-2.json
-  - label: GPU0 to GPU3 (peer)
-    file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-0-3.json
-  - label: GPU1 to GPU2 (peer)
-    file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-1-2.json
-  - label: GPU1 to GPU3 (peer)
-    file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-1-3.json
+  # - label: GPU0 to GPU3 (peer)
+  #   file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-0-3.json
+  # - label: GPU1 to GPU2 (peer)
+  #   file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-1-2.json
+  # - label: GPU1 to GPU3 (peer)
+  #   file: hal000.ncsa.illinois.edu-CUDA_Memcpy_GPUToGPU-1-3.json
   - label: GPU0 to GPU2 (no peer)
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-0-2.json
-  - label: GPU0 to GPU3 (no peer)
-    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-0-3.json
-  - label: GPU1 to GPU2 (no peer)
-    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-1-2.json
-  - label: GPU2 to GPU3 (no peer)
-    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-1-3.json
+  # - label: GPU0 to GPU3 (no peer)
+  #   file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-0-3.json
+  # - label: GPU1 to GPU2 (no peer)
+  #   file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-1-2.json
+  # - label: GPU2 to GPU3 (no peer)
+  #   file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-1-3.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:

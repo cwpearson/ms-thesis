@@ -511,11 +511,16 @@ With peer access enabled, GPUs may do DMAs directly with their peer memory inste
 	\end{subfigure}
 	\\
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/dgx_peer_nopeer_local.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_memcpy_local.pdf}
 		\caption{}
-		\label{fig:explicit-dgx-peer-nopeer-local}
+		\label{fig:explicit-dgx-peer}
 	\end{subfigure}
-	
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_memcpy_remote.pdf}
+		\caption{}
+		\label{fig:explicit-dgx-peer}
+	\end{subfigure}
 	\caption[GPU-GPU \texttt{cudaMemcpy} bandwidth and peer access]{
 		GPU-GPU \texttt{cudaMemcpy} transfer bandwidth vs. transfer size for various scenarios with peer access enabled or disabled.
 		(a) shows a GPU0 to GPU1 transfer on S822LC with and without peer access,
@@ -600,6 +605,13 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 		\caption{}
 		\label{fig:ac922-explicit-path-gpu2-gpu0}
 	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_nopeer_remote.pdf}
+		\caption{}
+		\label{fig:explicit-dgx-nopeer-remote}
+	\end{subfigure}
+	~
 	\caption[Peer Access and GPU-GPU Transfer Bandwidth]{
 		Transfer bandwidth vs transfer size when peer access is disabled.
 		(a) shows anisotropy on transfers between GPU0 and GPU2 on S822LC.
