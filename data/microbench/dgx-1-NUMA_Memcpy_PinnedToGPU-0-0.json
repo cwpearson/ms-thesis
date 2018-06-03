@@ -1,0 +1,1883 @@
+{
+  "context": {
+    "date": "2018-06-02 23:59:59",
+    "num_cpus": 80,
+    "mhz_per_cpu": 3600,
+    "cpu_scaling_enabled": false,
+    "library_build_type": "release"
+  },
+  "benchmarks": [
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/8/0/0/manual_time",
+      "iterations": 63995,
+      "real_time": 1.0928169280674239e+04,
+      "cpu_time": 7.2845399934033525e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3425698616576102e+07,
+      "bytes": 2.5600000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/8/0/0/manual_time",
+      "iterations": 63995,
+      "real_time": 1.0912853561946433e+04,
+      "cpu_time": 7.2382372167150295e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3458575572999761e+07,
+      "bytes": 2.5600000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/8/0/0/manual_time",
+      "iterations": 63995,
+      "real_time": 1.0946459224200566e+04,
+      "cpu_time": 7.2536552400483000e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3386557676479723e+07,
+      "bytes": 2.5600000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/8/0/0/manual_time",
+      "iterations": 63995,
+      "real_time": 1.0911761517794243e+04,
+      "cpu_time": 7.2101861393713307e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3460923296621785e+07,
+      "bytes": 2.5600000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/8/0/0/manual_time",
+      "iterations": 63995,
+      "real_time": 1.0896664818792504e+04,
+      "cpu_time": 7.2225354760127139e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3493427049210478e+07,
+      "bytes": 2.5600000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/8/0/0/manual_time_mean",
+      "iterations": 63995,
+      "real_time": 1.0919181680681597e+04,
+      "cpu_time": 7.2418308131101453e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3445036442377571e+07,
+      "bytes": 2.5600000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/8/0/0/manual_time_median",
+      "iterations": 63995,
+      "real_time": 1.0912853561946433e+04,
+      "cpu_time": 7.2382372167150295e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3458575572999761e+07,
+      "bytes": 2.5600000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/8/0/0/manual_time_stddev",
+      "iterations": 63995,
+      "real_time": 1.8887524370284602e+01,
+      "cpu_time": 2.8941754000444119e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 4.0531063990513809e+04,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/9/0/0/manual_time",
+      "iterations": 63712,
+      "real_time": 1.0966617308703622e+04,
+      "cpu_time": 7.2042912594638610e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 4.6687140217216551e+07,
+      "bytes": 5.1200000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/9/0/0/manual_time",
+      "iterations": 63712,
+      "real_time": 1.0905725781785892e+04,
+      "cpu_time": 7.1764076238726115e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 4.6947815326065928e+07,
+      "bytes": 5.1200000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/9/0/0/manual_time",
+      "iterations": 63712,
+      "real_time": 1.0903074327764876e+04,
+      "cpu_time": 7.2002917572315919e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 4.6959232287005760e+07,
+      "bytes": 5.1200000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/9/0/0/manual_time",
+      "iterations": 63712,
+      "real_time": 1.0886693629420162e+04,
+      "cpu_time": 7.1635923124456704e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 4.7029889645867601e+07,
+      "bytes": 5.1200000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/9/0/0/manual_time",
+      "iterations": 63712,
+      "real_time": 1.0951508321832131e+04,
+      "cpu_time": 7.2100633448221898e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 4.6751551015061006e+07,
+      "bytes": 5.1200000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/9/0/0/manual_time_mean",
+      "iterations": 63712,
+      "real_time": 1.0922723873901337e+04,
+      "cpu_time": 7.1909292595671844e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 4.6875125698243372e+07,
+      "bytes": 5.1200000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/9/0/0/manual_time_median",
+      "iterations": 63712,
+      "real_time": 1.0905725781785892e+04,
+      "cpu_time": 7.2002917572315919e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 4.6947815326065928e+07,
+      "bytes": 5.1200000000000000e+02
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/9/0/0/manual_time_stddev",
+      "iterations": 63712,
+      "real_time": 3.4381667999409459e+01,
+      "cpu_time": 1.9940531609597146e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 1.4740999215517074e+05,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/10/0/0/manual_time",
+      "iterations": 63508,
+      "real_time": 1.0992706461693691e+04,
+      "cpu_time": 7.2002445940818930e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.3152673872292966e+07,
+      "bytes": 1.0240000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/10/0/0/manual_time",
+      "iterations": 63508,
+      "real_time": 1.0983034607026473e+04,
+      "cpu_time": 7.2410997843313122e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.3234705765644118e+07,
+      "bytes": 1.0240000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/10/0/0/manual_time",
+      "iterations": 63508,
+      "real_time": 1.1093237781248063e+04,
+      "cpu_time": 7.2473971495938206e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.2308487404007792e+07,
+      "bytes": 1.0240000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/10/0/0/manual_time",
+      "iterations": 63508,
+      "real_time": 1.0964995406043670e+04,
+      "cpu_time": 7.2029094385475993e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.3388092021962285e+07,
+      "bytes": 1.0240000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/10/0/0/manual_time",
+      "iterations": 63508,
+      "real_time": 1.0929347388805776e+04,
+      "cpu_time": 7.2237513851957321e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.3692693952505991e+07,
+      "bytes": 1.0240000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/10/0/0/manual_time_mean",
+      "iterations": 63508,
+      "real_time": 1.0992664328963536e+04,
+      "cpu_time": 7.2230804703500712e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.3155330603282630e+07,
+      "bytes": 1.0240000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/10/0/0/manual_time_median",
+      "iterations": 63508,
+      "real_time": 1.0983034607026473e+04,
+      "cpu_time": 7.2237513851957321e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.3234705765644118e+07,
+      "bytes": 1.0240000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/10/0/0/manual_time_stddev",
+      "iterations": 63508,
+      "real_time": 6.1201219004534394e+01,
+      "cpu_time": 2.1475535275395247e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 5.1633035110648879e+05,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/11/0/0/manual_time",
+      "iterations": 62432,
+      "real_time": 1.1208258321288937e+04,
+      "cpu_time": 7.1873324205007219e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.8272241246528324e+08,
+      "bytes": 2.0480000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/11/0/0/manual_time",
+      "iterations": 62432,
+      "real_time": 1.1204696045343786e+04,
+      "cpu_time": 7.1942485591244805e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.8278050486260760e+08,
+      "bytes": 2.0480000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/11/0/0/manual_time",
+      "iterations": 62432,
+      "real_time": 1.1213503315699822e+04,
+      "cpu_time": 7.1891958304023480e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.8263694604099616e+08,
+      "bytes": 2.0480000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/11/0/0/manual_time",
+      "iterations": 62432,
+      "real_time": 1.1117307540814023e+04,
+      "cpu_time": 7.0931589753438270e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.8421726595952770e+08,
+      "bytes": 2.0480000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/11/0/0/manual_time",
+      "iterations": 62432,
+      "real_time": 1.1184105059029967e+04,
+      "cpu_time": 7.1680701568420565e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.8311702091411054e+08,
+      "bytes": 2.0480000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/11/0/0/manual_time_mean",
+      "iterations": 62432,
+      "real_time": 1.1185574056435307e+04,
+      "cpu_time": 7.1664011884426868e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.8309483004850507e+08,
+      "bytes": 2.0480000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/11/0/0/manual_time_median",
+      "iterations": 62432,
+      "real_time": 1.1204696045343786e+04,
+      "cpu_time": 7.1873324205007219e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.8278050486260760e+08,
+      "bytes": 2.0480000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/11/0/0/manual_time_stddev",
+      "iterations": 62432,
+      "real_time": 3.9757845022376415e+01,
+      "cpu_time": 4.2131922180592148e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 6.5335820036561869e+05,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/12/0/0/manual_time",
+      "iterations": 62015,
+      "real_time": 1.1273440809450287e+04,
+      "cpu_time": 7.1627039652859247e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.6333184067160845e+08,
+      "bytes": 4.0960000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/12/0/0/manual_time",
+      "iterations": 62015,
+      "real_time": 1.1271066672341607e+04,
+      "cpu_time": 7.1377035259463108e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.6340837287843323e+08,
+      "bytes": 4.0960000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/12/0/0/manual_time",
+      "iterations": 62015,
+      "real_time": 1.1357522113127367e+04,
+      "cpu_time": 7.1471050144389915e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.6064204491098630e+08,
+      "bytes": 4.0960000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/12/0/0/manual_time",
+      "iterations": 62015,
+      "real_time": 1.1322652669649116e+04,
+      "cpu_time": 7.1297038360272133e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.6175268459656215e+08,
+      "bytes": 4.0960000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/12/0/0/manual_time",
+      "iterations": 62015,
+      "real_time": 1.1331732277158391e+04,
+      "cpu_time": 7.1856203353427172e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.6146282843766016e+08,
+      "bytes": 4.0960000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/12/0/0/manual_time_mean",
+      "iterations": 62015,
+      "real_time": 1.1311282908345354e+04,
+      "cpu_time": 7.1525673354082322e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.6211955429905009e+08,
+      "bytes": 4.0960000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/12/0/0/manual_time_median",
+      "iterations": 62015,
+      "real_time": 1.1322652669649116e+04,
+      "cpu_time": 7.1471050144389915e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.6175268459656215e+08,
+      "bytes": 4.0960000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/12/0/0/manual_time_stddev",
+      "iterations": 62015,
+      "real_time": 3.7864502845031595e+01,
+      "cpu_time": 2.2185363734027320e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 1.2123951302112690e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/13/0/0/manual_time",
+      "iterations": 60225,
+      "real_time": 1.1543340213146937e+04,
+      "cpu_time": 7.0248146002540731e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.0967327036501706e+08,
+      "bytes": 8.1920000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/13/0/0/manual_time",
+      "iterations": 60225,
+      "real_time": 1.1622345823474425e+04,
+      "cpu_time": 7.0399565234820569e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.0484910055369997e+08,
+      "bytes": 8.1920000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/13/0/0/manual_time",
+      "iterations": 60225,
+      "real_time": 1.1685013800638171e+04,
+      "cpu_time": 7.1059685814825904e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.0106891953799820e+08,
+      "bytes": 8.1920000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/13/0/0/manual_time",
+      "iterations": 60225,
+      "real_time": 1.1673317353339053e+04,
+      "cpu_time": 7.0548712659508860e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.0177137758160484e+08,
+      "bytes": 8.1920000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/13/0/0/manual_time",
+      "iterations": 60225,
+      "real_time": 1.1727580538570035e+04,
+      "cpu_time": 7.0705560123742688e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 6.9852430115980816e+08,
+      "bytes": 8.1920000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/13/0/0/manual_time_mean",
+      "iterations": 60225,
+      "real_time": 1.1650319545833725e+04,
+      "cpu_time": 7.0592333967087758e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.0317739383962572e+08,
+      "bytes": 8.1920000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/13/0/0/manual_time_median",
+      "iterations": 60225,
+      "real_time": 1.1673317353339053e+04,
+      "cpu_time": 7.0548712659508860e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.0177137758160484e+08,
+      "bytes": 8.1920000000000000e+03
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/13/0/0/manual_time_stddev",
+      "iterations": 60225,
+      "real_time": 7.0584981103820468e+01,
+      "cpu_time": 3.1175546093252450e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 4.2738984620694956e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/14/0/0/manual_time",
+      "iterations": 56571,
+      "real_time": 1.2282562315936681e+04,
+      "cpu_time": 6.7623505184863698e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.3339236210299284e+09,
+      "bytes": 1.6384000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/14/0/0/manual_time",
+      "iterations": 56571,
+      "real_time": 1.2274832591993101e+04,
+      "cpu_time": 6.7603078101409495e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.3347636211908355e+09,
+      "bytes": 1.6384000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/14/0/0/manual_time",
+      "iterations": 56571,
+      "real_time": 1.2223750035948591e+04,
+      "cpu_time": 6.7535266359080946e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.3403415442737792e+09,
+      "bytes": 1.6384000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/14/0/0/manual_time",
+      "iterations": 56571,
+      "real_time": 1.2256760871047472e+04,
+      "cpu_time": 6.7584437201877356e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.3367316350849073e+09,
+      "bytes": 1.6384000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/14/0/0/manual_time",
+      "iterations": 56571,
+      "real_time": 1.2216256738489528e+04,
+      "cpu_time": 6.7157698577510011e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.3411636928339303e+09,
+      "bytes": 1.6384000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/14/0/0/manual_time_mean",
+      "iterations": 56571,
+      "real_time": 1.2250832510683076e+04,
+      "cpu_time": 6.7500797084948301e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.3373848228826761e+09,
+      "bytes": 1.6384000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/14/0/0/manual_time_median",
+      "iterations": 56571,
+      "real_time": 1.2256760871047472e+04,
+      "cpu_time": 6.7584437201877356e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.3367316350849073e+09,
+      "bytes": 1.6384000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/14/0/0/manual_time_stddev",
+      "iterations": 56571,
+      "real_time": 2.9777820443154823e+01,
+      "cpu_time": 1.9456301674537249e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 3.2518967683000024e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/15/0/0/manual_time",
+      "iterations": 50481,
+      "real_time": 1.3801301857045493e+04,
+      "cpu_time": 6.4618623149148083e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3742687711211901e+09,
+      "bytes": 3.2768000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/15/0/0/manual_time",
+      "iterations": 50481,
+      "real_time": 1.3757672935247387e+04,
+      "cpu_time": 6.4644895408470976e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3817981539630766e+09,
+      "bytes": 3.2768000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/15/0/0/manual_time",
+      "iterations": 50481,
+      "real_time": 1.3776639266969041e+04,
+      "cpu_time": 6.4688702869709909e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3785191268355823e+09,
+      "bytes": 3.2768000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/15/0/0/manual_time",
+      "iterations": 50481,
+      "real_time": 1.3899678959514111e+04,
+      "cpu_time": 6.4561800500556481e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3574645209752002e+09,
+      "bytes": 3.2768000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/15/0/0/manual_time",
+      "iterations": 50481,
+      "real_time": 1.3878032530855555e+04,
+      "cpu_time": 6.5057103311974430e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3611416047012186e+09,
+      "bytes": 3.2768000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/15/0/0/manual_time_mean",
+      "iterations": 50481,
+      "real_time": 1.3822665109926316e+04,
+      "cpu_time": 6.4714225047971988e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3706384355192537e+09,
+      "bytes": 3.2768000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/15/0/0/manual_time_median",
+      "iterations": 50481,
+      "real_time": 1.3801301857045493e+04,
+      "cpu_time": 6.4644895408470976e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 2.3742687711211901e+09,
+      "bytes": 3.2768000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/15/0/0/manual_time_stddev",
+      "iterations": 50481,
+      "real_time": 6.2839943291652951e+01,
+      "cpu_time": 1.9710178216555724e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0765288755372984e+07,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/16/0/0/manual_time",
+      "iterations": 41775,
+      "real_time": 1.6662182574041126e+04,
+      "cpu_time": 5.8847067378880000e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.9332182148875213e+09,
+      "bytes": 6.5536000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/16/0/0/manual_time",
+      "iterations": 41775,
+      "real_time": 1.6518288255388899e+04,
+      "cpu_time": 5.8671185009451485e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.9674813144527631e+09,
+      "bytes": 6.5536000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/16/0/0/manual_time",
+      "iterations": 41775,
+      "real_time": 1.6650864786833437e+04,
+      "cpu_time": 5.8821783982115960e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.9358916692316284e+09,
+      "bytes": 6.5536000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/16/0/0/manual_time",
+      "iterations": 41775,
+      "real_time": 1.6586589757464884e+04,
+      "cpu_time": 5.8503437298697948e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.9511437226272006e+09,
+      "bytes": 6.5536000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/16/0/0/manual_time",
+      "iterations": 41775,
+      "real_time": 1.6545971760136927e+04,
+      "cpu_time": 5.8643665443614233e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.9608432161048040e+09,
+      "bytes": 6.5536000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/16/0/0/manual_time_mean",
+      "iterations": 41775,
+      "real_time": 1.6592779426773057e+04,
+      "cpu_time": 5.8697427822551930e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.9497156274607835e+09,
+      "bytes": 6.5536000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/16/0/0/manual_time_median",
+      "iterations": 41775,
+      "real_time": 1.6586589757464884e+04,
+      "cpu_time": 5.8671185009451485e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 3.9511437226272006e+09,
+      "bytes": 6.5536000000000000e+04
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/16/0/0/manual_time_stddev",
+      "iterations": 41775,
+      "real_time": 6.3184076673467722e+01,
+      "cpu_time": 1.4059503299596873e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 1.5039520952030353e+07,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/17/0/0/manual_time",
+      "iterations": 31103,
+      "real_time": 2.2530927896891390e+04,
+      "cpu_time": 5.2835097547020644e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 5.8174257447286100e+09,
+      "bytes": 1.3107200000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/17/0/0/manual_time",
+      "iterations": 31103,
+      "real_time": 2.2529191410526368e+04,
+      "cpu_time": 5.2824860052374464e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 5.8178741354542761e+09,
+      "bytes": 1.3107200000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/17/0/0/manual_time",
+      "iterations": 31103,
+      "real_time": 2.2556331187774071e+04,
+      "cpu_time": 5.2969622858698142e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 5.8108740694073210e+09,
+      "bytes": 1.3107200000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/17/0/0/manual_time",
+      "iterations": 31103,
+      "real_time": 2.2486222994693446e+04,
+      "cpu_time": 5.2786776271376371e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 5.8289913797853861e+09,
+      "bytes": 1.3107200000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/17/0/0/manual_time",
+      "iterations": 31103,
+      "real_time": 2.2531855930102953e+04,
+      "cpu_time": 5.2821801611313885e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 5.8171861388872776e+09,
+      "bytes": 1.3107200000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/17/0/0/manual_time_mean",
+      "iterations": 31103,
+      "real_time": 2.2526905883997642e+04,
+      "cpu_time": 5.2847631668156695e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 5.8184702936525745e+09,
+      "bytes": 1.3107200000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/17/0/0/manual_time_median",
+      "iterations": 31103,
+      "real_time": 2.2530927896891390e+04,
+      "cpu_time": 5.2824860052374464e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 5.8174257447286100e+09,
+      "bytes": 1.3107200000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/17/0/0/manual_time_stddev",
+      "iterations": 31103,
+      "real_time": 2.5332040780617785e+01,
+      "cpu_time": 7.0583412364839576e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 6.5477365688243750e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/18/0/0/manual_time",
+      "iterations": 20363,
+      "real_time": 3.4377982218328012e+04,
+      "cpu_time": 4.6664949942772806e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.6253457324857941e+09,
+      "bytes": 2.6214400000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/18/0/0/manual_time",
+      "iterations": 20363,
+      "real_time": 3.4416595949421513e+04,
+      "cpu_time": 4.6702406183936399e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.6167904689134779e+09,
+      "bytes": 2.6214400000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/18/0/0/manual_time",
+      "iterations": 20363,
+      "real_time": 3.4380057599214437e+04,
+      "cpu_time": 4.6674941936252224e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.6248854221230230e+09,
+      "bytes": 2.6214400000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/18/0/0/manual_time",
+      "iterations": 20363,
+      "real_time": 3.4381158043764794e+04,
+      "cpu_time": 4.6728342687998509e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.6246413709017344e+09,
+      "bytes": 2.6214400000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/18/0/0/manual_time",
+      "iterations": 20363,
+      "real_time": 3.4416622810579087e+04,
+      "cpu_time": 4.6743426807086092e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.6167845242334871e+09,
+      "bytes": 2.6214400000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/18/0/0/manual_time_mean",
+      "iterations": 20363,
+      "real_time": 3.4394483324261571e+04,
+      "cpu_time": 4.6702813511609203e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.6216895037315035e+09,
+      "bytes": 2.6214400000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/18/0/0/manual_time_median",
+      "iterations": 20363,
+      "real_time": 3.4381158043764794e+04,
+      "cpu_time": 4.6702406183936399e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 7.6246413709017344e+09,
+      "bytes": 2.6214400000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/18/0/0/manual_time_stddev",
+      "iterations": 20363,
+      "real_time": 2.0230399062137188e+01,
+      "cpu_time": 3.3585037927294051e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 4.4820416353621706e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/19/0/0/manual_time",
+      "iterations": 12053,
+      "real_time": 5.8072091268306482e+04,
+      "cpu_time": 4.1963772133651716e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.0282266153920364e+09,
+      "bytes": 5.2428800000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/19/0/0/manual_time",
+      "iterations": 12053,
+      "real_time": 5.8111030798089123e+04,
+      "cpu_time": 4.1985656327197182e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.0221769051331348e+09,
+      "bytes": 5.2428800000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/19/0/0/manual_time",
+      "iterations": 12053,
+      "real_time": 5.7997022171136305e+04,
+      "cpu_time": 4.1863956928673685e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.0399124019323406e+09,
+      "bytes": 5.2428800000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/19/0/0/manual_time",
+      "iterations": 12053,
+      "real_time": 5.8384930303189009e+04,
+      "cpu_time": 4.2114509587737817e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 8.9798514321659336e+09,
+      "bytes": 5.2428800000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/19/0/0/manual_time",
+      "iterations": 12053,
+      "real_time": 5.7936566689653111e+04,
+      "cpu_time": 4.1838440730721605e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.0493453436486187e+09,
+      "bytes": 5.2428800000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/19/0/0/manual_time_mean",
+      "iterations": 12053,
+      "real_time": 5.8100328246074809e+04,
+      "cpu_time": 4.1953267141596407e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.0239025396544132e+09,
+      "bytes": 5.2428800000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/19/0/0/manual_time_median",
+      "iterations": 12053,
+      "real_time": 5.8072091268306482e+04,
+      "cpu_time": 4.1963772133651716e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.0282266153920364e+09,
+      "bytes": 5.2428800000000000e+05
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/19/0/0/manual_time_stddev",
+      "iterations": 12053,
+      "real_time": 1.7277166645956962e+02,
+      "cpu_time": 1.0990900714180102e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 2.6766711984122369e+07,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/20/0/0/manual_time",
+      "iterations": 6612,
+      "real_time": 1.0582666689331693e+05,
+      "cpu_time": 3.8815020205518937e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.9084288561885967e+09,
+      "bytes": 1.0485760000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/20/0/0/manual_time",
+      "iterations": 6612,
+      "real_time": 1.0580803893755449e+05,
+      "cpu_time": 3.8812871207365382e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.9101732772766514e+09,
+      "bytes": 1.0485760000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/20/0/0/manual_time",
+      "iterations": 6612,
+      "real_time": 1.0581915547066065e+05,
+      "cpu_time": 3.8812224733605146e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.9091321919567528e+09,
+      "bytes": 1.0485760000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/20/0/0/manual_time",
+      "iterations": 6612,
+      "real_time": 1.0584783567686226e+05,
+      "cpu_time": 3.8830463755748373e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.9064472437693195e+09,
+      "bytes": 1.0485760000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/20/0/0/manual_time",
+      "iterations": 6612,
+      "real_time": 1.0578435310623900e+05,
+      "cpu_time": 3.8848841774484628e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.9123922320243092e+09,
+      "bytes": 1.0485760000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/20/0/0/manual_time_mean",
+      "iterations": 6612,
+      "real_time": 1.0581721001692668e+05,
+      "cpu_time": 3.8823884335344493e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.9093147602431259e+09,
+      "bytes": 1.0485760000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/20/0/0/manual_time_median",
+      "iterations": 6612,
+      "real_time": 1.0581915547066065e+05,
+      "cpu_time": 3.8815020205518937e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 9.9091321919567528e+09,
+      "bytes": 1.0485760000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/20/0/0/manual_time_stddev",
+      "iterations": 6612,
+      "real_time": 2.3424525740193126e+01,
+      "cpu_time": 1.5826959909250273e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 2.1936665617910121e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/21/0/0/manual_time",
+      "iterations": 3448,
+      "real_time": 2.0296360975589356e+05,
+      "cpu_time": 3.6997713043620032e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0332650284069477e+10,
+      "bytes": 2.0971520000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/21/0/0/manual_time",
+      "iterations": 3448,
+      "real_time": 2.0295263084652132e+05,
+      "cpu_time": 3.7002942731321764e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0333209238297222e+10,
+      "bytes": 2.0971520000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/21/0/0/manual_time",
+      "iterations": 3448,
+      "real_time": 2.0290983682912949e+05,
+      "cpu_time": 3.6993630702841151e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0335388529073696e+10,
+      "bytes": 2.0971520000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/21/0/0/manual_time",
+      "iterations": 3448,
+      "real_time": 2.0292639384465400e+05,
+      "cpu_time": 3.7006373078624034e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0334545251937164e+10,
+      "bytes": 2.0971520000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/21/0/0/manual_time",
+      "iterations": 3448,
+      "real_time": 2.0295755907967055e+05,
+      "cpu_time": 3.7008072529757041e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0332958326409353e+10,
+      "bytes": 2.0971520000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/21/0/0/manual_time_mean",
+      "iterations": 3448,
+      "real_time": 2.0294200607117382e+05,
+      "cpu_time": 3.7001746417232800e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0333750325957384e+10,
+      "bytes": 2.0971520000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/21/0/0/manual_time_median",
+      "iterations": 3448,
+      "real_time": 2.0295263084652132e+05,
+      "cpu_time": 3.7002942731321764e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0333209238297222e+10,
+      "bytes": 2.0971520000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/21/0/0/manual_time_stddev",
+      "iterations": 3448,
+      "real_time": 2.2913439419039303e+01,
+      "cpu_time": 6.0205852439576636e+04,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1668063160610676e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/22/0/0/manual_time",
+      "iterations": 1779,
+      "real_time": 3.9342836233561602e+05,
+      "cpu_time": 3.6079692984541810e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0660909079101999e+10,
+      "bytes": 4.1943040000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/22/0/0/manual_time",
+      "iterations": 1779,
+      "real_time": 3.9341517789142771e+05,
+      "cpu_time": 3.6076211912872094e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0661266356016182e+10,
+      "bytes": 4.1943040000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/22/0/0/manual_time",
+      "iterations": 1779,
+      "real_time": 3.9341019527966232e+05,
+      "cpu_time": 3.6078116587072498e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0661401382896059e+10,
+      "bytes": 4.1943040000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/22/0/0/manual_time",
+      "iterations": 1779,
+      "real_time": 3.9343564760187530e+05,
+      "cpu_time": 3.6077851249579531e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0660711670550739e+10,
+      "bytes": 4.1943040000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/22/0/0/manual_time",
+      "iterations": 1779,
+      "real_time": 3.9348025649391796e+05,
+      "cpu_time": 3.6087288281732374e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0659503064710522e+10,
+      "bytes": 4.1943040000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/22/0/0/manual_time_mean",
+      "iterations": 1779,
+      "real_time": 3.9343392792049987e+05,
+      "cpu_time": 3.6079832203159666e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0660758310655100e+10,
+      "bytes": 4.1943040000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/22/0/0/manual_time_median",
+      "iterations": 1779,
+      "real_time": 3.9342836233561602e+05,
+      "cpu_time": 3.6078116587072498e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0660909079101999e+10,
+      "bytes": 4.1943040000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/22/0/0/manual_time_stddev",
+      "iterations": 1779,
+      "real_time": 2.7816683428528595e+01,
+      "cpu_time": 4.3470250327943664e+04,
+      "time_unit": "ns",
+      "bytes_per_second": 7.5369104842766968e+05,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/23/0/0/manual_time",
+      "iterations": 906,
+      "real_time": 7.7224469729020749e+05,
+      "cpu_time": 3.5621298755407709e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0862629461148094e+10,
+      "bytes": 8.3886080000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/23/0/0/manual_time",
+      "iterations": 906,
+      "real_time": 7.7226497071011865e+05,
+      "cpu_time": 3.5623883689294440e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0862344296526161e+10,
+      "bytes": 8.3886080000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/23/0/0/manual_time",
+      "iterations": 906,
+      "real_time": 7.7232197753285326e+05,
+      "cpu_time": 3.5626994153751493e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0861542522455492e+10,
+      "bytes": 8.3886080000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/23/0/0/manual_time",
+      "iterations": 906,
+      "real_time": 7.7227291836872057e+05,
+      "cpu_time": 3.5624278790508199e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0862232509356066e+10,
+      "bytes": 8.3886080000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/23/0/0/manual_time",
+      "iterations": 906,
+      "real_time": 7.7228559761628858e+05,
+      "cpu_time": 3.5623621830793768e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0862054175154894e+10,
+      "bytes": 8.3886080000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/23/0/0/manual_time_mean",
+      "iterations": 906,
+      "real_time": 7.7227803230363771e+05,
+      "cpu_time": 3.5624015443951118e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0862160592928141e+10,
+      "bytes": 8.3886080000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/23/0/0/manual_time_median",
+      "iterations": 906,
+      "real_time": 7.7227291836872057e+05,
+      "cpu_time": 3.5623883689294440e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0862232509356066e+10,
+      "bytes": 8.3886080000000000e+06
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/23/0/0/manual_time_stddev",
+      "iterations": 906,
+      "real_time": 2.8707130846673230e+01,
+      "cpu_time": 2.0306865173150112e+04,
+      "time_unit": "ns",
+      "bytes_per_second": 4.0376118406800821e+05,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/24/0/0/manual_time",
+      "iterations": 458,
+      "real_time": 1.5296812563744173e+06,
+      "cpu_time": 3.5529033119214880e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0967785563225513e+10,
+      "bytes": 1.6777216000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/24/0/0/manual_time",
+      "iterations": 458,
+      "real_time": 1.5298582348610605e+06,
+      "cpu_time": 3.5528764865283293e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0966516777630499e+10,
+      "bytes": 1.6777216000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/24/0/0/manual_time",
+      "iterations": 458,
+      "real_time": 1.5298374821777623e+06,
+      "cpu_time": 3.5530548834934241e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0966665541569298e+10,
+      "bytes": 1.6777216000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/24/0/0/manual_time",
+      "iterations": 458,
+      "real_time": 1.5298966633554499e+06,
+      "cpu_time": 3.5530402691046923e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0966241316719604e+10,
+      "bytes": 1.6777216000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/24/0/0/manual_time",
+      "iterations": 458,
+      "real_time": 1.5298404205208197e+06,
+      "cpu_time": 3.5529987163754386e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0966644478048471e+10,
+      "bytes": 1.6777216000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/24/0/0/manual_time_mean",
+      "iterations": 458,
+      "real_time": 1.5298228114579020e+06,
+      "cpu_time": 3.5529747334846741e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0966770735438677e+10,
+      "bytes": 1.6777216000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/24/0/0/manual_time_median",
+      "iterations": 458,
+      "real_time": 1.5298404205208197e+06,
+      "cpu_time": 3.5529987163754386e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0966644478048471e+10,
+      "bytes": 1.6777216000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/24/0/0/manual_time_stddev",
+      "iterations": 458,
+      "real_time": 8.2571288432853905e+01,
+      "cpu_time": 8.0696389730310912e+03,
+      "time_unit": "ns",
+      "bytes_per_second": 5.9195879640393890e+05,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/25/0/0/manual_time",
+      "iterations": 230,
+      "real_time": 3.0450184343625670e+06,
+      "cpu_time": 3.5613797860434264e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1019451186680307e+10,
+      "bytes": 3.3554432000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/25/0/0/manual_time",
+      "iterations": 230,
+      "real_time": 3.0451208342919531e+06,
+      "cpu_time": 3.5614540869566220e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1019080629620409e+10,
+      "bytes": 3.3554432000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/25/0/0/manual_time",
+      "iterations": 230,
+      "real_time": 3.0450131511315703e+06,
+      "cpu_time": 3.5613109053043586e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1019470305910072e+10,
+      "bytes": 3.3554432000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/25/0/0/manual_time",
+      "iterations": 230,
+      "real_time": 3.0447745381894968e+06,
+      "cpu_time": 3.5611377181304967e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1020333879943817e+10,
+      "bytes": 3.3554432000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/25/0/0/manual_time",
+      "iterations": 230,
+      "real_time": 3.0449017112993677e+06,
+      "cpu_time": 3.5611484066085678e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1019873605601913e+10,
+      "bytes": 3.3554432000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/25/0/0/manual_time_mean",
+      "iterations": 230,
+      "real_time": 3.0449657338549914e+06,
+      "cpu_time": 3.5612861806086951e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1019641921551304e+10,
+      "bytes": 3.3554432000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/25/0/0/manual_time_median",
+      "iterations": 230,
+      "real_time": 3.0450131511315703e+06,
+      "cpu_time": 3.5613109053043586e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1019470305910072e+10,
+      "bytes": 3.3554432000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/25/0/0/manual_time_stddev",
+      "iterations": 230,
+      "real_time": 1.3203838914417446e+02,
+      "cpu_time": 1.4016828701340688e+04,
+      "time_unit": "ns",
+      "bytes_per_second": 4.7785048305929336e+05,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/26/0/0/manual_time",
+      "iterations": 115,
+      "real_time": 6.0773259231253807e+06,
+      "cpu_time": 3.5934292164347821e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1042498764898886e+10,
+      "bytes": 6.7108864000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/26/0/0/manual_time",
+      "iterations": 115,
+      "real_time": 6.0763583721026126e+06,
+      "cpu_time": 3.5928554913911694e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1044257084655493e+10,
+      "bytes": 6.7108864000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/26/0/0/manual_time",
+      "iterations": 115,
+      "real_time": 6.0751079095770484e+06,
+      "cpu_time": 3.5920063338261908e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1046530366021458e+10,
+      "bytes": 6.7108864000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/26/0/0/manual_time",
+      "iterations": 115,
+      "real_time": 6.0773518057944980e+06,
+      "cpu_time": 3.5934443987827498e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1042451736299770e+10,
+      "bytes": 6.7108864000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/26/0/0/manual_time",
+      "iterations": 115,
+      "real_time": 6.0760484562943811e+06,
+      "cpu_time": 3.5926336875652492e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1044820409633121e+10,
+      "bytes": 6.7108864000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/26/0/0/manual_time_mean",
+      "iterations": 115,
+      "real_time": 6.0764384933787854e+06,
+      "cpu_time": 3.5928738256000286e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1044111672301746e+10,
+      "bytes": 6.7108864000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/26/0/0/manual_time_median",
+      "iterations": 115,
+      "real_time": 6.0763583721026126e+06,
+      "cpu_time": 3.5928554913911694e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1044257084655493e+10,
+      "bytes": 6.7108864000000000e+07
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/26/0/0/manual_time_stddev",
+      "iterations": 115,
+      "real_time": 9.4216143711173891e+02,
+      "cpu_time": 6.0094865242152984e+04,
+      "time_unit": "ns",
+      "bytes_per_second": 1.7124828806852347e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/27/0/0/manual_time",
+      "iterations": 58,
+      "real_time": 1.2141528908677142e+07,
+      "cpu_time": 3.7089633891379052e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1054433836918108e+10,
+      "bytes": 1.3421772800000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/27/0/0/manual_time",
+      "iterations": 58,
+      "real_time": 1.2136244359586773e+07,
+      "cpu_time": 3.7071366339656341e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1059247327529089e+10,
+      "bytes": 1.3421772800000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/27/0/0/manual_time",
+      "iterations": 58,
+      "real_time": 1.2135022368025163e+07,
+      "cpu_time": 3.7068723403448176e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1060360989004292e+10,
+      "bytes": 1.3421772800000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/27/0/0/manual_time",
+      "iterations": 58,
+      "real_time": 1.2142028723811282e+07,
+      "cpu_time": 3.7090649796550775e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1053978791599348e+10,
+      "bytes": 1.3421772800000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/27/0/0/manual_time",
+      "iterations": 58,
+      "real_time": 1.2135665141174506e+07,
+      "cpu_time": 3.7071046991378421e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1059775170016783e+10,
+      "bytes": 1.3421772800000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/27/0/0/manual_time_mean",
+      "iterations": 58,
+      "real_time": 1.2138097900254972e+07,
+      "cpu_time": 3.7078284084482557e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1057559223013525e+10,
+      "bytes": 1.3421772800000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/27/0/0/manual_time_median",
+      "iterations": 58,
+      "real_time": 1.2136244359586773e+07,
+      "cpu_time": 3.7071366339656341e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1059247327529089e+10,
+      "bytes": 1.3421772800000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/27/0/0/manual_time_stddev",
+      "iterations": 58,
+      "real_time": 3.3924924795941320e+03,
+      "cpu_time": 1.0878491203608229e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 3.0902078374633640e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/28/0/0/manual_time",
+      "iterations": 29,
+      "real_time": 2.4286899715662003e+07,
+      "cpu_time": 3.8922616610345775e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1052685157129908e+10,
+      "bytes": 2.6843545600000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/28/0/0/manual_time",
+      "iterations": 29,
+      "real_time": 2.4261451872258350e+07,
+      "cpu_time": 3.8882445293104547e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1064278321568270e+10,
+      "bytes": 2.6843545600000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/28/0/0/manual_time",
+      "iterations": 29,
+      "real_time": 2.4292291366848454e+07,
+      "cpu_time": 3.8932593017240584e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1050232024070496e+10,
+      "bytes": 2.6843545600000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/28/0/0/manual_time",
+      "iterations": 29,
+      "real_time": 2.4294399046178523e+07,
+      "cpu_time": 3.8933943337931377e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1049273352667044e+10,
+      "bytes": 2.6843545600000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/28/0/0/manual_time",
+      "iterations": 29,
+      "real_time": 2.4324782770769350e+07,
+      "cpu_time": 3.8983837799998879e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1035471869560703e+10,
+      "bytes": 2.6843545600000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/28/0/0/manual_time_mean",
+      "iterations": 29,
+      "real_time": 2.4291964954343334e+07,
+      "cpu_time": 3.8931087211724234e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1050388144999283e+10,
+      "bytes": 2.6843545600000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/28/0/0/manual_time_median",
+      "iterations": 29,
+      "real_time": 2.4292291366848454e+07,
+      "cpu_time": 3.8932593017240584e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1050232024070496e+10,
+      "bytes": 2.6843545600000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/28/0/0/manual_time_stddev",
+      "iterations": 29,
+      "real_time": 2.2581769441788198e+04,
+      "cpu_time": 3.6162262113586004e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0271023300606420e+07,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/29/0/0/manual_time",
+      "iterations": 14,
+      "real_time": 4.8552207648754120e+07,
+      "cpu_time": 4.1374364978571117e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1057600426409786e+10,
+      "bytes": 5.3687091200000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/29/0/0/manual_time",
+      "iterations": 14,
+      "real_time": 4.8571846580931120e+07,
+      "cpu_time": 4.1393060671428013e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1053129534728680e+10,
+      "bytes": 5.3687091200000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/29/0/0/manual_time",
+      "iterations": 14,
+      "real_time": 4.8572898975440435e+07,
+      "cpu_time": 4.1392742078570932e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1052890054420145e+10,
+      "bytes": 5.3687091200000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/29/0/0/manual_time",
+      "iterations": 14,
+      "real_time": 4.8568205641848698e+07,
+      "cpu_time": 4.1388329571426904e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1053958137942947e+10,
+      "bytes": 5.3687091200000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/29/0/0/manual_time",
+      "iterations": 14,
+      "real_time": 4.8610429146460123e+07,
+      "cpu_time": 4.1425596557142192e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1044356559421480e+10,
+      "bytes": 5.3687091200000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/29/0/0/manual_time_mean",
+      "iterations": 14,
+      "real_time": 4.8575117598686896e+07,
+      "cpu_time": 4.1394818771427834e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1052386942584608e+10,
+      "bytes": 5.3687091200000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/29/0/0/manual_time_median",
+      "iterations": 14,
+      "real_time": 4.8571846580931120e+07,
+      "cpu_time": 4.1392742078570932e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1053129534728680e+10,
+      "bytes": 5.3687091200000000e+08
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/29/0/0/manual_time_stddev",
+      "iterations": 14,
+      "real_time": 2.1419431619592222e+04,
+      "cpu_time": 1.8809193360877599e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 4.8718755840928452e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/30/0/0/manual_time",
+      "iterations": 7,
+      "real_time": 9.7247315304619923e+07,
+      "cpu_time": 4.8837345914287364e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1041351842326796e+10,
+      "bytes": 1.0737418240000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/30/0/0/manual_time",
+      "iterations": 7,
+      "real_time": 9.7174989325659618e+07,
+      "cpu_time": 4.8802230857142246e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1049569765339529e+10,
+      "bytes": 1.0737418240000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/30/0/0/manual_time",
+      "iterations": 7,
+      "real_time": 9.7251057624816895e+07,
+      "cpu_time": 4.8839161542855841e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1040926959811268e+10,
+      "bytes": 1.0737418240000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/30/0/0/manual_time",
+      "iterations": 7,
+      "real_time": 9.7144192882946566e+07,
+      "cpu_time": 4.8786089142857593e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1053072676138245e+10,
+      "bytes": 1.0737418240000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/30/0/0/manual_time",
+      "iterations": 7,
+      "real_time": 9.7091103238718852e+07,
+      "cpu_time": 4.8762466885713297e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1059116522344797e+10,
+      "bytes": 1.0737418240000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/30/0/0/manual_time_mean",
+      "iterations": 7,
+      "real_time": 9.7181731675352380e+07,
+      "cpu_time": 4.8805458868571275e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1048807553192127e+10,
+      "bytes": 1.0737418240000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/30/0/0/manual_time_median",
+      "iterations": 7,
+      "real_time": 9.7174989325659618e+07,
+      "cpu_time": 4.8802230857142246e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1049569765339529e+10,
+      "bytes": 1.0737418240000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/30/0/0/manual_time_stddev",
+      "iterations": 7,
+      "real_time": 6.8511738830303831e+04,
+      "cpu_time": 3.3115596242648002e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 7.7900330987743558e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/31/0/0/manual_time",
+      "iterations": 4,
+      "real_time": 1.9414411857724190e+08,
+      "cpu_time": 6.8410299399999988e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1061286140098059e+10,
+      "bytes": 2.1474836480000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/31/0/0/manual_time",
+      "iterations": 4,
+      "real_time": 1.9395340979099274e+08,
+      "cpu_time": 6.8343843024998558e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1072162383296907e+10,
+      "bytes": 2.1474836480000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/31/0/0/manual_time",
+      "iterations": 4,
+      "real_time": 1.9409612193703651e+08,
+      "cpu_time": 6.8391487075000870e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1064021406345406e+10,
+      "bytes": 2.1474836480000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/31/0/0/manual_time",
+      "iterations": 4,
+      "real_time": 1.9422414153814316e+08,
+      "cpu_time": 6.8437948500001514e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1056728741304600e+10,
+      "bytes": 2.1474836480000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/31/0/0/manual_time",
+      "iterations": 4,
+      "real_time": 1.9423051923513412e+08,
+      "cpu_time": 6.8440391999999404e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1056365685766773e+10,
+      "bytes": 2.1474836480000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/31/0/0/manual_time_mean",
+      "iterations": 4,
+      "real_time": 1.9412966221570972e+08,
+      "cpu_time": 6.8404794000000072e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1062112871362349e+10,
+      "bytes": 2.1474836480000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/31/0/0/manual_time_median",
+      "iterations": 4,
+      "real_time": 1.9414411857724190e+08,
+      "cpu_time": 6.8410299399999988e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1061286140098059e+10,
+      "bytes": 2.1474836480000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/31/0/0/manual_time_stddev",
+      "iterations": 4,
+      "real_time": 1.1346512084236341e+05,
+      "cpu_time": 3.9651114454194391e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 6.4679532956631649e+06,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/32/0/0/manual_time",
+      "iterations": 2,
+      "real_time": 3.8806603848934174e+08,
+      "cpu_time": 9.8114345700000167e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1067619605980959e+10,
+      "bytes": 4.2949672960000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/32/0/0/manual_time",
+      "iterations": 2,
+      "real_time": 3.8886298239231110e+08,
+      "cpu_time": 9.8315663599998975e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1044937395627308e+10,
+      "bytes": 4.2949672960000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/32/0/0/manual_time",
+      "iterations": 2,
+      "real_time": 3.8875904679298401e+08,
+      "cpu_time": 9.8288559849999046e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1047890284305305e+10,
+      "bytes": 4.2949672960000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/32/0/0/manual_time",
+      "iterations": 2,
+      "real_time": 3.8885606825351715e+08,
+      "cpu_time": 9.8313501450000727e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1045133782507591e+10,
+      "bytes": 4.2949672960000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/32/0/0/manual_time",
+      "iterations": 2,
+      "real_time": 3.8899861276149750e+08,
+      "cpu_time": 9.8349436050001776e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1041086407763945e+10,
+      "bytes": 4.2949672960000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/32/0/0/manual_time_mean",
+      "iterations": 2,
+      "real_time": 3.8870854973793036e+08,
+      "cpu_time": 9.8276301330000138e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1049333495237022e+10,
+      "bytes": 4.2949672960000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/32/0/0/manual_time_median",
+      "iterations": 2,
+      "real_time": 3.8885606825351715e+08,
+      "cpu_time": 9.8313501450000727e+08,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1045133782507591e+10,
+      "bytes": 4.2949672960000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/32/0/0/manual_time_stddev",
+      "iterations": 2,
+      "real_time": 3.6916066008947900e+05,
+      "cpu_time": 9.3088428257213754e+05,
+      "time_unit": "ns",
+      "bytes_per_second": 1.0505265755998751e+07,
+      "bytes": 0.0000000000000000e+00
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/33/0/0/manual_time",
+      "iterations": 1,
+      "real_time": 7.7703464031219482e+08,
+      "cpu_time": 1.5833848560000093e+09,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1054764030273811e+10,
+      "bytes": 8.5899345920000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/33/0/0/manual_time",
+      "iterations": 1,
+      "real_time": 7.7758997678756714e+08,
+      "cpu_time": 1.5844745709999871e+09,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1046868977770681e+10,
+      "bytes": 8.5899345920000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/33/0/0/manual_time",
+      "iterations": 1,
+      "real_time": 7.7675336599349976e+08,
+      "cpu_time": 1.5828001130000188e+09,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1058767130044062e+10,
+      "bytes": 8.5899345920000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/33/0/0/manual_time",
+      "iterations": 1,
+      "real_time": 7.7626031637191772e+08,
+      "cpu_time": 1.5818335149999712e+09,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1065791218270182e+10,
+      "bytes": 8.5899345920000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/33/0/0/manual_time",
+      "iterations": 1,
+      "real_time": 7.7753895521163940e+08,
+      "cpu_time": 1.5843850800000041e+09,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1047593865778589e+10,
+      "bytes": 8.5899345920000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/33/0/0/manual_time_mean",
+      "iterations": 1,
+      "real_time": 7.7703545093536389e+08,
+      "cpu_time": 1.5833756269999981e+09,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1054757044427465e+10,
+      "bytes": 8.5899345920000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/33/0/0/manual_time_median",
+      "iterations": 1,
+      "real_time": 7.7703464031219482e+08,
+      "cpu_time": 1.5833848560000093e+09,
+      "time_unit": "ns",
+      "bytes_per_second": 1.1054764030273811e+10,
+      "bytes": 8.5899345920000000e+09
+    },
+    {
+      "name": "NUMA_Memcpy_PinnedToGPU/33/0/0/manual_time_stddev",
+      "iterations": 1,
+      "real_time": 5.5709551231706212e+05,
+      "cpu_time": 1.1108650047019352e+06,
+      "time_unit": "ns",
+      "bytes_per_second": 7.9272717834675005e+06,
+      "bytes": 0.0000000000000000e+00
+    }
+  ]
+}
