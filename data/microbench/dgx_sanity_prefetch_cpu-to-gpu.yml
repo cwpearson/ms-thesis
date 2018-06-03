@@ -1,0 +1,34 @@
+series:
+  - label: CPU0 to GPU0 (local)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-0.json
+  - label: CPU0 to GPU1 (local)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-1.json
+  - label: CPU0 to GPU2 (remote)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-2.json
+  - label: CPU0 to GPU3 (remote)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-3.json
+  - label: CPU0 to GPU0 (local)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-4.json
+  - label: CPU0 to GPU1 (local)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-5.json
+  - label: CPU0 to GPU2 (remote)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-6.json
+  - label: CPU0 to GPU3 (remote)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-7.json
+  - label: CPU1 to GPU0 (remote)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-1-0.json
+  - label: CPU1 to GPU1 (remote)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-1-1.json
+  - label: CPU1 to GPU2 (local)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-1-2.json
+  - label: CPU1 to GPU3 (local)
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-1-2.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 20_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: DGX SANITY Prefetch Bandwidth (CPU to GPU)
