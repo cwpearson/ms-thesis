@@ -306,13 +306,6 @@ Furthermore, coherency is not enforced, so data is not snooped on the PCIe bus, 
 Due to the possible lack of caching, this type of allocation makes sense for data that is not frequently read by the CPU, for example, data written once by the CPU before being sent to a GPU.
 \end{sloppypar}
 
-%3.2.4.3 
-% \begin{sloppypar}
-% \texttt{cudaHostAllocMapped} introduces the ability to map the host allocation (in the host address space) into the device's address space.
-% By using \texttt{cudaHostGetDevicePointer}, the corresponding pointer in the device address space may be obtained and directly used by CUDA kernels.
-% In this case, the programmer does not need to explicitly allocate memory or copy data to the device, nor does the programmer need to use streams to overlap computation with communication.
-% \end{sloppypar}
-
 \texttt{cudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
 This became the default with the introduction of unified virtual addressing.
 
@@ -462,6 +455,28 @@ Chapters~\ref{ch:explicit} and ~\ref{ch:unified} show these effects in more deta
 Applications can leverage the numactl\cite{wickman2015numactl} library to affect their own NUMA execution policy.
 This policy controls on which CPUs processes may execute, and on which NUMA nodes memory is allocated.
 numactl is used in this work to ensure that data is allocated and programs execute on specific CPUs as needed to exercise different underlying hardware links.
+Listing~\ref{lst:numa-bind-node} shows a C++ function that takes the operating system NUMA node ID as an integer argument and binds the executing thread and its allocations to that node.
+Lines 6 and 7 allocate a \texttt{bitmask}, and set the bit corresponding to the NUMA node.
+\texttt{numa\_bind()} in line 8 forces execution and allocations to occur on the nodes in the nodemask.
+
+\begin{lstlisting}[language=C++, caption=Binding to NUMA nodes., label=lst:numa-bind-node, numbers=left]
+static inline void 
+numa_bind_node(const int node) {
+  if (-1 == node) {
+	numa_bind(numa_all_nodes_ptr);
+  } else if (node >= 0) {
+	struct bitmask *nodemask = numa_allocate_nodemask();
+	nodemask = numa_bitmask_setbit(nodemask, node);
+	numa_bind(nodemask);
+	numa_free_nodemask(nodemask);
+  } else {
+	LOG(critical, "expected node >= -1");
+	exit(1);
+  }
+}
+\end{lstlisting}
+
+The benchmarks in this paper also initialize numactl with calls to \texttt{  numa\_set\_strict(1)} and \texttt{ numa\_set\_bind\_policy(1) }, which ensure that NUMA will cause the program to exit on an error, and that if the memory cannot be allocated on the requested NUMA node, the allocation will fail instead of falling back to a different node.
 
 \section{OpenMP}
 \label{sec:openmp}
