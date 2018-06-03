@@ -26,23 +26,24 @@ CUDA events are used to measure the time of the memory copy.
 	\caption[Measure \texttt{cudaMemcpy} CPU-CPU Bandwidth]{
 		Algorithm to measure \texttt{cudaMemcpy} CPU-CPU Bandwidth.
 		AllocPinned and AllocPageable are defined in Algorithm~\ref{alg:host-allocators}.
+		\texttt{numa\_bind\_node} is defined in Listing~\ref{lst:numa-bind-node}.
 	}
 	\label{alg:explicit-cpu-cpu}
 	\begin{algorithmic}[1]
         \Statex
 		\Function{bandwidth}{$dst$, $src$, $transfer\_size$}
-		\State \texttt{numa\_bind($src$)}
+		\State \texttt{numa\_bind\_node($src$)}
         \State $srcPtr \gets$ \texttt{AllocPageable($transfer\_size$)}
 		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)}
-		\State \texttt{numa\_bind($dst$)}
+		\State \texttt{numa\_bind\_node($dst$)}
         \State $dstPtr \gets$ \texttt{AllocPinned($transfer\_size$)}
 		\State \texttt{memset($dstPtr$, 0, $transfer\_size$)}
 
 		\Statex
 		\For{state}
-		\State \texttt{numa\_bind($src$)} 
+		\State \texttt{numa\_bind\_node($src$)} 
 		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment invalidate $dst$ cache
-		\State \texttt{numa\_bind($dst$)}
+		\State \texttt{numa\_bind\_node($dst$)}
 		\State $start \gets$ cudaEventRecord()
 		\State \begin{varwidth}[t]{\linewidth}
 			cudaMemcpy(\par
@@ -146,12 +147,12 @@ The main benchmark loop uses the \texttt{cudaMemcpy} time as the iteration time 
 		\If{$src$ is GPU}
 		\State \texttt{cudaSetDevice($src$)}
 		\Else \Comment{$src$ is CPU}
-		\State \texttt{numa\_bind($src$)}
+		\State \texttt{numa\_bind\_node($src$)}
 		\EndIf
 		\If{$dst$ is GPU}
 		\State \texttt{cudaSetDevice($dst$)}
 		\Else \Comment{$dst$ is CPU}
-		\State \texttt{numa\_bind($dst$)}
+		\State \texttt{numa\_bind\_node($dst$)}
 		\EndIf
 		
 		\State $devPtr \gets$ \texttt{cudaMalloc($bytes$)} \Comment{device allocation}
@@ -183,6 +184,7 @@ The main benchmark loop uses the \texttt{cudaMemcpy} time as the iteration time 
 	\caption[Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}.]{
 		Measuring CPU/GPU bandwidth with \texttt{cudaMemcpy}.
 		Host allocators are described in Algorithm~\ref{alg:host-allocators}.
+		\texttt{numa\_bind\_node} is defined in Listing~\ref{lst:numa-bind-node}.
 	}
 	\label{alg:explicit-cpu-gpu}
 \end{algorithm}
@@ -445,39 +447,69 @@ First, peer access is enabled or disabled depending on the experimental configur
 Then, \texttt{cudaMalloc} is used to create allocations of $transfer\_size$ bytes pointed to by $srcPtr$ and $dstPtr$.
 Finally, the achievable bandwidth is measured using the wall time for $num\_iters$ iterations, and the minimum elapsed time is reported, to help remove jitter from the results.
 
+\todo{Update GPU-GPU description}
+
 \begin{algorithm}[H]
-	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth]{Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth}
+	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Peer Bandwidth]{Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth with Peer Access Enabled}
 	\label{alg:explicit-gpu-gpu}
 	\begin{algorithmic}[1]
 		\Statex
-		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_iters$, $peer\_access$}
-		\If{$peer\_access$}
+		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$}
 		\State \texttt{cudaSetDevice($src$)}
+		\State $srcPtr \gets$ \texttt{cudaMalloc($transfer\_size$)} \Comment{Source allocation}
+		\State \texttt{cudaMemset($srcPtr$, $transfer\_size$, 0)}
 		\State \texttt{cudaDeviceEnablePeerAccess($dst$)}
 		\State \texttt{cudaSetDevice($dst$)}
+		\State $dstPtr \gets$ \texttt{cudaMalloc($transfer\_size$)} \Comment{Destination allocation}
+		\State \texttt{cudaMemset($dstPtr$, $transfer\_size$, 0)}
 		\State \texttt{cudaDeviceEnablePeerAccess($src$)}
-		\Else
+		
+		\State $start \gets$ \texttt{cudaEventCreate()}
+		\State $end \gets$ \texttt{cudaEventCreate()}
+
+		\For{state}
+		\State \texttt{cudaEventRecord($start$)}
+		\State \texttt{cudaMemcpy($dstPtr$, $srcPtr$, $bytes$, cudaMemcpyDefault)}
+		\State \texttt{cudaEventRecord($stop$)}
+		\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
+		\State state.SetIterationTime($millis$ / $1000$)
+        \EndFor
+		
+		\EndFunction
+		
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Non-Peer Bandwidth]{
+		Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth with Peer Access Disabled.
+		\texttt{numa\_bind\_node} is defined in Listing~\ref{lst:numa-bind-node}.}
+	\label{alg:explicit-gpu-gpu}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $numa$ $transfer\_size$}
+
+		\State \texttt{numa\_bind\_node($numa$)}
 		\State \texttt{cudaSetDevice($src$)}
+		\State $srcPtr \gets$ \texttt{cudaMalloc($transfer\_size$)} \Comment{Source allocation}
+		\State \texttt{cudaMemset($srcPtr$, $transfer\_size$, 0)}
 		\State \texttt{cudaDeviceDisablePeerAccess($dst$)}
 		\State \texttt{cudaSetDevice($dst$)}
-		\State \texttt{cudaDeviceDisablePeerAccess($src$)}        
-		\EndIf
+		\State $dstPtr \gets$ \texttt{cudaMalloc($transfer\_size$)} \Comment{Destination allocation}
+		\State \texttt{cudaMemset($dstPtr$, $transfer\_size$, 0)}
+		\State \texttt{cudaDeviceDisablePeerAccess($src$)}
 		
-		\State \texttt{cudaSetDevice($src$)} \Comment{Source allocation}
-		\State $srcPtr \gets$ \texttt{cudaMalloc($transfer\_size$)}
+		\State $start \gets$ \texttt{cudaEventCreate()}
+		\State $end \gets$ \texttt{cudaEventCreate()}
+
+		\For{state}
+		\State \texttt{cudaEventRecord($start$)}
+		\State \texttt{cudaMemcpy($dstPtr$, $srcPtr$, $bytes$, cudaMemcpyDefault)}
+		\State \texttt{cudaEventRecord($stop$)}
+		\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
+		\State state.SetIterationTime($millis$ / $1000$)
+        \EndFor
 		
-		\State \texttt{cudaSetDevice($dst$)} \Comment{Destination allocation}
-		\State $dstPtr \gets$ \texttt{cudaMalloc($transfer\_size$)}
-		
-		\State $elapsed \gets infinity$ \Comment{minimum of $num\_iters$ observations}
-		\For{$i \gets 1 \textrm{ to } num\_iters$}
-		\State $start \gets$ walltime()
-		\State \texttt{cudaMemcpy($dst$,$src$,$transfer\_size$)}
-		\State $end \gets$ walltime()
-		\State $elapsed \gets$ min($elapsed$, $end-start$)
-		\EndFor
-		
-		\Return $elapsed$
 		\EndFunction
 		
 	\end{algorithmic}
