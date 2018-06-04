@@ -1,0 +1,18 @@
+series:
+  - label: cudaMalloc
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-0-0.json
+  - label: cudaHostAlloc
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-0.json
+  - label: coherence
+    file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_HostToGPU-0-0.json
+  - label: prefetch
+    file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_HostToGPU-0-0.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 80_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: AC922 CPU to GPU Transfers

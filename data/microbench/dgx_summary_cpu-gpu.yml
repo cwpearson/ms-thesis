@@ -1,0 +1,18 @@
+series:
+  - label: cudaMalloc
+    file: dgx-1-NUMA_Memcpy_HostToGPU-0-0.json
+  - label: cudaHostAlloc
+    file: dgx-1-NUMA_Memcpy_PinnedToGPU-0-0.json
+  - label: coherence
+    file: dgx-1-NUMAUM_Coherence_HostToGPU-0-0.json
+  - label: prefetch
+    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-0.json
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 12_000_000_000
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: DGX-1 CPU to GPU Transfers
