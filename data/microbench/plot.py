@@ -138,6 +138,11 @@ def generate_figure(plot_cfg, root_dir):
 
     fig = plt.figure()
 
+    if "size" in plot_cfg:
+        figsize = plot_cfg["size"]
+        print("Using figsize:", figsize)
+        fig.set_size_inches(figsize)
+
     if "generator" in plot_cfg:
         if plot_cfg["generator"] == "regplot":
             fig = generator_regplot(fig, root_dir, plot_cfg)

@@ -1,0 +1,25 @@
+series:
+  - label: cudaMalloc
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToHost-0-0.json
+    yscale: 1e-9
+  - label: cudaHostAlloc
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToPinned-0-0.json
+    yscale: 1e-9
+  - label: coherence
+    file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_GPUToHost-0-0.json
+    yscale: 1e-9
+  - label: prefetch
+    file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_GPUToHost-0-0.json
+    yscale: 1e-9
+yaxis:
+  label: Transfer Bandwidth (GB/s)
+  lim:
+    - 0
+    - 80
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: P9 / NVLink 2.0 / V100 -- GPU to CPU
+size:
+  - 4 # x
+  - 3 # y

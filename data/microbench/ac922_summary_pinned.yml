@@ -1,0 +1,25 @@
+series:
+  - label: CPU to GPU (local)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-0.json
+    yscale: 1e-9
+  - label: CPU to GPU (remote)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-2.json
+    yscale: 1e-9
+  - label: GPU to CPU (local)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToPinned-0-0.json
+    yscale: 1e-9
+  - label: GPU to CPU (remote)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToPinned-0-2.json
+    yscale: 1e-9
+yaxis:
+  label: Transfer Bandwidth (GB/s)
+  lim:
+    - 0
+    - 80
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: P9 / NVLink 2.0 / V100 -- Pinned
+size:
+  - 4 # x
+  - 3 # y
