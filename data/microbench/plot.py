@@ -18,11 +18,10 @@ def generator_errorbar(fig, yaml_dir, plot_cfg):
     for s in plot_cfg["series"]:
         file_path = s["file"]
         label = s["label"]
-        if "regex" in s:
-            regex = s["regex"]
-        else:
-            regex = ".*"
+        regex = s.get("regex", ".*")
         print("Using regex:", regex)
+        yscale = float(s.get("yscale", 1.0))
+        xscale = float(s.get("xscale", 1.0))
         if not os.path.isabs(file_path):
             file_path = os.path.join(yaml_dir, file_path)
         print("reading", file_path)
@@ -33,9 +32,14 @@ def generator_errorbar(fig, yaml_dir, plot_cfg):
         matches = [b for b in j["benchmarks"] if pattern == None or pattern.search(b["name"])]
         means = [b for b in matches if b["name"].endswith("_mean")]
         stddevs = [b for b in matches if b["name"].endswith("_stddev")]
-        x = np.array([int(b["bytes"]) for b in means])
+        x = np.array([float(b["bytes"]) for b in means])
         y = np.array([float(b["bytes_per_second"]) for b in means])
         e = np.array([float(b["bytes_per_second"]) for b in stddevs])
+
+        # Rescale
+        x *= xscale
+        y *= yscale
+        e *= yscale
 
         # pp.pprint(means)
 

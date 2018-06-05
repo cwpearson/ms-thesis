@@ -1,17 +1,21 @@
 series:
   - label: cudaMalloc
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-0-0.json
+    yscale: 1e-9
   - label: cudaHostAlloc
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-0.json
+    yscale: 1e-9
   - label: coherence
     file: hal000.ncsa.illinois.edu-NUMAUM_Coherence_HostToGPU-0-0.json
+    yscale: 1e-9
   - label: prefetch
     file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_HostToGPU-0-0.json
+    yscale: 1e-9
 yaxis:
-  label: Transfer Bandwidth (B/s)
+  label: Transfer Bandwidth (GB/s)
   lim:
     - 0
-    - 80_000_000_000
+    - 80
 xaxis:
   label: Transfer Size (B)
   scale: log
