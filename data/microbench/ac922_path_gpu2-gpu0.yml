@@ -2,8 +2,8 @@ series:
   - label: GPU2 to CPU1
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToPinned-8-2.json
     yscale: 1e-9
-  - label: CPU0 to GPU2
-    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-2.json
+  - label: CPU0 to GPU0
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-0.json
     yscale: 1e-9 
 yaxis:
   label: Transfer Bandwidth (GB/s)
