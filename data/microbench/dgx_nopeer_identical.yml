@@ -1,0 +1,22 @@
+series:
+  - label: GPU0 to GPU1
+    file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-1.json
+    yscale: 1e-9
+  - label: GPU0 to GPU2
+    file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-2.json
+    yscale: 1e-9
+  - label: GPU0 to GPU3
+    file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-3.json
+    yscale: 1e-9
+  - label: GPU0 to GPU4
+    file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-4.json
+    yscale: 1e-9
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 13
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: DGX-1 Local Transfers on Identical Links (No Peer) 
