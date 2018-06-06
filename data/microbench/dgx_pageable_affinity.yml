@@ -1,0 +1,22 @@
+series:
+  - label: CPU0 to GPU0 (local)
+    file: dgx-1-NUMA_Memcpy_HostToGPU-0-0.json
+    yscale: 1e-9
+  - label: CPU0 to GPU2 (remote)
+    file: dgx-1-NUMA_Memcpy_HostToGPU-0-2.json
+    yscale: 1e-9
+  - label: GPU0 to CPU0 (local)
+    file: dgx-1-NUMA_Memcpy_GPUToHost-0-0.json
+    yscale: 1e-9
+  - label: GPU2 to CPU0 (remote)
+    file: dgx-1-NUMA_Memcpy_GPUToHost-0-2.json
+    yscale: 1e-9
+yaxis:
+  label: Transfer Bandwidth (GB/s)
+  lim:
+    - 0
+    - 13
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: DGX-1 Pageable Bandwidth (CPU0 to GPUs)
