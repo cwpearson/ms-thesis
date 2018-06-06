@@ -1,15 +1,15 @@
 series:
   - label: cudaMalloc
-    file: dgx-1-NUMA_Memcpy_HostToGPU-0-0.json
+    file: dgx-1-NUMA_Memcpy_GPUToHost-0-0.json
     yscale: 1e-9
   - label: cudaHostAlloc
-    file: dgx-1-NUMA_Memcpy_PinnedToGPU-0-0.json
+    file: dgx-1-NUMA_Memcpy_GPUToPinned-0-0.json
     yscale: 1e-9
   - label: coherence
-    file: dgx-1-NUMAUM_Coherence_HostToGPU-0-0.json
+    file: dgx-1-NUMAUM_Coherence_GPUToHost-0-0.json
     yscale: 1e-9
   - label: prefetch
-    file: dgx-1-NUMAUM_Prefetch_HostToGPU-0-0.json
+    file: dgx-1-NUMAUM_Prefetch_GPUToHost-0-0.json
     yscale: 1e-9
 yaxis:
   label: Transfer Bandwidth (GB/s)
@@ -19,7 +19,7 @@ yaxis:
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: AMD64 / PCIe 3.0 / P100 -- CPU to GPU
+title: AMD64 / PCIe 3.0 / P100 -- GPU to CPU
 size:
   - 4 # x
   - 3 # y

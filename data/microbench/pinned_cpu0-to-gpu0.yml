@@ -1,13 +1,18 @@
 series:
   - label: S822LC
     file: minsky1-NUMA_Memcpy_PinnedToGPU-0-0.json
+    yscale: 1e-9
   - label: AC922
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-0.json
+    yscale: 1e-9
+  - label: DGX-1
+    file: dgx-1-NUMA_Memcpy_PinnedToGPU-0-0.json
+    yscale: 1e-9
 yaxis:
-  label: Transfer Bandwidth (B/s)
+  label: Transfer Bandwidth (GB/s)
   lim:
     - 0
-    - 80_000_000_000
+    - 80
 xaxis:
   label: Transfer Size (B)
   scale: log
