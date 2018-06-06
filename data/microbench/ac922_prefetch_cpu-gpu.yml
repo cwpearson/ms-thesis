@@ -1,17 +1,21 @@
 series:
   - label: CPU0 to GPU0 (local)
     file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_HostToGPU-0-0.json
+    yscale: 1e-9
   - label: CPU0 to GPU2 (remote)
     file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_HostToGPU-0-2.json
+    yscale: 1e-9
   - label: GPU0 to CPU0 (local)
     file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_GPUToHost-0-0.json
+    yscale: 1e-9
   - label: GPU2 to CPU0 (remote)
     file: hal000.ncsa.illinois.edu-NUMAUM_Prefetch_GPUToHost-0-2.json
+    yscale: 1e-9
 yaxis:
-  label: Transfer Bandwidth (B/s)
+  label: Transfer Bandwidth (GB/s)
   lim:
     - 0
-    - 80_000_000_000
+    - 80
 xaxis:
   label: Transfer Size (B)
   scale: log

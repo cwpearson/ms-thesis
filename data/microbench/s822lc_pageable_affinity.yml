@@ -1,17 +1,21 @@
 series:
   - label: CPU0 to GPU0
     file: minsky1-NUMA_Memcpy_HostToGPU-0-0.json
+    yscale: 1e-9
   - label: CPU0 to GPU2
     file: minsky1-NUMA_Memcpy_HostToGPU-0-2.json
+    yscale: 1e-9
   - label: GPU0 to CPU0
     file: minsky1-NUMA_Memcpy_GPUToHost-0-0.json
+    yscale: 1e-9
   - label: GPU2 to CPU0
     file: minsky1-NUMA_Memcpy_GPUToHost-0-2.json
+    yscale: 1e-9
 yaxis:
-  label: Transfer Bandwidth (B/s)
+  label: Transfer Bandwidth (GB/s)
   lim:
     - 0
-    - 40_000_000_000
+    - 40
 xaxis:
   label: Transfer Size (B)
   scale: log

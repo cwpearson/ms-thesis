@@ -1,13 +1,15 @@
 series:
   - label: CPU0 to CPU0
     file: minsky1-NUMA_Memcpy_HostToPinned-0-0.json
+    yscale: 1e-9
   - label: CPU0 to CPU1
     file: minsky1-NUMA_Memcpy_HostToPinned-0-1.json
+    yscale: 1e-9
 yaxis:
-  label: Transfer Bandwidth (B/s)
+  label: Transfer Bandwidth (GB/s)
   lim:
     - 0
-    - 35_000_000_000
+    - 35
 xaxis:
   label: Transfer Size (B)
   scale: log

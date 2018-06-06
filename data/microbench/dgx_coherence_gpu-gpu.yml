@@ -1,0 +1,16 @@
+series:
+  - label: GPU0 to GPU1 (local)
+    file: dgx-1-UM_Coherence_GPUToGPU-0-1.json
+    yscale: 1e-9
+  - label: GPU0 to GPU5 (remote)
+    file: dgx-1-UM_Coherence_GPUToGPU-0-5.json
+    yscale: 1e-9
+yaxis:
+  label: Transfer Bandwidth (GB/s)
+  lim:
+    - 0
+    - 40
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: DGX-1 GPU/GPU Coherence Bandwidth

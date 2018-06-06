@@ -1,0 +1,15 @@
+series:
+  - label: Local (CPU0 to GPU0)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-0.json
+    yscale: 1e-9
+  - label: Remote (CPU0 to GPU2)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-0-2.json
+    yscale: 1e-9
+yaxis:
+  label: Transfer Bandwidth (GB/s)
+  lim:
+    - 0
+    - 80
+xaxis:
+  scale: log
+title: CPU-GPU Transfer NUMA Effects on AC922
