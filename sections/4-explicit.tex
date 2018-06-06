@@ -527,31 +527,37 @@ With peer access enabled, GPUs may do DMAs directly with their peer memory inste
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/s822lc_memcpy_local.pdf}
 		\caption{}
-		\label{fig:explicit-s822lc-peer}
+		\label{fig:explicit-s822lc-gpu-gpu-local}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/ac922_memcpy_local.pdf}
 		\caption{}
-		\label{fig:explicit-hal-peer-local}
+		\label{fig:explicit-ac922-gpu-gpu-local}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/dgx_memcpy_local.pdf}
+		\caption{}
+		\label{fig:explicit-dgx-gpu-gpu-local}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_memcpy_remote_80.pdf}
+		\caption{}
+		\label{fig:explicit-s822lc-gpu-gpu-remote}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/ac922_memcpy_remote.pdf}
 		\caption{}
-		\label{fig:explicit-hal-peer-remote}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/dgx_memcpy_local.pdf}
-		\caption{}
-		\label{fig:explicit-dgx-peer}
+		\label{fig:explicit-ac922-gpu-gpu-remote}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/dgx_memcpy_remote.pdf}
 		\caption{}
-		\label{fig:explicit-dgx-peer}
+		\label{fig:explicit-dgx-gpu-gpu-remote}
 	\end{subfigure}
 	\caption[GPU-GPU \texttt{cudaMemcpy} bandwidth and peer access]{
 		GPU-GPU \texttt{cudaMemcpy} transfer bandwidth vs. transfer size for various scenarios with peer access enabled or disabled.
@@ -603,7 +609,7 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 \begin{figure}[ht]
 	\centering
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/s822lc_memcpy_remote.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_memcpy_remote_40.pdf}
 		\caption{}
 		\label{fig:minsky-explicit-nopeer-remote}
 	\end{subfigure}
@@ -621,7 +627,7 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 	\end{subfigure}
 	\\
 	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/ac922_nopeer_remote.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_memcpy_remote.pdf}
 		\caption{}
 		\label{fig:explicit-ac922-nopeer-remote}
 	\end{subfigure}
@@ -636,12 +642,6 @@ The observed GPU0-GPU2 bandwidth is sometimes higher than the higher observed ba
 		\includegraphics[width=\textwidth]{figures/generated/ac922_path_gpu2-gpu0.pdf}
 		\caption{}
 		\label{fig:ac922-explicit-path-gpu2-gpu0}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.3\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/dgx_nopeer_remote.pdf}
-		\caption{}
-		\label{fig:explicit-dgx-nopeer-remote}
 	\end{subfigure}
 	~
 	\caption[Peer Access and GPU-GPU Transfer Bandwidth]{

@@ -1,14 +1,16 @@
 series:
-  - label: Peer Access Enabled
+  - label: GPU0 to GPU1 (peer)
     file: minsky1-CUDA_Memcpy_GPUToGPU-0-1.json
-  - label: Peer Access Disabled
+    yscale: 1e-9
+  - label: GPU0 to GPU1 (nopeer)
     file: minsky1-NUMA_Memcpy_GPUToGPU-0-0-1.json
+    yscale: 1e-9
 yaxis:
-  label: Transfer Bandwidth (B/s)
+  label: Transfer Bandwidth (GB/s)
   lim:
     - 0
-    - 40_000_000_000
+    - 80
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: S822LC GPU0 to GPU1 Transfer
+title: S822LC GPU/GPU Local Transfers

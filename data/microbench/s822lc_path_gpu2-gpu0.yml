@@ -6,11 +6,11 @@ series:
     file: minsky1-NUMA_Memcpy_PinnedToGPU-0-2.json
     yscale: 1e-9
 yaxis:
-  label: Transfer Bandwidth (B/s)
+  label: Transfer Bandwidth (GB/s)
   lim:
     - 0
     - 40
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: S822LC GPU2 to GPU0 Path Transfer
+title: S822LC GPU2 to GPU0 Path Segments

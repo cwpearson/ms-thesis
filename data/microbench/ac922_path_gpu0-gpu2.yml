@@ -1,16 +1,16 @@
 series:
   - label: GPU0 to CPU0
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToPinned-0-0.json
+    yscale: 1e-9
   - label: CPU1 to GPU2
     file: hal000.ncsa.illinois.edu-NUMA_Memcpy_PinnedToGPU-8-2.json
-  # - label: CPU0 to CPU1
-  #   file: 
+    yscale: 1e-9
 yaxis:
-  label: Transfer Bandwidth (B/s)
+  label: Transfer Bandwidth (GB/s)
   lim:
     - 0
-    - 80_000_000_000
+    - 80
 xaxis:
   label: Transfer Size (B)
   scale: log
-title: AC922 GPU0 to GPU2 Path Transfer
+title: AC922 GPU0 to GPU2 Path Segments
