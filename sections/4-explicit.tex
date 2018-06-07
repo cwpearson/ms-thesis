@@ -6,7 +6,7 @@ In particular, it focuses on CPU/CPU transfers, CPU/GPU transfers, and GPU/GPU t
 It highlights cases where the observed logical communication performance deviates significantly from the symmetries present in the CUDA API, numactl API, and hardware.
 Those deviations take the form of different performance on identical links, anisotropic link performance, or performance affected by device affinity.
 
-The microbenchmarks used in this section are available in the \texttt{microbench} project~\cite{pearson2018microbench}.
+The microbenchmarks developed for this section are available in the \texttt{microbench} project~\cite{pearson2018microbench}.
 That project also includes benchmarks of other aspects of CUDA performance, including CUDA primitives like kernel launches, and CUDA libraries such as cuBLAS and cuDNN.
 
 \section{CPU / CPU Transfers}
@@ -17,7 +17,7 @@ This attempts to provide insight into the CUDA performance when sending data fro
 Such a transfer would occur when data is sent from a CPU A to a GPU attached to another CPU B.
 The data would traverse the SMP bus between CPU A and CPU B, and the bandwidth of that bus could limit the overall performance of the transfer.
 Algorithm~\ref{alg:explicit-cpu-cpu} describes the measurement approach.
-First, an allocation is created on the source CPU and destination CPU.
+During the setup phase, an allocation is created on the source CPU $src$ and destination CPU $dst$.
 During the benchmark iterations, the $dst$ cache is invalidated (if the $src$ is different from the $dst$) by accessing that data from the $src$.
 Then, \texttt{cudaMemcpy} is invoked to transfer data between those allocations.
 CUDA events are used to measure the time of the memory copy.
@@ -32,25 +32,28 @@ CUDA events are used to measure the time of the memory copy.
 	\begin{algorithmic}[1]
         \Statex
 		\Function{bandwidth}{$dst$, $src$, $transfer\_size$}
-		\State \texttt{numa\_bind\_node($src$)}
-        \State $srcPtr \gets$ \texttt{AllocPageable($transfer\_size$)}
-		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)}
-		\State \texttt{numa\_bind\_node($dst$)}
-        \State $dstPtr \gets$ \texttt{AllocPinned($transfer\_size$)}
-		\State \texttt{memset($dstPtr$, 0, $transfer\_size$)}
+		\State numa\_bind\_node($src$)
+        \State $srcPtr \gets$ AllocPageable($transfer\_size$)
+		\State memset($srcPtr$, 0, $transfer\_size$)
+		\State numa\_bind\_node($dst$)
+        \State $dstPtr \gets$ AllocPinned($transfer\_size$)
+		\State memset($dstPtr$, 0, $transfer\_size$)
+
+		\State $start \gets$ cudaEventCreate()
+		\State $stop \gets$ cudaEventCreate()
 
 		\Statex
-		\For{state}
-		\State \texttt{numa\_bind\_node($src$)} 
-		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment invalidate $dst$ cache
-		\State \texttt{numa\_bind\_node($dst$)}
-		\State $start \gets$ cudaEventRecord()
+		\For{state} \Comment Benchmark library loop
+		\State numa\_bind\_node($src$)
+		\State memset($srcPtr$, 0, $transfer\_size$) \Comment invalidate $dst$ cache
+		\State numa\_bind\_node($dst$)
+		\State cudaEventRecord($start$)
 		\State \begin{varwidth}[t]{\linewidth}
 			cudaMemcpy(\par
 			\hskip\algorithmicindent $dstPtr$, $srcPtr$, $transfer\_size$, \par 
 			\hskip\algorithmicindent cudaMemcpyHostToHost)
 		\end{varwidth}
-		\State $stop \gets$ cudaEventRecord()
+		\State cudaEventRecord($stop$)
 		\State cudaEventSynchronize($stop$)
 		\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
 		\State state.SetIterationTime($\frac{millis}{1000}$)
@@ -71,33 +74,37 @@ Algorithm~\ref{alg:host-allocators} shows the different kind of host allocation 
 		\Function{AllocPageable}{$bytes$}
 		\State $ptr \gets 0$
 		\State malloc($ptr$, $bytes$)
-		\Return $ptr$
+		\State \Return $ptr$
 		\EndFunction
 		\Statex
 		\Function{AllocPinned}{$bytes$}
 		\State $ptr \gets 0$
 		\State malloc($ptr$, $bytes$)
 		\State cudaHostRegister($ptr$, $bytes$, cudaHostRegisterPortable)
-		\Return $ptr$
+		\State \Return $ptr$
 		\EndFunction
 		\Statex
 		\Function{AllocWriteCombined}{$bytes$}
 		\State $ptr \gets 0$
 		\State cudaHostAlloc($ptr$, $bytes$, cudaHostAllocWriteCombined)
-		\Return $ptr$
+		\State \Return $ptr$
 		\EndFunction
 		
 	\end{algorithmic}
-	\caption[Pageable, Pinned, and Write-Combining Host Allocators.]{
-        Pageable, Pinned, and Write-Combining Host Allocators.
+	\caption[Pageable, Pinned, and Write-Combining host allocators.]{
+        Pageable, Pinned, and Write-Combining host allocators.
 	}
 	\label{alg:host-allocators}
 \end{algorithm}
 
 Figure~\ref{fig:explicit-cpu-cpu} shows intra- and inter-CPU \texttt{cudaMemcpy} performance on S822LC, AC922, and DGX-1.
-For small transfers, the bandwidth is limited by overhead of invoking the transfer.
-At intermediate sizes, the overhead is amortized, and the performance peaks due to the transfer size fitting in the cache.
-At larger sizes, the bandwidth reduces to that of the memory bandwidth that can be generated by a single CPU thread.
+In all cases, for small transfers, the bandiwdth is limited by the overhead of invoking the transfer.
+For intermediate and larger sizes, that overhead ceases to be the performance-limiter.
+At large sizes, intra-CPU bandwidth is higher, presumably since data transfer over the SMP bus is not required.
+The bandwidth saturates at the rate that a single thread can generate loads and stores.
+
+S822LC and AC922 have similar intra-CPU performance except for intermediate sizes, where the S822LC performance peaks (presumably due to transfers happening in cache) and AC922 performance drops.
+On DGX-1, inter-CPU transfers are actually faster than intra-CPU transfers for intermediate sizes.
 
 \begin{figure}[H]
 	\centering
@@ -130,7 +137,7 @@ At larger sizes, the bandwidth reduces to that of the memory bandwidth that can 
 \label{sec:explicit-cpu-gpu}
 
 Explicit CPU-GPU transfers are caused by the \texttt{cudaMemcpy} family of functions being invoked on one pointer to a host allocation and one pointer to a device allocation.
-The host allocation may be pageable (created by \texttt{malloc} or \texttt{new}), or be created by \texttt{cudaMallocHost} or \texttt{cudaHostAlloc}, as shown in Algorithm~\ref{alg:host-allocators}.
+In this work, the host allocation is created by one of three methods shown in Algorithm~\ref{alg:host-allocators}.
 The device allocation is created by \texttt{cudaMalloc}.
 This section compares bandwidth achievable from pinned, pageable, and write-combining host allocations, with particular emphasis on how device affinity affects transfer-performance and cases where transfers are anisotropic.
 
@@ -145,17 +152,17 @@ The main benchmark loop uses the \texttt{cudaMemcpy} time as the iteration time 
 		\Statex
 		\Function{Bandwidth}{$dst$, $src$, $bytes$, $num\_iters$}
 		\If{$src$ is GPU}
-		\State \texttt{cudaSetDevice($src$)}
+		\State cudaSetDevice($src$)
 		\Else \Comment{$src$ is CPU}
-		\State \texttt{numa\_bind\_node($src$)}
+		\State numa\_bind\_node($src$)
 		\EndIf
 		\If{$dst$ is GPU}
-		\State \texttt{cudaSetDevice($dst$)}
+		\State cudaSetDevice($dst$)
 		\Else \Comment{$dst$ is CPU}
-		\State \texttt{numa\_bind\_node($dst$)}
+		\State numa\_bind\_node($dst$)
 		\EndIf
 		
-		\State $devPtr \gets$ \texttt{cudaMalloc($bytes$)} \Comment{device allocation}
+		\State $devPtr \gets$ cudaMalloc($bytes$) \Comment{device allocation}
 		\State $hostPtr \gets$ hostAllocate($bytes$) \Comment{appropriate host allocator}
 
 		\If{$src$ is GPU}
@@ -166,13 +173,13 @@ The main benchmark loop uses the \texttt{cudaMemcpy} time as the iteration time 
 		\State $dstPtr \gets devPtr$
 		\EndIf
 
-		\State $start \gets$ \texttt{cudaEventCreate()}
-		\State $end \gets$ \texttt{cudaEventCreate()}
+		\State $start \gets$ cudaEventCreate()
+		\State $end \gets$ cudaEventCreate()
 
 		\For{state}
-		\State \texttt{cudaEventRecord($start$)}
-		\State \texttt{cudaMemcpy($dstPtr$, $srcPtr$, $bytes$, cudaMemcpyDefault)}
-		\State \texttt{cudaEventRecord($stop$)}
+		\State cudaEventRecord($start$)
+		\State cudaMemcpy($dstPtr$, $srcPtr$, $bytes$, cudaMemcpyDefault)
+		\State cudaEventRecord($stop$)
 		\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
 		\State state.SetIterationTime($millis$ / $1000$)
         \EndFor
@@ -192,10 +199,11 @@ The main benchmark loop uses the \texttt{cudaMemcpy} time as the iteration time 
 \subsection{Comparison of Pageable, Pinned, and Write-Combining Host Allocations}
 \label{sec:explicit-pageable-pinned-wc}
 
-To contextualize other results presented in this chapter, Figure~\ref{fig:pageable-pinned-wc} shows the transfer performance from pageable, pinned, and write-combined allocations on CPU0 to device allocations on GPU0.
+To contextualize other results presented in this chapter, Figure~\ref{fig:pageable-pinned-wc} shows the transfer performance between pageable, pinned, and write-combined allocations on CPU0 and a device allocation on GPU0.
+On all tested systems, this is a local transfer between a directly-connected CPU and GPU.
 These performance curves exhibit features common throughout this chapter:
 \begin{itemize}
-	\item For small transfer sizes, the time is dominated by overhead introduced by the abstraction layer.
+	\item For small transfer sizes, the time is dominated by overhead of invoking the transfer.
 	\item For large transfer sizes, the time is dominated by bandwidth limits on the exercised physical link.
 	\item The performance may vary smoothly across intermediate transfer sizes, or exhibit more complicated behavior.
 	For example, in the AC922 transfer show in Figure~\ref{fig:pageable-cpu0-gpu0}, there is a peak in bandwidth for intermediate transfer sizes before the performance drops, and then recovers before larger transfers.
@@ -242,8 +250,10 @@ These performance curves exhibit features common throughout this chapter:
 		\texttt{cudaMemcpy} bandwidth vs transfer size for CPU0 to GPU0 transfers from 
 		(a) pageable allocations,
 		(b) pinned allocations, and
-		(c) write-combining allocations.
+		(c) write-combining allocations and 
+		GPU0 to CPU0 transfers of the same kind (d-f).
 		Results for S822LC, AC922, and DGX-1 systems are shown.
+		Whiskers show standard deviations of benchmark measurements over 5 repetitions.
 	}
 	\label{fig:pageable-pinned-wc}
 \end{figure}

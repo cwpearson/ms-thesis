@@ -598,6 +598,9 @@ The loop body in lines $4$ through $7$ are executed and timed automatically by t
 Any part of the loop body that should not be timed can be wrapped in \texttt{state.PauseTiming()} and \texttt{state.ResumeTiming()}.
 This allows for per-iteration setup code to not be timed.
 The number of loop iterations is automatically controlled by the benchmark suite based on the number of arguments and desired run time.
+For the benchmarks presented in this work, there are tens of thousands of iterations for small transfers, and as few as a single transfer test for large iterations.
+The mean time is reported as a result of the benchmark.
+This process is then repeated multiple times to determine a standard deviation of the measurement.
 
 Some of the microbenchmarks in this work make use of CUDA events to accurately measure the time taken by various CUDA operations.
 Benchmark supports this by allowing each microbenchmark to record and report their own iteration time.
