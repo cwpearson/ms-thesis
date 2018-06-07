@@ -45,6 +45,9 @@ def generator_errorbar(fig, yaml_dir, plot_cfg):
 
         ax.errorbar(x, y, e, capsize=3, label=label)
 
+    ax.yaxis.tick_right()
+    ax.yaxis.set_label_position("right")
+
     if "yaxis" in plot_cfg:
         axis_cfg = plot_cfg["yaxis"]
         if axis_cfg and "lim" in axis_cfg:
