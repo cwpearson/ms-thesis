@@ -459,6 +459,7 @@ Listing~\ref{lst:numa-bind-node} shows a C++ function that takes the operating s
 Lines 6 and 7 allocate a \texttt{bitmask}, and set the bit corresponding to the NUMA node.
 \texttt{numa\_bind()} in line 8 forces execution and allocations to occur on the nodes in the nodemask.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=C++, caption=Binding to NUMA nodes., label=lst:numa-bind-node, numbers=left]
 static inline void 
 numa_bind_node(const int node) {
@@ -470,13 +471,13 @@ numa_bind_node(const int node) {
 	numa_bind(nodemask);
 	numa_free_nodemask(nodemask);
   } else {
-	LOG(critical, "expected node >= -1");
 	exit(1);
   }
 }
 \end{lstlisting}
+\end{minipage}
 
-The benchmarks in this paper also initialize numactl with calls to \texttt{  numa\_set\_strict(1)} and \texttt{ numa\_set\_bind\_policy(1) }, which ensure that NUMA will cause the program to exit on an error, and that if the memory cannot be allocated on the requested NUMA node, the allocation will fail instead of falling back to a different node.
+The benchmarks in this paper also initialize numactl with calls to \texttt{numa\_set\_strict(1)} and \texttt{ numa\_set\_bind\_policy(1) }, which ensure that NUMA will cause the program to exit on an error, and that if the memory cannot be allocated on the requested NUMA node, the allocation will fail instead of falling back to a different node.
 
 \section{OpenMP}
 \label{sec:openmp}
@@ -520,30 +521,33 @@ These events may be used as a lightweight method for measuring how much time CUD
 Events are created with \texttt{cudaEventCreate()}, destroyed with \texttt{cudaEventDestroy()}, and inserted into a stream with \texttt{cudaEventRecord()}.
 \texttt{cudaEventSynchronize()} blocks the calling thread until a particular event has been completed in the stream.
 \texttt{cudaEventElapsedTime()} returns the number of milliseconds that have elapsed between two completed events.
-Listing~\ref{lst:cuda-events} shows an example of measuring time of hypothetical CUDA operation \texttt{cudaSomeOperation()} taking place in the default stream (represented by the \texttt{NULL} argument to \texttt{cudaEventRecord}.
+Listing~\ref{lst:cuda-events} shows an example of measuring time of hypothetical CUDA operation \texttt{cudaSomeAsyncOperation()} taking place in the \texttt{stream} stream.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=C++, caption=Measuring time with CUDA events., label=lst:cuda-events, numbers=left]
-	// Declare variables
-	float millis;
-	cudaEvent_t start, stop;
+// Declare variables
+float millis;
+cudaEvent_t start, stop;
+cudaStream_t stream;
 
-	// Create events
-	cudaEventCreate(start);
-	cudaEventCreate(stop);
+// Create events
+cudaEventCreate(start);
+cudaEventCreate(stop);
 
-	// Insert events into stream
-	cudaEventRecord(start, NULL);
-	cudaSomeOperation(..., NULL);
-	cudaEventRecord(stop);
+// Insert events into stream
+cudaEventRecord(start, stream);
+cudaSomeAsyncOperation(..., stream);
+cudaEventRecord(stop, stream);
 
-	// Wait for events to finish before computing time
-	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&millis, start, stop);
+// Wait for events to finish before computing time
+cudaEventSynchronize(stop);
+cudaEventElapsedTime(&millis, start, stop);
 \end{lstlisting}
+\end{minipage}
 
-Lines $6$ and $7$ create the events that will wrap the operation to be timed.
-Lines $10$ and $12$ insert the \texttt{start} and \texttt{stop} events around the operation to be timed.
-Line $15$ blocks until the events have finished, and then line $16$ produces the number of milliseconds elapsed between the \texttt{start} and \texttt{stop} events.
+Lines $7$ and $8$ create the events that will wrap the operation to be timed.
+Lines $11$ and $13$ insert the \texttt{start} and \texttt{stop} events around the operation to be timed.
+Line $16$ blocks until the events have finished, and then line $17$ produces the number of milliseconds elapsed between the \texttt{start} and \texttt{stop} events.
 
 \subsection{CUDA Profiling Tools Interface}
 \label{sec:cupti}
@@ -574,22 +578,23 @@ Benchmark also supports manual or automatic timing.
 An example of the basic layout of an automatic timing benchmark is shown in Listing~\ref{lst:benchmark-automatic}.
 Microbenchmarks using Benchmark are written in C++, and have a setup phase, an interation phase, and a teardown phase.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=C++, caption=Benchmark with automatic timing., label=lst:benchmark-automatic, numbers=left]
 #include <benchmark/benchmark.h>
-
 static void BM_Foo(benchmark::State& state) {
   for (auto _ : state) {
 	  state.PauseTiming();
-	  ... // this time will not be counted
+	  // Time elapsed here will not be counted
 	  state.ResumeTiming();
 	  foo();
 	}
 }
 BENCHMARK(BM_Foo);
 \end{lstlisting}
+\end{minipage}
 
-Lines $3$-$10$ define a Benchmark function, which is registered to be run in line $11$.
-The loop body in lines $5$ through $9$ are executed and timed automatically by the framework, and the average time is recorded.
+Lines $2$-$9$ define a Benchmark function, which is registered to be run in line $10$.
+The loop body in lines $4$ through $7$ are executed and timed automatically by the framework, and the average time is recorded.
 Any part of the loop body that should not be timed can be wrapped in \texttt{state.PauseTiming()} and \texttt{state.ResumeTiming()}.
 This allows for per-iteration setup code to not be timed.
 The number of loop iterations is automatically controlled by the benchmark suite based on the number of arguments and desired run time.
@@ -603,9 +608,9 @@ It does not prevent any optimization of \texttt{<expr>}, including replacing it 
 Benchmark also provides a \texttt{ClobberMemory()} function, which forces all pending global memory writes to be completed.
 Through these two functions, the microbenchmarks can ensure that specific memory operations are completed and not optimized away.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=C++, caption=Benchmark with manual timing., label=lst:benchmark-manual, numbers=left]
 #include <benchmark/benchmark.h>
-
 static void BM_Foo(benchmark::State& state) {
   cudaEvent_t start, stop;
   cudaEventCreate(start);
@@ -621,13 +626,13 @@ static void BM_Foo(benchmark::State& state) {
     state.SetIterationTime(msec / 1000);
   }
 }
-
 BENCHMARK(BM_Foo)->UseManualTime();
 \end{lstlisting}
+\end{minipage}
 
-Now, when the benchmark is registered in line 20, the framework is informed that the benchmark loop iteration will report its own time.
-Instead of the framework timing the loop body in lines 10-15, CUDA events are used to measure the operation time.
-The iteration time is manually set in line 15.
+Now, when the benchmark is registered in line 17, the framework is informed that the benchmark loop iteration will report its own time.
+Instead of the framework timing the loop body in lines 9-14, CUDA events are used to measure the operation time.
+The iteration time is manually set in line 14.
 
 Although Benchmark also supports multithreaded benchmarking, the microbenchmarks developed for this work do not use it.
 Benchmark does not directly support thread synchronization within each benchmark iteration, which is needed to accurately measure the performance of using mutiple threads to move memory.
@@ -650,7 +655,7 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
     \label{tab:dgx1}
     \begin{tabular}{cc}
     \hline
-    \textbf{Component}                     & \textbf{Specification}                                      \\ \hline
+    \textbf{Component}            & \textbf{Specification}                                      \\ \hline
     \textbf{CPU}                  & \makecell{2x Intel Xeon E5-2698 v4 \\ 40C / 80T \\ 2.2 GHz} \\ \hline
     \textbf{System Memory}        & 512 GB DDR4                                                 \\ \hline
 	\textbf{GPU}                  & 4 Nvidia P100                                               \\ \hline
