@@ -98,7 +98,7 @@ Algorithm~\ref{alg:host-allocators} shows the different kind of host allocation 
 \end{algorithm}
 
 Figure~\ref{fig:explicit-cpu-cpu} shows intra- and inter-CPU \texttt{cudaMemcpy} performance on S822LC, AC922, and DGX-1.
-In all cases, for small transfers, the bandiwdth is limited by the overhead of invoking the transfer.
+In all cases, for small transfers, the bandwidth is limited by the overhead of invoking the transfer.
 For intermediate and larger sizes, that overhead ceases to be the performance-limiter.
 At large sizes, intra-CPU bandwidth is higher, presumably since data transfer over the SMP bus is not required.
 The bandwidth saturates at the rate that a single thread can generate loads and stores.
@@ -417,43 +417,49 @@ For pageable transfers, CPU-to-GPU transfers tend to be faster than GPU-to-CPU t
 \subsection{Differences between Identical Transfers}
 \label{sec:explicit-cpu-gpu-identical}
 
-Figure~\ref{fig:minsky_pageable_cpu1-gpu01} shows transfer performance on two different identical links: CPU1-GPU0 and CPU1-GPU1.
-Both of the scenarios presented involve identical hardware and logical links, yet there is a 10\% bandwidth different at intermediate sizes.
+Figure~\ref{fig:explicit-identical} shows cases of different performance on two topologically- or logically-identical links.
+Figures~\ref{fig:explicit-identical-s822lc-local}~and~\ref{fig:explicit-identical-s822lc-remote} show transfer bandwidth between a pageable allocation and local or remote GPU on S822LC, respectively.
+Figures~\ref{fig:explicit-identical-ac922-local}~and~\ref{fig:explicit-identical-ac922-remote} show transfer bandwidth from a local GPU to a pageable allocation, and a pageable allocation to a remote GPU on AC922, respectively.
+Each of these four scenarios involve identical logical and topological links, and yet a substantial transfer bandwidth difference is observed.
 Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer performance differs on identical links.
-S822LC is the only system where this behavior is observed for CPU-GPU transfers.
-
-
 
 \begin{figure}[ht]
 	\centering
 	\begin{subfigure}[b]{0.31\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/s822lc_identical_pageable-to-gpu_local.pdf}
 		\caption{}
-		\label{fig:minsky_pageable_affinity}
+		\label{fig:explicit-identical-s822lc-local}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.31\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/s822lc_identical_pageable-to-gpu_remote.pdf}
 		\caption{}
-		\label{fig:minsky_pageable_affinity}
+		\label{fig:explicit-identical-s822lc-remote}
 	\end{subfigure}
 	\\
 	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/ac922_identical_pageable-to-gpu_remote.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_identical_gpu-to-pageable_local.pdf}
 		\caption{}
-		\label{fig:dgx_pageable_affinity}
+		\label{fig:explicit-identical-ac922-local}
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.31\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/ac922_identical_gpu-to-pageable_local.pdf}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_identical_pageable-to-gpu_remote.pdf}
 		\caption{}
-		\label{fig:minsky_pinned_affinity}
+		\label{fig:explicit-identical-ac922-remote}
 	\end{subfigure}
-
-	\caption[Different CPU/GPU \texttt{cudaMemcpy} bandwidth on identical links]{
+	\caption[CPU/GPU \texttt{cudaMemcpy} bandwidth on identical links]{
+		Cases of CPU/GPU \texttt{cudaMemcpy} bandwidth on identical links.
+		(a) and (b) show transfer bandwidth from pageable allocations to GPUs on S822lc.
+		(c) shows bandwidth from local GPU to pageable CPU allocation on AC922.
+		(d) shows bandwidth from pageable CPU allocation to remote GPU on AC922.
 	}
-	\label{fig:cpu-gpu-affinity-direction}
+	\label{fig:explicit-identical}
 \end{figure}
+
+This discrepencies only manifest on systems with high-bandwidth interconnets and pageable transfers.
+This suggests that the lower-performance PCIe 3.0 buses mask any similar effects that appear on that system.
+Furthermore, it suggests that the cause of these discrepencies are performance bugs in the CUDA system relating to how internal buffers are allocated, or performance bugs in the system firmware related to low-level data transfer.
 
 \begin{table}[ht]
 	\centering
@@ -461,11 +467,11 @@ S822LC is the only system where this behavior is observed for CPU-GPU transfers.
 	\label{tab:explicit-identical}
 	\begin{tabular}{cccc}
 		\hline
-		\textbf{Transfer Kind}     & \textbf{S822LC}                                        & \textbf{AC922} & \textbf{DGX-1} \\ \hline 
-		Pageable $\rightarrow$ GPU & \checkmark (Fig.~\ref{fig:minsky_pageable_cpu1-gpu01}) & $\times$       & $\times$       \\ \hline
-		Pageable $\leftarrow$ GPU  & $\times$                                               & $\times$       & $\times$       \\ \hline
-		Pinned $\rightarrow$ GPU   & $\times$                                               & $\times$       & $\times$       \\ \hline
-		Pinned $\leftarrow$ GPU    & $\times$                                               & $\times$       & $\times$       \\ \hline
+		\textbf{Transfer Kind}     & \textbf{S822LC}                                                                                              & \textbf{AC922}                                               & \textbf{DGX-1} \\ \hline 
+		Pageable $\rightarrow$ GPU & \checkmark (Figs. \ref{fig:explicit-identical-s822lc-local} and ~\ref{fig:explicit-identical-s822lc-remote}) & \checkmark (Figs. \ref{fig:explicit-identical-ac922-remote}) & $\times$       \\ \hline
+		Pageable $\leftarrow$ GPU  & $\times$                                                                                                     & \checkmark (Figs. \ref{fig:explicit-identical-ac922-local})  & $\times$       \\ \hline
+		Pinned $\rightarrow$ GPU   & $\times$                                                                                                     & $\times$                                                     & $\times$       \\ \hline
+		Pinned $\leftarrow$ GPU    & $\times$                                                                                                     & $\times$                                                     & $\times$       \\ \hline
 	\end{tabular}
 \end{table}
 
