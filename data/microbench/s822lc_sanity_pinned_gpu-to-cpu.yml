@@ -1,12 +1,20 @@
 series:
   - label: GPU0 to CPU0
     file: minsky1-NUMA_Memcpy_GPUToPinned-0-0.json
+  - label: GPU1 to CPU0
+    file: minsky1-NUMA_Memcpy_GPUToPinned-0-1.json
   - label: GPU2 to CPU0
     file: minsky1-NUMA_Memcpy_GPUToPinned-0-2.json
+  - label: GPU3 to CPU0
+    file: minsky1-NUMA_Memcpy_GPUToPinned-0-3.json
   - label: GPU0 to CPU1
     file: minsky1-NUMA_Memcpy_GPUToPinned-1-0.json
+  - label: GPU1 to CPU1
+    file: minsky1-NUMA_Memcpy_GPUToPinned-1-1.json
   - label: GPU2 to CPU1
     file: minsky1-NUMA_Memcpy_GPUToPinned-1-2.json
+  - label: GPU3 to CPU1
+    file: minsky1-NUMA_Memcpy_GPUToPinned-1-3.json
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:

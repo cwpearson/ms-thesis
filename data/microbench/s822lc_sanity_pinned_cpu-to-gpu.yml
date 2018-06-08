@@ -1,17 +1,33 @@
 series:
   - label: CPU0 to GPU0 (local)
     file: minsky1-NUMA_Memcpy_PinnedToGPU-0-0.json
+    yscale: 1e-9
+  - label: CPU0 to GPU1 (local)
+    file: minsky1-NUMA_Memcpy_PinnedToGPU-0-1.json
+    yscale: 1e-9
   - label: CPU0 to GPU2 (remote)
     file: minsky1-NUMA_Memcpy_PinnedToGPU-0-2.json
-  - label: CPU1 to GPU0 (local)
+    yscale: 1e-9
+  - label: CPU0 to GPU3 (remote)
+    file: minsky1-NUMA_Memcpy_PinnedToGPU-0-3.json
+    yscale: 1e-9
+  - label: CPU1 to GPU0 (remote)
     file: minsky1-NUMA_Memcpy_PinnedToGPU-1-0.json
-  - label: CPU1 to GPU2 (remote)
+    yscale: 1e-9
+  - label: CPU1 to GPU1 (remote)
+    file: minsky1-NUMA_Memcpy_PinnedToGPU-1-1.json
+    yscale: 1e-9
+  - label: CPU1 to GPU2 (local)
     file: minsky1-NUMA_Memcpy_PinnedToGPU-1-2.json
+    yscale: 1e-9
+  - label: CPU1 to GPU3 (local)
+    file: minsky1-NUMA_Memcpy_PinnedToGPU-1-3.json
+    yscale: 1e-9
 yaxis:
   label: Transfer Bandwidth (B/s)
   lim:
     - 0
-    - 40_000_000_000
+    - 40
 xaxis:
   label: Transfer Size (B)
   scale: log

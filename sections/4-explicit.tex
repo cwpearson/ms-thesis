@@ -422,13 +422,37 @@ Both of the scenarios presented involve identical hardware and logical links, ye
 Table~\ref{tab:explicit-identical} summarizes scenarios where the transfer performance differs on identical links.
 S822LC is the only system where this behavior is observed for CPU-GPU transfers.
 
+
+
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.45\textwidth]{figures/generated/minsky_pageable_cpu1-gpu01.pdf}
-	\caption[Different Performance on Identical S822LC Links]{
-        S822LC transfer bandwidth vs. transfer size for a pageable allocation on CPU1 to an allocation on GPU0 or GPU1.
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_identical_pageable-to-gpu_local.pdf}
+		\caption{}
+		\label{fig:minsky_pageable_affinity}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/s822lc_identical_pageable-to-gpu_remote.pdf}
+		\caption{}
+		\label{fig:minsky_pageable_affinity}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_identical_pageable-to-gpu_remote.pdf}
+		\caption{}
+		\label{fig:dgx_pageable_affinity}
+	\end{subfigure}
+	~
+	\begin{subfigure}[b]{0.31\textwidth}
+		\includegraphics[width=\textwidth]{figures/generated/ac922_identical_gpu-to-pageable_local.pdf}
+		\caption{}
+		\label{fig:minsky_pinned_affinity}
+	\end{subfigure}
+
+	\caption[Different CPU/GPU \texttt{cudaMemcpy} bandwidth on identical links]{
 	}
-	\label{fig:minsky_pageable_cpu1-gpu01}
+	\label{fig:cpu-gpu-affinity-direction}
 \end{figure}
 
 \begin{table}[ht]

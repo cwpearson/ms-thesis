@@ -1,0 +1,16 @@
+series:
+  - label: CPU0 to GPU2 (remote)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-0-2.json
+    yscale: 1e-9
+  - label: CPU1 to GPU1 (remote)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_HostToGPU-8-1.json
+    yscale: 1e-9
+yaxis:
+  label: Transfer Bandwidth (B/s)
+  lim:
+    - 0
+    - 40
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: AC922 Rmote Pageable-to-GPU Bandwidth
