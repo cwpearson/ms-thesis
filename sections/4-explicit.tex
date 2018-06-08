@@ -483,16 +483,22 @@ Unlike the different types of host allocations CPU-GPU transfers described in Se
 Device allocations come with the concept of peer access, discussed in Section~\ref{sec:cuda-peer}.
 This section focuses on the effect of peer access on transfer bandwidth, and cases where transfers are anisotropic or have different performance on identical links.
 
-Algorithm~\ref{alg:explicit-gpu-gpu} is used to evaluate the achievable GPU-GPU transfer bandwidth.
-First, peer access is enabled or disabled depending on the experimental configuration.
+Algorithm~\ref{alg:explicit-gpu-gpu-peer} is used to evaluate the achievable GPU-GPU transfer bandwidth with peer access enabled.
+First, peer access is enabled.
+If the devices do not support peer access, this will fail, and the benchmark is not run.
 Then, \texttt{cudaMalloc} is used to create allocations of $transfer\_size$ bytes pointed to by $srcPtr$ and $dstPtr$.
 Finally, the achievable bandwidth is measured using the wall time for $num\_iters$ iterations, and the minimum elapsed time is reported, to help remove jitter from the results.
 
-\todo{Update GPU-GPU description}
+Algorithm~\ref{alg:explicit-gpu-gpu-nopeer} is used to evaluate GPU-GPU transfer bandwidth without peer access.
+First, peer access is disabled.
+Then, to help ensure consistency in the benchmarks, the ecexuting thread is pinned to a specific NUMA node.
+On S822LC, this was observed to have a large impact on GPU-GPU transfer performance.
+When execution is pinned to the NUMA node affiliated with the source GPU, transfer bandwidth is more than $25\%$ higher.
+No similar pattern was observed on AC922.
 
 \begin{algorithm}[H]
 	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Peer Bandwidth]{Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth with Peer Access Enabled}
-	\label{alg:explicit-gpu-gpu}
+	\label{alg:explicit-gpu-gpu-peer}
 	\begin{algorithmic}[1]
 		\Statex
 		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$}
@@ -525,7 +531,7 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
 	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Non-Peer Bandwidth]{
 		Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth with Peer Access Disabled.
 		\texttt{numa\_bind\_node} is defined in Listing~\ref{lst:numa-bind-node}.}
-	\label{alg:explicit-gpu-gpu}
+	\label{alg:explicit-gpu-gpu-nopeer}
 	\begin{algorithmic}[1]
 		\Statex
 		\Function{Bandwidth}{$dst$, $src$, $numa$ $transfer\_size$}
