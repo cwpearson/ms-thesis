@@ -477,16 +477,16 @@ Unlike the different types of host allocations CPU-GPU transfers described in Se
 Device allocations come with the concept of peer access, discussed in Section~\ref{sec:cuda-peer}.
 This section focuses on the effect of peer access on transfer bandwidth, and cases where transfers are anisotropic or have different performance on identical links.
 
-Algorithm~\ref{alg:explicit-gpu-gpu} is used to evaluate the achievable GPU-GPU transfer bandwidth.
-First, peer access is enabled or disabled depending on the experimental configuration.
+Algorithms~\ref{alg:explicit-gpu-gpu-peer} and \ref{alg:explicit-gpu-gpu-nopeer} are used to evaluate the achievable GPU-GPU transfer bandwidth with and without peer access enabled.
+When peer access is disabled, \texttt{numa\_bind\_node} is used to pin the executing thread to a specific node.
+On systems where the CUDA driver does not make NUMA-aware allocations, this may help control for NUMA performance effects.
+Then, peer access is enabled or disabled depending on the experimental configuration.
 Then, \texttt{cudaMalloc} is used to create allocations of $transfer\_size$ bytes pointed to by $srcPtr$ and $dstPtr$.
-Finally, the achievable bandwidth is measured using the wall time for $num\_iters$ iterations, and the minimum elapsed time is reported, to help remove jitter from the results.
-
-\todo{Update GPU-GPU description}
+The achievable bandwidth is measured during the Benchmark loop using \texttt{cudaEvent}s and \texttt{cudaMemcpy}.
 
 \begin{algorithm}[H]
 	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Peer Bandwidth]{Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth with Peer Access Enabled}
-	\label{alg:explicit-gpu-gpu}
+	\label{alg:explicit-gpu-gpu-peer}
 	\begin{algorithmic}[1]
 		\Statex
 		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$}
@@ -519,10 +519,10 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
 	\caption[Measuring GPU-GPU \texttt{cudaMemcpy} Non-Peer Bandwidth]{
 		Measuring GPU-GPU \texttt{cudaMemcpy} Bandwidth with Peer Access Disabled.
 		\texttt{numa\_bind\_node} is defined in Listing~\ref{lst:numa-bind-node}.}
-	\label{alg:explicit-gpu-gpu}
+	\label{alg:explicit-gpu-gpu-nopeer}
 	\begin{algorithmic}[1]
 		\Statex
-		\Function{Bandwidth}{$dst$, $src$, $numa$ $transfer\_size$}
+		\Function{Bandwidth}{$dst$, $src$, $numa$, $transfer\_size$}
 
 		\State \texttt{numa\_bind\_node($numa$)}
 		\State \texttt{cudaSetDevice($src$)}
@@ -556,6 +556,7 @@ Finally, the achievable bandwidth is measured using the wall time for $num\_iter
 Figure~\ref{fig:explicit-peer} shows the performance of a variety of GPU-GPU transfers with and without peer access.
 Generally, peer access has a large effect on the bandwidth of local GPU-GPU transfers.
 With peer access enabled, GPUs may do DMAs directly with their peer memory instead of copying through the host.
+Without peer access, the execution is pinned to a particular CPU to control the location for the CUDA system making memory allocations.
 
 \begin{figure}[H]
 	\centering
@@ -598,35 +599,23 @@ With peer access enabled, GPUs may do DMAs directly with their peer memory inste
 		GPU-GPU \texttt{cudaMemcpy} transfer bandwidth vs. transfer size for various scenarios with peer access enabled or disabled.
 		(a) shows a GPU0 to GPU1 transfer on S822LC with and without peer access,
 		(b) shows GPU to GPU local transfers on AC922.
-		(c) shows GPU to GPU remote transfers on AC922.
-		(d) shows GPU to GPU local transfers on DGX-1.
-		S822LC and DGX-1 do not support peer access for remote GPU-GPU transfers.
+		(c) shows GPU to GPU local transfers on DGX-1.
+		(d-f) shows GPU-to-GPU remote transfers on the same systems.
+		S822LC (d) and DGX-1 (f) do not support peer access for remote GPU-GPU transfers.
+		S822LC (d) is annotated with the CPU that the non-peer benchmark is pinned to.
+		The same is not shown in (e-f) because there is no significant performance effect.
 	}
 	\label{fig:explicit-peer}
 \end{figure}
 
-Figure~\ref{fig:explicit-s822lc-peer} shows that enabling peer access on S822LC improves the performance of local GPU-GPU transfers by \mytilde40\%, to over 75\% of the theoretical link bandwidth.
-Likewise, Figure~\ref{fig:explicit-dgx-peer-nopeer-local} shows peer access roughly doubling performance on DGX-1 and Figure~\ref{fig:explicit-hal-peer-local} shows similar behavior for AC922, with the much higher performance ceiling due to the increased bandwidth of NVLink 2.0.
-On AC922, GPU2 and GPU3 show lower performance than GPU0 and GPU1 when peer access is disabled.
-This may be because the CUDA staging buffers needed during this transfer are allocated on a NUMA node remote to the GPUs, so the transfer must copy over the X bus unnecessarily.
-For remote transfers on AC922, shown in Figure~\ref{fig:explicit-hal-peer-remote}, enabling peer access actually reduces the performance, though the effect is not very large.
-More interestingly, the remote GPU/GPU performance with peer disabled is well below both the pinned GPU-to-CPU and CPU-to-GPU remote bandwidth shown in Figure~\ref{fig:hal_pageable_affinity}.
-Together, those operations should be able to implement the GPU-to-GPU transfer.
+Figure~\ref{fig:explicit-s822lc-gpu-gpu-local} shows that enabling peer access on S822LC improves the performance of local GPU-GPU transfers by \mytilde$40$\%, to over $90$\% of the theoretical link bandwidth.
+Likewise, Figure~\ref{fig:explicit-dgx-gpu-gpu-local} shows peer access roughly doubling performance on DGX-1 and Figure~\ref{fig:explicit-ac922-gpu-gpu-local} shows similar behavior for AC922, with the much higher performance ceiling due to the increased bandwidth of NVLink 2.0.
 
-Table~\ref{tab:explicit-peer-rate} summarizes the scenarios where peer access affects transfer bandwidth.
-
-\begin{table}[H]
-	\centering
-	\caption[Effect of Peer Access on Transfer Rate]{Effect of Peer Access on Transfer Rate}
-	\label{tab:explicit-peer-rate}
-	\begin{tabular}{cccc}
-		\hline
-		\textbf{Transfer Kind}       & \textbf{S822LC}                                   & \textbf{AC922}                                       & \textbf{DGX-1}                                             \\ \hline 
-		GPU $\rightarrow$ Local GPU  & \checkmark  (Fig.~\ref{fig:explicit-s822lc-peer}) & \checkmark (Fig.~\ref{fig:explicit-hal-peer-local})  & \checkmark (Fig.~\ref{fig:explicit-dgx-peer-nopeer-local}) \\ \hline
-		GPU $\rightarrow$ Remote GPU & N/A                                               & \checkmark (Fig.~\ref{fig:explicit-hal-peer-remote}) & N/A                                                        \\ \hline
-	\end{tabular}
-\end{table}
-
+On S822LC remote transfers (Figure~\ref{fig:explicit-s822lc-gpu-gpu-remote}), pinning the benchmark to the NUMA node with affinity to the sending GPU improves the performance by around $25$\%.
+On DGX-1 (Figure~\ref{fig:explicit-dgx-gpu-gpu-remote}), no similar effect is seen.
+Any performance differences may be masked by the limited PCIe CPU-GPU bandwidth relative to the CPU-CPU and GPU-GPU bandwidth, so the specific route that the data takes through the system matters less than whether or not the data travels over a slow PCIe bus.
+The performance difference may be masked by the fact that GPU-CPU interconnects are slower than CPU-CPU interconnects on that system, so when the data transfers back
+On AC922 (Figure~\ref{fig:explicit-ac922-gpu-gpu-remote}), there is no substantial effect for large transfers for disabling peer access.
 
 \subsection{Transfer Anisotropy with Peer Access Disabled}
 \label{sec:explicit-peer-direction}

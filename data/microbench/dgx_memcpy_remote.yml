@@ -2,12 +2,6 @@ series:
   - label: GPU0 to GPU5 (no peer)
     file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-5.json
     yscale: 1e-9
-  - label: GPU0 to GPU6 (no peer)
-    file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-6.json
-    yscale: 1e-9
-  - label: GPU0 to GPU7 (no peer)
-    file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-7.json
-    yscale: 1e-9
 yaxis:
   label: Transfer Bandwidth (GB/s)
   lim:

@@ -1,9 +1,15 @@
 series:
-  - label: GPU0 to GPU2 (no peer)
+  - label: GPU0 to GPU2 (CPU0) (no peer)
     file: minsky1-NUMA_Memcpy_GPUToGPU-0-0-2.json
     yscale: 1e-9
-  - label: GPU2 to GPU0 (no peer)
+  - label: GPU0 to GPU2 (CPU1) (no peer)
+    file: minsky1-NUMA_Memcpy_GPUToGPU-1-0-2.json
+    yscale: 1e-9
+  - label: GPU2 to GPU0 (CPU0) (no peer)
     file: minsky1-NUMA_Memcpy_GPUToGPU-0-2-0.json
+    yscale: 1e-9
+  - label: GPU2 to GPU0 (CPU1) (no peer)
+    file: minsky1-NUMA_Memcpy_GPUToGPU-1-2-0.json
     yscale: 1e-9
 yaxis:
   label: Transfer Bandwidth (GB/s)
