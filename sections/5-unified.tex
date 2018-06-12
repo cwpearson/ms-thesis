@@ -22,10 +22,9 @@ The time for the CPU workload or GPU workload and synchronization is recorded as
 The benchmark is repeated five times to discover outliers and establish a standard deviation of measurement.
 
 \begin{algorithm}[H]
-	\caption[Measuring GPU-GPU unified memory coherence or prefetch bandwidth.]{
-		Measuring GPU-GPU unified memory coherence or prefetch bandwidth.
+	\caption[Measuring GPU-GPU Unified Memory Coherence or Prefetch Bandwidth.]{
+		Measuring GPU-GPU unified memory coherence or prefetch bandwidth during a $bytes$-sized transfer between $src$ and $dst$.
 		\texttt{gpu\_write} is defined in Listing~\ref{lst:gpu-write}.
-		\todo{describe arguments}
 	}
 	\label{alg:um-bw-gpu-gpu}
 	\begin{algorithmic}[1]
@@ -68,9 +67,8 @@ The benchmark is repeated five times to discover outliers and establish a standa
 
 \begin{algorithm}[H]
 	\caption[Measuring CPU-GPU Unified Memory Coherence or Prefetch Bandwidth.]{
-		Measuring CPU-GPU Unified Memory Coherence or Prefetch Bandwidth.
+		Measuring CPU-GPU unified memory coherence or prefetch bandwidth during a $bytes$-sized transfer between $src$ and $dst$.
 		\texttt{gpu\_write} is defined in Listing~\ref{lst:gpu-write}.
-		\todo{describe arguments}
 	}
 	\label{alg:um-bw-cpu-gpu}
 	\begin{algorithmic}[1]
@@ -113,10 +111,9 @@ The automatic benchmark timing may be used instead of CUDA events, as the CPU ac
 The benchmark is repeated five times to discover outliers and establish a standard deviation of measurement.
 
 \begin{algorithm}[H]
-	\caption[Measuring GPU-to-CPU unified memory coherence bandwidth.]{
-		Measuring GPU-to-CPU unified memory coherence bandwidth.
+	\caption[Measuring GPU-to-CPU Unified Memory Coherence Bandwidth.]{
+		Measuring GPU-to-CPU unified memory coherence bandwidth during a $bytes$-sized transfer between $src$ and $dst$.
 		\texttt{cpu\_write} is defined in Listing~\ref{lst:cpu-write}.
-		\todo{describe arguments}
 	}
 	\label{alg:um-coherence-bw-gpu-cpu}
 	\begin{algorithmic}[1]
@@ -148,10 +145,9 @@ It is the same as Algorithm~\ref{alg:um-coherence-bw-gpu-cpu}, except CUDA event
 The benchmark is repeated five times to discover outliers and establish a standard deviation of measurement.
 
 \begin{algorithm}[H]
-	\caption[Measuring GPU-to-CPU unified memory prefetch bandwidth.]{
-		Measuring GPU-to-CPU unified memory prefetch bandwidth.
+	\caption[Measuring GPU-to-CPU Unified Memory Prefetch Bandwidth.]{
+		Measuring GPU-to-CPU unified memory prefetch bandwidth during a $bytes$-sized transfer between $src$ and $dst$.
 		\texttt{cpu\_write} is defined in Listing~\ref{lst:cpu-write}.
-		\todo{describe arguments}
 	}
 	\label{alg:um-prefetch-bw-gpu-cpu}
 	\begin{algorithmic}[1]
@@ -184,40 +180,25 @@ The benchmark is repeated five times to discover outliers and establish a standa
 	\end{algorithmic}
 \end{algorithm}
 
-\todo{describe cpu\_write and gpu\_write}.
-
-The \texttt{gpu\_write} workload, shown in Listing~\ref{lst:cpu-write} and \ref{lst:gpu-write}, writes a single value to every $stride$ bytes in $bytes$.
-To minimize the extra work, $stride$ is set to the page size on the target system.
-This causes a single access to each page, and forces the unified memory system to migrate each page to the destination.
 
 Listing~\ref{lst:cpu-write} shows a simple function to write \texttt{sizeof(data\_type)} bytes to every \texttt{stride} byte in a \texttt{count}-byte region starting at \texttt{ptr}.
-OpenMP is used to statically partition the write loop, with each thread taking a contiguous chunk the loop iteration space.
-This ensures that the CPU is running enough threads to maximize demand on the unified memory system.
-When \texttt{stride} is the page size, each page is written only once, doing the minimal amount of work to force a page migraion.
+When \texttt{stride} is the page size, each page is written only once, doing the minimal amount of work to force a page migration.
 
-\begin{lstlisting}[language=c++, caption=\texttt{cpu\_write} function for Algorithm~\ref{alg:um-coherence-bw}, label=lst:cpu-write]
-    template <typename data_type>
-    void cpu_write(data_type *ptr, const size_t count,
-                   const size_t stride)
-    {
-    
-      const size_t numElems = count / sizeof(data_type);
-      const size_t elemsPerStride = stride / sizeof(data_type);
-    
-    #pragma omp parallel for schedule(static)
-      for (size_t i = 0; i < numElems; i += elemsPerStride)
-      {
-        ptr[i] = i * 31ul + 7ul;
-      }
-    }
+\begin{lstlisting}[language=c++, caption=\texttt{cpu\_write} function., label=lst:cpu-write]
+static void 
+cpu_write(char *ptr, const size_t count, const size_t stride) {
+  for (size_t i = 0; i < count; i += stride) {
+    benchmark::DoNotOptimize(ptr[i] = 0);
+  }
+}
 \end{lstlisting}
 
 Listing~\ref{lst:gpu-write} shows CUDA kernel to write \texttt{sizeof(data\_type)} bytes to every \texttt{stride} byte in a \texttt{count}-byte region starting at \texttt{ptr}.
 It assigns consecutive warps in the grid to handle consecutive writes, with a single thread from each warp doing a write.
 If there are not sufficient warps in the grid to cover all writes, the grid loops over the required writes.
-Since warps execute in lockstep, this ensures the broadest simultaneous demands on the unified memory system without reduntant work within a warp.
+Since warps execute in lockstep, this ensures the broadest simultaneous demands on the unified memory system without redundant work within a warp.
 
-\begin{lstlisting}[language=c++, caption=\texttt{gpu\_write} function for Algorithm~\ref{alg:um-coherence-bw}, label=lst:gpu-write]
+\begin{lstlisting}[language=c++, caption=\texttt{gpu\_write} function., label=lst:gpu-write]
     template <typename data_type>
     __global__ void gpu_write(data_type *ptr,
                               const size_t count,
@@ -242,62 +223,12 @@ Since warps execute in lockstep, this ensures the broadest simultaneous demands 
           const size_t id = wx * dataPerStride;
           if (id < numData)
           {
-            ptr[id] = id * 31ul + 7ul;
+            ptr[id] = 0;
           }
         }
       }
     }
 \end{lstlisting}
-
-
-
-Algorithm~\ref{alg:um-coherence-bw} describes a similar approach for measure prefetch bandwidth between two devices participating in the unified memory system.
-First, if $src$ is a CPU, the application thread is bound to that CPU, or if $src$ is a GPU, that GPU is made active.
-$transfer\_size$ bytes are then allocated through \texttt{cudaMallocManaged}, and are associated with the source device thanks to the previous step.
-The benchmark loop is then
-\begin{itemize}
-	\item \texttt{cudaMemPrefetchAsync} is used to move the pages to the source device (if they are not already there).
-	\item \texttt{cudaDeviceSynchronize} ensures the asynchronous prefetch completes.
-	\item the wall time is recorded
-	\item \texttt{cudaMemPrefetchAsync} to move the allocation to $dst$.
-	\item \texttt{cudaDeviceSynchronize} ensures the asynchronous prefetch completes.
-	\item the end wall time is recorded
-\end{itemize}
-The loop is run $num\_iters$ times, and the fastest observed time is reported.
-
-\begin{algorithm}
-	\caption{CPU-GPU Prefetch Bandwidth}
-	\label{alg:um-prefetch-bw}
-	\begin{algorithmic}[1]
-		\Statex
-		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-				
-		\If{$src$ is CPU}
-		\State \texttt{cpu\_bind($src$)}
-		\Else
-		\State \texttt{cudaSetDevice($src$)}
-		\EndIf
-				
-		\State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
-		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
-				
-		\State $elapsed \gets \infty$
-		\For{$i$ in $numIters$}
-				
-		\State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
-		\State \texttt{cudaDeviceSynchronize()}
-				
-		\State $start \gets$ walltime()
-		\State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $dst$)} \Comment pages on $dst$
-		\State \texttt{cudaDeviceSynchronize()}
-		\State $end \gets$ walltime()
-		\State $elapsed \gets$ min($elapsed$, $end-start$)
-		\EndFor
-		\State \Return $elapsed$
-		\EndFunction
-				
-	\end{algorithmic}
-\end{algorithm}
 
 %
 %
