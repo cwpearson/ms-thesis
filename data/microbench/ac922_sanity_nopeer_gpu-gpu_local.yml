@@ -1,0 +1,22 @@
+series:
+  - label: GPU0 to GPU1 (CPU0)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-0-1.json
+    yscale: 1e-9
+  - label: GPU1 to GPU0 (CPU0)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-0-1-0.json
+    yscale: 1e-9
+  - label: GPU2 to GPU3 (CPU1)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-8-2-3.json
+    yscale: 1e-9
+  - label: GPU3 to GPU2 (CPU1)
+    file: hal000.ncsa.illinois.edu-NUMA_Memcpy_GPUToGPU-8-3-2.json
+    yscale: 1e-9
+yaxis:
+  label: Transfer Bandwidth (GB/s)
+  lim:
+    - 0
+    - 80
+xaxis:
+  label: Transfer Size (B)
+  scale: log
+title: AC922 SANITY Memcpy Bandwidth (Local) (No Peer) (GPU to GPU)
