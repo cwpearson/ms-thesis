@@ -5,7 +5,7 @@ series:
   - label: CPU0 to GPU2 (remote)
     file: minsky1-NUMAUM_Coherence_HostToGPU-0-2.json
     yscale: 1e-9
-  - label: GPU0 to CPU0 (lcaol)
+  - label: GPU0 to CPU0 (local)
     file: minsky1-NUMAUM_Coherence_GPUToHost-0-0.json
     yscale: 1e-9
   - label: GPU2 to CPU0 (remote)
@@ -15,7 +15,7 @@ yaxis:
   label: Transfer Bandwidth (GB/s)
   lim:
     - 0
-    - 40
+    - 35
 xaxis:
   label: Transfer Size (B)
   scale: log

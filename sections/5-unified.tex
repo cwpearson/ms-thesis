@@ -236,8 +236,6 @@ Since warps execute in lockstep, this ensures the broadest simultaneous demands 
 \section{Coherence vs Prefetch Bandwidth}
 \label{sec:um-coherence-prefetch}
 
-Figure~\ref{fig:um-cpu-gpu} compares CPU/GPU prefetch and coherence bandwidth on S822LC, AC922, and DGX-1.
-
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[b]{0.45\textwidth}
@@ -282,20 +280,25 @@ Figure~\ref{fig:um-cpu-gpu} compares CPU/GPU prefetch and coherence bandwidth on
 	\label{fig:um-cpu-gpu}
 \end{figure}
 
-
-In general, the CPU/GPU prefetch bandwidth saturates at a higher fraction of the theoretical underlying link bandwidth than the coherence bandwidth.
+Figure~\ref{fig:um-cpu-gpu} compares CPU/GPU prefetch and coherence bandwidth on S822LC, AC922, and DGX-1.
+Prefetch provides substantially higher bandwidth than coherence demands, especially for large transfers.
 This is likely because the DMA associated with a prefetch is a simpler and higher-performance operation than the on-demand migration of pages.
-Coherence migrations can provide higher transfer bandwidth at small and intermediate transfer sizes.
-This suggests that the overhead of the prefetch transfer is higher than the coherence transfer.
-Notably, CPU-GPU transfers on AC922 show some unique performance degradation as transfer sizes get larger.
-Due to the construction of the benchmark, the number of GPU threads participating in the transfer grows linearly with the transfer size.
-Performance of the unified memory system on S822LC and AC922 may degrade with too many simultaneous pending transfers.
+Prefetch is still lower performance than CPU-to-GPU transfers from pinned memory.
+Prefetch must still obey consistency and coherency requirements of the unified memory system, which is a cost not present in explicit data transfer.
 
-Figure~\ref{fig:um-gpu-gpu} compares GPU/GPU prefetch and coherence bandwidth on S822LC, AC922, and DGX-1.
-The GPU/GPU prefetch bandwidth also saturates at a higher bandwidth than the coherence transfers, and like the CPU/GPU transfers, the coherence bandwidth is higher for small and intermediate transfers.
-On S822LC and AC922, the achieved bandwidth drop as the transfer size gets larger (except for the S822LC remote case).
-This would be consistent with many parallel GPU threads generating too many concurrent page transfer demands.
+On the IBM systems, prefetch bandwidth between local devices is higher than between remote devices (Figures~\ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-gpu}).
+The hardware/software overhead of the unified memory prefetch is low enough to exercise a majority of the availably underlying hardware links, so the more limited performance of the X bus in the remote transfers is likely the cause.
+The situation is reversed on DGX-1 (Figure~\ref{fig:um-prefetch-dgx-cpu-gpu}), where GPU to CPU transfers manage to match the performance of pinned explicit transfers, and CPU to GPU transfers do not.
+Overall, the prefetch bandwidth is closely correlated with the underlying hardware link performance, with AC922 providing much more bandwidth than the other two systems.
 
+All three systems share behavior for coherence bandwidth (Figures~\ref{fig:um-coherence-s822lc-cpu-gpu}, \ref{fig:um-coherence-ac922-cpu-gpu}, and \ref{fig:um-coherence-dgx-cpu-gpu}).
+In these measurements, CPU to GPU performance exceeds GPU to CPU performance due to only using a single CPU thread to generate coherence requests.
+On S822LC and AC922, there is a peak in coherence bandwidth at intermediate transfer sizes.
+On DGX-1, coherence requests actually provide higher bandwidth at small transfer sizes.
+This may be due to reduced overhead for small number of coherence requests compare to setting up an bulk prefetch.
+Investigating the details of unified memory performance for different thread counts is under consideration as future work.
+
+\subsection{Device Affinity and Coherence Bandwidth}
 
 \begin{figure}[H]
 	\centering
@@ -337,23 +340,21 @@ This would be consistent with many parallel GPU threads generating too many conc
 	\caption[GPU/GPU Coherence and Prefetch Bandwidth]{
 		Measured GPU/GPU coherence and prefetch bandwidth vs. transfer size for S822LC, AC922, and DGX-1.
 		Local and remote transfers in both directions for each pair of GPUs are shown.
+		For S822LC, anisotropy on GPU-GPU transfers is also shown.
+		Similar anisotropy was not observed on AC922 or DGX-1.
 	}
 	\label{fig:um-gpu-gpu}
 \end{figure}
 
+Observed coherence transfer bandwidth is correlated with device affinity; Table~\ref{tab:um-coherence-affinity} summarizes the observed effects.
+The effect for CPU-to-GPU transfers is small but measurable on all three systems, as shown in Figures \ref{fig:um-coherence-s822lc-cpu-gpu},~\ref{fig:um-coherence-ac922-cpu-gpu},~and~\ref{fig:um-coherence-dgx-cpu-gpu}.
+There is also a small, measurable effect for GPU to CPU transfers, though using a single CPU thread may be obfuscating a larger difference.
+This small effect is probably due to overhead of ensuring coherence, so reduced link bandwidth in remote transfers is not a highly influential effect.
 
-
-\subsection{Device Affinity and Coherence Bandwidth}
-
-Device affinity affects the observed coherence transfer bandwidth.
-Table~\ref{tab:um-coherence-affinity} shows some cases where affinity affects transfer bandwidth.
-Figures \ref{fig:um-coherence-s822lc-cpu-gpu} and ~\ref{fig:um-coherence-ac922-cpu-gpu} shows no affinity effect for CPU to GPU coherence traffic.
-On AC922, the same is not true for GPU-to-CPU traffic, where local transfers saturate above 40GB/s while remote transfers are limited to around 30 GB/s.
-The CPUs on AC922 may be able to generate more coherence requests, or the system may be able to serve them faster, and ultimately the performance is limited by the slower CPU-CPU X bus.
-
-Figures \ref{fig:um-coherence-s822lc-gpu-gpu} and ~\ref{fig:um-coherence-ac922-gpu-gpu} show that affinity influences the performance of GPU-GPU transfers, with local transfers being faster than remote transfers.
-The performance difference is much greater for intermediate transfers than large transfers.
-\todo{Can we figure out why?}
+Figure~\ref{fig:um-gpu-gpu} compares GPU/GPU prefetch and coherence bandwidth on S822LC, AC922, and DGX-1.
+For GPU-GPU transfers, the effect of device affinity on coherence bandwidth is much stronger.
+On S822LC, local transfers achieve around $30\%$ higher bandwidth.
+The local bandwidth is nearly $100\%$ higher on DGX, and also on AC922 for intermediate transfer sizes.
 
 \begin{table}[ht]
 	\centering
@@ -363,10 +364,10 @@ The performance difference is much greater for intermediate transfers than large
 	\label{tab:um-coherence-affinity}
 	\begin{tabular}{cccc}
 		\hline
-		\textbf{Transfer Kind}    & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
-		CPU $\rightarrow$     GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-		CPU $\leftarrow$      GPU & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-		GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+		\textbf{Transfer Kind}    & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                                      \\ \hline 
+		CPU $\rightarrow$     GPU & small (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu})      & $\times$   (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & small (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		CPU $\leftarrow$      GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & small (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu})      & small (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -375,16 +376,16 @@ The performance difference is much greater for intermediate transfers than large
 
 Device affinity can affect the observed prefetch bandwidth.
 Table~\ref{tab:um-prefetch-affinity} shows some cases where affinity affects prefetch transfer bandwidth.
-Figures \ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-gpu} show that CPU-GPU prefetch bandwidth is influenced by device affinity.
-For S822LC and AC922, the prefetch bandwidth from GPU2 to CPU0 is substantially higher than that of GPU0 to CPU0, even though GPU2 is remote from CPU0 and must traverse more links.
-The CPU-to-GPU transfers show more expected behavior, with local transfer bandwidth being higher than remote.
-On DGX-1, there is no effect, probably due to the low PCIe bandwidth hiding other factors that might introduce unepxected behavior.
+Figures \ref{fig:um-prefetch-s822lc-cpu-gpu}~and~\ref{fig:um-prefetch-ac922-cpu-gpu} show that CPU/GPU prefetch bandwidth is strongly correlated with device affinity on S822LC and AC922.
+The overhead of prefetch transfers is lower than coherence transfers, and the availability of bandwidth on the underlying links has a large impact.
+On DGX-1 (Figure~\ref{fig:um-prefetch-dgx-cpu-gpu}), bandwidth is not at all correlated with device affinity, in fact, for GPU-to-CPU transfers, remote bandwidth is higher than local bandwidth.
+The hardware bandwidth on DGX-1 is much lower, and other implementation details control the performance.
 
-Figures \ref{fig:um-prefetch-s822lc-gpu-gpu}, \ref{fig:um-prefetch-ac922-gpu-gpu}, and \ref{fig:um-prefetch-dgx-gpu-gpu} show that GPU-GPU affinity has a very large effect for prefetch bandwidth.
+Figures \ref{fig:um-prefetch-s822lc-gpu-gpu}, \ref{fig:um-prefetch-ac922-gpu-gpu}, and \ref{fig:um-prefetch-dgx-gpu-gpu} show that like coherence bandwidth GPU-GPU affinity is strongly correlated with prefetch bandwidth.
 On all systems, local GPUs can prefetch data much faster than remote GPUs.
-On S822LC, local GPUs enjoy $162\%$ of the transfer bandwidth of their remote companions.
+On S822LC, local GPUs enjoy $130\%$ of the transfer bandwidth of their remote companions.
 On DGX-1, it is $170\%$, and on AC922, that number balloons to $230\%$.
-Generally, local GPU-GPU transfers are able to saturate around 75\% of the theoretical underlying link bandwidth.
+Generally, local GPU-GPU transfers are able to saturate around $90$\% of the theoretical underlying link bandwidth, just like pinned transfers.
 
 \begin{table}[ht]
 	\centering
@@ -427,7 +428,7 @@ On AC922, Figure~\ref{fig:um-coherence-ac922-gpu-gpu} shows there is no anisotro
 	\end{tabular}
 \end{table}
 
-\section{Observed Anisotropy in Prefetch Bandwidth}
+\subsection{Observed Anisotropy in Prefetch Bandwidth}
 
 Table~\ref{tab:um-prefetch-anisotropy} describes instances of observed anisotropy in prefetch bandwidth.
 
