@@ -600,15 +600,8 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
 
 \section{Summary}
 
-The performance of the unified memory system deviates from expectations in substantial ways:
-\begin{itemize}
-\item CPU-to-GPU coherence bandwidth is higher than prefetch bandwidth for small / intermediate transfer sizes.
-\item S822LC and AC922 exhibit faster remote GPU-GPU prefetch bandwidth than local GPU-GPU prefetch bandwidth.
-\item DGX-1 GPU-CPU prefetch bandwidth is not affected by device affinity.
-\item S822LC is alone in exhibiting remote GPU-GPU prefetch anisotropy.
-\item Anisotropy is observed in a wide variety of cases
-\item AC922 and DGX-1 have better CPU-to-GPU coherence bandwidth for smaller transfers and better GPU-to-CPU coherence bandwidth for large cases, while S822LC always demonstrates better CPU-to-GPU than GPU-to-GPU coherence bandwidth.
-\item IBM CPU/GPU prefetch bandwidth is anisotropic and affected by affinity.
-\end{itemize}
-However, the performance of the unified memory system is no more surprising than that of the explicit transfer system, and with hints from the application developer, can achieve the same effective performance as the explicit system.
-In this way, the application developer is able to have the best of both worlds: detailed performance or simpler application development when desired.
+The unified memory system comes at a significant performance penalty compared to explicit memory management, and suffers from similar topological performance effects.
+Unsurprisingly, performance is strongly correlated with device affinity, particularly for prefetch bandwidth.
+Performance anisotropy is observed in nearly all prefetch benchmarks and many coherence benchmarks.
+Achievable coherence performance ranges from around $30\%$-$90\%$ of the best possible explicit performance, with more degredation on higher-performance links.
+With the additional programmer effort of including prefetching hints, performance nearly equal to the explicit data transfer can be achieved.
