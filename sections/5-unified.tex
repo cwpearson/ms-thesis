@@ -11,53 +11,6 @@ This chapter comprises two sections, detailing performance of prefetch and coher
 In each section, transfer bandwidth for coherence and prefetch transfers is examined, as well as page-fault latency for demand transfers, where applicable.
 
 Algorithm~\ref{alg:um-coherence-bw} describes the approach to measure coherence bandwidth between any two CUDA devices in the unified memory system.
-
-\begin{algorithm}[H]
-	\caption{CPU-GPU Coherence Bandwidth}
-	\label{alg:um-coherence-bw}
-	\begin{algorithmic}[1]
-		\Statex
-		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$, $num\_workers$}
-				
-		\If{$src$ is CPU}
-		\State \texttt{numa\_bind($src$)} \Comment bind thread and children to $src$
-		\EndIf
-		\If{$dst$ is CPU}
-		\State \texttt{numa\_bind($dst$)}
-		\EndIf
-		\State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
-		\State \texttt{memset($srcPtr$, 0, $transfer\_size$)} \Comment force pages to be allocated
-				        
-				
-		\State $blockDim \gets [256,1,1]$
-		\State $transferStrides \gets floor(\frac{transfer\_size + stride - 1}{stride})$
-		\State $gridDim \gets [floor(\frac{transferStride + 255}{256}), 1, 1]$
-				
-		\If{$dst$ is GPU}
-		\State \texttt{cudaSetDevice($dst$)}
-		\EndIf
-		\State $elapsed \gets \infty$
-		\For{$i$ in $numIters$}
-				
-		\State \texttt{cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)} \Comment pages on $src$
-		\State \texttt{cudaDeviceSynchronize()}
-				
-		\State $start \gets$ walltime()
-		\If{$dst$ is GPU}
-		\State \texttt{gpu\_read\_8<<<$gridDim$,$blockDim$>>>($ptr$, $transfer\_size$, $stride$)}
-		\State \texttt{cudaDeviceSynchronize()}
-		\Else
-		\State \texttt{cpu\_write\_8($ptr$, $transfer\_size$, $stride$)}
-		\EndIf
-		\State $end \gets$ walltime()
-		\State $elapsed \gets$ min($elapsed$, $end-start$)
-		\EndFor
-		\State \Return $elapsed$
-		\EndFunction
-				
-	\end{algorithmic}
-\end{algorithm}
-
 First, if the source or destination device is a CPU, the application and worker threads are bound to that CPU.
 $transfer\_size$ bytes are allocated for the unified memory system, and touched by the CPU to ensure the allocation is actually backed by pages.
 Then, if the destination is a GPU, that GPU is set as the active device, so future kernel executions will happen on that GPU.
@@ -67,6 +20,46 @@ To minimize the extra work, $stride$ is set to the page size on the target syste
 This causes a single access to each page, and forces the unified memory system to migrate each page to the destination.
 \texttt{cudaDeviceSynchronize} is used to ensure the GPU kernel is finished.
 The time for the CPU workload or GPU workload and synchronization is recorded, and the minimum time over $numIters$ is returned.
+
+\begin{algorithm}[H]
+	\caption[Measuring GPU-GPU Unified Memory Coherence Bandwidth.]{
+		Measuring GPU-GPU Unified Memory Coherence Bandwidth.
+		\texttt{gpu\_write} is defined in Listing~\ref{lst:gpu-write}
+	}
+	\label{alg:um-coherence-bw-gpu-gpu}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$}
+				
+
+		\State cudaSetDevice($dst$)
+		\State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
+		\State \texttt{memset($ptr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+
+		\State cudaEventCreate($start$)
+		\State cudaEventCreate($stop$)		        
+				
+		\For{$state$}
+			\State cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)
+			\State cudaSetDevice($src$)
+			\State cudaDeviceSynchronize()
+			\State cudaSetDevice($dst$)
+			\State cudaDeviceSynchronize()
+			\State cudaEventRecord($start$)
+			\State \texttt{gpu\_write<<<$256$,$256$>>>($ptr$, $transfer\_size$, $stride$)}
+			\State cudaEeventRecord($stop$)
+			\State cudaEventSynchronize($stop$)
+			\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
+			\State state.SetIterationTime($\frac{millis}{1000}$)
+
+		\EndFor
+		
+		\EndFunction
+				
+	\end{algorithmic}
+\end{algorithm}
+
+
 
 Listing~\ref{lst:cpu-write} shows a simple function to write \texttt{sizeof(data\_type)} bytes to every \texttt{stride} byte in a \texttt{count}-byte region starting at \texttt{ptr}.
 OpenMP is used to statically partition the write loop, with each thread taking a contiguous chunk the loop iteration space.
