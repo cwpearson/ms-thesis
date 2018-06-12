@@ -1,15 +1,12 @@
 series:
-  - label: GPU0 to GPU1
+  - label: GPU0 to GPU1 (CPU0)
     file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-1.json
     yscale: 1e-9
-  - label: GPU0 to GPU2
+  - label: GPU0 to GPU2 (CPU0)
     file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-2.json
     yscale: 1e-9
-  - label: GPU0 to GPU3
+  - label: GPU0 to GPU3 (CPU0)
     file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-3.json
-    yscale: 1e-9
-  - label: GPU0 to GPU4
-    file: dgx-1-NUMA_Memcpy_GPUToGPU-0-0-4.json
     yscale: 1e-9
 yaxis:
   label: Transfer Bandwidth (GB/s)

@@ -626,8 +626,23 @@ On AC922 (Figure~\ref{fig:explicit-ac922-gpu-gpu-remote}), there is no substanti
 \subsection{Transfer Rate on Identical Transfers}
 \label{sec:explicit-peer-identical}
 
-Like CPU-GPU transfers, different performance is observed on identical GPU-GPU transfers when peer access is disabled.
-Figure~\ref{fig:explicit-nopeer-identical} show some example scenarios.
+Different performance is observed on identical GPU-GPU transfers when peer access is disabled.
+Figure~\ref{fig:explicit-nopeer-identical} shows some example scenarios.
+In isolation, there is no reason to disable peer access for local transfers, as it always reduces performance.
+Therefore, it is unlikely that a practical program would ever exercise this scenario.
+During cases of contention, peer access could be utilized to divert data along a different hardware path, so these results are presented for completeness.
+
+Figure~\ref{fig:explicit-nopeer-identical-s822lc-local} compares the bandwidth of transfers from GPU0 to GPU1 (pinned to local CPU0) and GPU2 to GPU3 (pinned to local CPU1) on S822LC.
+These are identical transfers on different CPU-GPU-GPU triads that make up S822LC (Figure~\ref{fig:topo-minsky-simple}).
+The transfer between GPU0 and GPU1 is around $30$\% slower than the same transfer between GPU2 and GPU3.
+
+Similarly, Figure~\ref{fig:explicit-nopeer-identical-dgx-local} shows variability in transfer bandwidths observed on DGX-1.
+As shown in Figure~\ref{fig:topo-minsky-actual}, there are three PCIe bridges between GPU0 and GPU1, and there are seven PCIe bridges between GPU2 and GPU3.
+The bandwidth between GPU0 and GPU2/GPU3 is identical, as are the topologies between them.
+Although the topology between GPU0 and GPU1 is shorter, the performance is also lower.
+It is possible that the different bridges have different performance characteristics.
+
+Table~\ref{tab:explicit-identical} summarizes the cases where differing performance is observed.
 
 \begin{figure}[ht]
 	\centering
@@ -638,33 +653,20 @@ Figure~\ref{fig:explicit-nopeer-identical} show some example scenarios.
 	\end{subfigure}
 	~
 	\begin{subfigure}[b]{0.4\textwidth}
-		\includegraphics[width=\textwidth]{figures/generated/s822lc_nopeer_identical-remote.pdf}
-		\caption{}
-		\label{fig:explicit-nopeer-identical-s822lc-remote}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{figures/generated/dgx_nopeer_identical.pdf}
 		\caption{}
-		\label{fig:explicit-nopeer-identical-dgx}
+		\label{fig:explicit-nopeer-identical-dgx-local}
 	\end{subfigure}
 	\caption[GPU-GPU \texttt{cudaMemcpy} Bandwidth on Identical Links]{
-		Transfer bandwidth vs transfer size for AC922 and S822LC.
-		(a) and (b) show differing transfer bandwidth on logically-identical local and remote transfers for S822LC.
-		(c) and (d) show the same for AC922.
-		(e) shows the same for DGX-1.
+		Transfer bandwidth vs transfer size for S822LC and DGX-1.
+		(a) shows differing transfer bandwidth on logically-identical local transfers on S822LC.
+		(b) shows the same for DGX-1.
+		AC922 is omitted as no performance variability is present when controlling for NUMA pinning during non-peer transfers.
 	}
 	\label{fig:explicit-nopeer-identical}
 \end{figure}
 
-Figure~\ref{fig:explicit-nopeer-identical-ac922-local} compares the bandwidth of transfers from GPU0 to GPU1 and GPU2 to GPU3 on AC922.
-These transfers are logically and physically identical: they have the same direction, between identical sub-topologies, and use the same CUDA APIs.
-Surprisingly, the achieved bandwidth varies by nearly a factor of two.
-This may be due to intermediate buffers being allocated on a CPU remote to the GPU pair, forcing transfers to cross the X-bus.
-Figure~\ref{fig:explicit-nopeer-identical-ac922-remote} shows similar behavior for remote transfers, though with a smaller magnitude of effect.
-Figures~\ref{fig:explicit-nopeer-identical-s822lc-local} and ~\ref{fig:explicit-nopeer-identical-s822lc-remote} show the same for S822LC.
-Figure~\ref{fig:explicit-nopeer-identical-dgx} shows how GPU0-GPU1, GPU2-GPU3, GPU4-GPU5, and GPU6-GPU7 transfers are slower than all other local transfers (GPU0-GPU2, for example).
-Table~\ref{tab:explicit-identical} summarizes the cases where differing performance is observed.
+
 
 \begin{table}[ht]
 	\centering
@@ -672,11 +674,11 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
 	\label{tab:explicit}
 	\begin{tabular}{cccc}
 		\hline
-		\textbf{Transfer Kind}                      \\ \hline 
-		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer enabled)  } & $\times$                                                            & $\times$                                                           & $\times$                                                  \\ \hline
-		\makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer enabled)  } & N/A                                                                 & $\times$                                                           & N/A                                                       \\ \hline
-		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-local})  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-ac922-local})  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-dgx}) \\ \hline
-		\makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-remote}) & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-ac922-remote}) & $\times$                                                  \\ \hline
+		\textbf{Transfer Kind}                                           & S822LC                                                              & AC922     & DGX-1                                                           \\ \hline 
+		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer enabled)  } & $\times$                                                            & $\times$  & $\times$                                                        \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer enabled)  } & N/A                                                                 & $\times$  & N/A                                                             \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Local GPU  \\ (peer disabled) } & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-s822lc-local})  & $\times$  & \checkmark (Fig.~\ref{fig:explicit-nopeer-identical-dgx-local}) \\ \hline
+		\makecell{ GPU $\leftrightarrow$ Remote GPU \\ (peer disabled) } & $\times$                                                            & $\times$  & $\times$                                                        \\ \hline
 	\end{tabular}
 \end{table}
 
