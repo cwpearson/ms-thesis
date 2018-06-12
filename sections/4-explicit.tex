@@ -666,8 +666,6 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
 	\label{fig:explicit-nopeer-identical}
 \end{figure}
 
-
-
 \begin{table}[ht]
 	\centering
 	\caption[Transfer rate on Identical Links]{Transfer Rate on Identical Links}
@@ -685,10 +683,7 @@ Table~\ref{tab:explicit-identical} summarizes the cases where differing performa
 \section{Summary}
 
 The performance of \texttt{cudaMemcpy} transfers is highly dependent on device affinity, CPU allocation type, transfer direction, and underlying hardware performance.
-Transfers involving pageable host allocations are particularly unpredictable, with bandwidth peaking at intermediate transfer sizes, possibly due to pageable-to-pinned transfers occurring wholly in the CPU cache.
+Transfers involving pageable host allocations are particularly unpredictable, probably due to the performance of combined intra-CPU communication, inter-CPU communication, cache effects, and DMA being difficult to tune for all cases.
 In general, constraining communication to pinned buffers and local devices offers the best performance, though direction of the transfer still has a large impact.
-
-\begin{itemize}
-	\item S822LC GPU to CPU pageable transfers are faster for remote than local.
-	\item AC922 GPU to CPU pageable transfers: local is faster than remove for small, remote is faster than local for large.
-\end{itemize}
+Some CPU-GPU pageable transfers exhibit different performance even when the logical communication is the same.
+This is also present in GPU-GPU transfers, but only for local transfers when peer-access is disabled.
