@@ -405,12 +405,10 @@ Generally, local GPU-GPU transfers are able to saturate around $90$\% of the the
 \subsection{Observed Anisotropy in Coherence Bandwidth}
 
 Table~\ref{tab:um-coherence-anisotropy} describes instances of observed anisotropy in coherence bandwidth.
-Figure~\ref{fig:um-coherence-s822lc-cpu-gpu} shows that CPU-to-GPU coherence transfers are uniformly faster than GPU-to-CPU coherence transfers on S822LC.
-On AC922, Figure~\ref{fig:um-coherence-ac922-cpu-gpu} shows that for small transfers, CPU-to-GPU transfers are faster, but the corresponding GPU-to-CPU transfers become larger for large transfers.
-The Power9 CPUs may be able to generate more coherence requests once the OpenMP overhead of the benchmark is sufficiently amortized for large transfers.
-
-Figure~\ref{fig:um-coherence-s822lc-gpu-gpu} shows that GPU-GPU S822LC transfers do exhibit anisotropy in large remote coherence transfers, but no other cases.
-On AC922, Figure~\ref{fig:um-coherence-ac922-gpu-gpu} shows there is no anisotropic behavior in any GPU-GPU coherence transfers.
+All CPU/GPU coherence transfers show anisotropy due to the single CPU thread vs multiple GPU threads making accesses.
+On all systems, GPU-to-CPU transfers can be around twice the performance for small transfers, but for larger sizes the bandwidth saturates at the rate a single CPU thread can generate requests.
+On S822LC, Figure~\ref{fig:um-coherence-dgx-gpu-gpu} there is ansiotropy present in remote GPU-to-GPU transfers.
+Similar GPU-GPU bandwidth anisotropy was not observed in any other cases.
 
 \begin{table}[ht]
 	\centering
@@ -420,11 +418,11 @@ On AC922, Figure~\ref{fig:um-coherence-ac922-gpu-gpu} shows there is no anisotro
 	\label{tab:um-coherence-anisotropy}
 	\begin{tabular}{cccc}
 		\hline
-		\textbf{Transfer Kind}             & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
+		\textbf{Transfer Kind}             & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                                      \\ \hline 
 		CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
 		CPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-ac922-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-coherence-dgx-cpu-gpu}) \\ \hline
-		GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
-		GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-coherence-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-ac922-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-coherence-dgx-gpu-gpu}) \\ \hline
 	\end{tabular}
 \end{table}
 
@@ -432,14 +430,10 @@ On AC922, Figure~\ref{fig:um-coherence-ac922-gpu-gpu} shows there is no anisotro
 
 Table~\ref{tab:um-prefetch-anisotropy} describes instances of observed anisotropy in prefetch bandwidth.
 
-Figure~\ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-gpu} show CPU-GPU anisotropy on S822LC and AC922.
-For local transfers, the CPU-GPU direction is faster.
-For remote transfers, the GPU-to-CPU direction is faster.
-Figure~\ref{fig:um-prefetch-dgx-cpu-gpu} shows negligable anisotropy on DGX-1, though the GPU-to-CPU direction is always faster.
-The relatively low PCIe bandwidth may be hiding other influences.
-
-Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu} shows anisotropy in remote GPU-GPU prefetch transfers on S822LC.
-Neither of the other systems demonstrate any GPU-GPU prefetch anisotropy.
+Figures~\ref{fig:um-prefetch-s822lc-cpu-gpu} shows limited anisotropy on local CPU/GPU transfers on S822LC, though there is substantial anisotropy for remote CPU/GPU transfers.
+For S822LC remote transfers, as well as on AC922 and DGX-1, there is significant CPU/GPU coherence transfer anisotropy.
+On DGX-1, GPU-to-CPU transfers are always faster.
+On AC922 and S822LC, GPU-to-CPU transfers are faster for local transfers and CPU-to-GPU transfers are faster for remote devices.
 
 \begin{table}[ht]
 	\centering
@@ -449,18 +443,17 @@ Neither of the other systems demonstrate any GPU-GPU prefetch anisotropy.
 	\label{tab:um-prefetch-anisotropy}
 	\begin{tabular}{cccc}
 		\hline
-		\textbf{Transfer Kind}             & \textbf{S822LC}                                         & \textbf{AC922}                                         & \textbf{DGX-1}                            \\ \hline 
-		CPU $\leftrightarrow$ GPU (local)  & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$ (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
-		CPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & $\times$ (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
-		GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu}) \\ \hline
-		GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu}) \\ \hline
+		\textbf{Transfer Kind}             & \textbf{S822LC}                                        & \textbf{AC922}                                        & \textbf{DGX-1}                                      \\ \hline 
+		CPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
+		CPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-ac922-cpu-gpu}) & \checkmark (Fig.~\ref{fig:um-prefetch-dgx-cpu-gpu}) \\ \hline
+		GPU $\leftrightarrow$ GPU (local)  & $\times$   (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu})   \\ \hline
+		GPU $\leftrightarrow$ GPU (remote) & \checkmark (Fig.~\ref{fig:um-prefetch-s822lc-gpu-gpu}) & $\times$   (Fig.~\ref{fig:um-prefetch-ac922-gpu-gpu}) & $\times$ (Fig.~\ref{fig:um-prefetch-dgx-gpu-gpu})   \\ \hline
 	\end{tabular}
 \end{table}
 
 %
 %
 %
-
 \section{Page Fault Latency}
 \label{sec:um-page-fault}
 
