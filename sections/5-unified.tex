@@ -10,56 +10,185 @@ Data tranfers in the unified memory system are created in two ways:
 This chapter comprises two sections, detailing performance of prefetch and coherence unified memory bandwidth (Section~\ref{sec:um-coherence-prefetch}), and page fault latency (Section~\ref{sec:um-page-fault}).
 In each section, transfer bandwidth for coherence and prefetch transfers is examined, as well as page-fault latency for demand transfers, where applicable.
 
-Algorithm~\ref{alg:um-coherence-bw} describes the approach to measure coherence bandwidth between any two CUDA devices in the unified memory system.
-First, if the source or destination device is a CPU, the application and worker threads are bound to that CPU.
-$transfer\_size$ bytes are allocated for the unified memory system, and touched by the CPU to ensure the allocation is actually backed by pages.
-Then, if the destination is a GPU, that GPU is set as the active device, so future kernel executions will happen on that GPU.
-The pages are prefetched to the source device, and the CPU or GPU workload is executed on the destination device.
-That workload, shown in Listing~\ref{lst:cpu-write} and \ref{lst:gpu-write}, writes a single value to every $stride$ bytes in $transfer\_size$.
-To minimize the extra work, $stride$ is set to the page size on the target system.
-This causes a single access to each page, and forces the unified memory system to migrate each page to the destination.
-\texttt{cudaDeviceSynchronize} is used to ensure the GPU kernel is finished.
-The time for the CPU workload or GPU workload and synchronization is recorded, and the minimum time over $numIters$ is returned.
+Algorithm~\ref{alg:um-bw-gpu-gpu} describes the approach to measure coherence or prefetch bandwidth between two GPUs in the unified memory system.
+First, a $bytes$-size unified memory allocation at $ptr$ is associated with the destination device.
+As of the time of this writing, this choice of association should not affect the benchmark, but is enforced for consistency.
+Then, \texttt{memset} is used to force pages backing the allocation to be produced.
+A $start$ and $stop$ event is created on the destination device, where the kernel will be executed for coherence bandwidth measurements.
+During the benchmark loop, $ptr$ is prefetch to the source device.
+Then, for coherence bandwidth, \texttt{gpu\_write} is executed on the destination device, or for prefetch bandwidth, \texttt{cudaMemPrefetchAsync} is used to prefetch $ptr$ to the destination device.
+\texttt{cudaEventSyncrhonize} is used to ensure the coherence or prefetch workload is complete.
+The time for the CPU workload or GPU workload and synchronization is recorded as the iteration time.
+The benchmark is repeated five times to discover outliers and establish a standard deviation of measurement.
 
 \begin{algorithm}[H]
-	\caption[Measuring GPU-GPU Unified Memory Coherence Bandwidth.]{
-		Measuring GPU-GPU Unified Memory Coherence Bandwidth.
-		\texttt{gpu\_write} is defined in Listing~\ref{lst:gpu-write}
+	\caption[Measuring GPU-GPU unified memory coherence or prefetch bandwidth.]{
+		Measuring GPU-GPU unified memory coherence or prefetch bandwidth.
+		\texttt{gpu\_write} is defined in Listing~\ref{lst:gpu-write}.
+		\todo{describe arguments}
 	}
-	\label{alg:um-coherence-bw-gpu-gpu}
+	\label{alg:um-bw-gpu-gpu}
 	\begin{algorithmic}[1]
 		\Statex
-		\Function{Bandwidth}{$dst$, $src$, $transfer\_size$}
-				
-
+		\Function{Bandwidth}{$dst$, $src$, $bytes$}
+		
+		\State $pageSize \gets$ sysconf(\_SC\_PAGESIZE)
 		\State cudaSetDevice($dst$)
-		\State $ptr \gets$ \texttt{cudaMallocManaged($transfer\_size$)}
-		\State \texttt{memset($ptr$, 0, $transfer\_size$)} \Comment force pages to be allocated
+		\State $ptr \gets$ \texttt{cudaMallocManaged($bytes$)}
+		\State \texttt{memset($ptr$, 0, $bytes$)} \Comment force pages to be allocated
 
 		\State cudaEventCreate($start$)
 		\State cudaEventCreate($stop$)		        
 				
 		\For{$state$}
-			\State cudaMemPrefetchAsync($ptr$, $transfer\_size$, $src$)
+			\State cudaMemPrefetchAsync($ptr$, $bytes$, $src$) \Comment move pages to $src$
 			\State cudaSetDevice($src$)
 			\State cudaDeviceSynchronize()
 			\State cudaSetDevice($dst$)
 			\State cudaDeviceSynchronize()
 			\State cudaEventRecord($start$)
-			\State \texttt{gpu\_write<<<$256$,$256$>>>($ptr$, $transfer\_size$, $stride$)}
+			\State cudaMemPrefetchAsync($ptr$, $bytes$, $src$) \Comment if prefetch, or...
+			\State \texttt{gpu\_write<<<$256$,$256$>>>($ptr$, $bytes$, $pageSize$)} \Comment if coherence
 			\State cudaEeventRecord($stop$)
 			\State cudaEventSynchronize($stop$)
 			\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
 			\State state.SetIterationTime($\frac{millis}{1000}$)
-
 		\EndFor
-		
-		\EndFunction
-				
+		\EndFunction			
 	\end{algorithmic}
 \end{algorithm}
 
+Algorithm~\ref{alg:um-bw-cpu-gpu} describes the approach to measure coherence or prefetch bandwidth from a CPU to a GPU in the unified memory system.
+First, execution is bound to the source NUMA node.
+Then, the destination CUDA device is set to be active, a $bytes$-sized unified memory allocation is created, and \texttt{cudaMemset} is used to ensure that pages for the allocation are created.
+During the event loop, \texttt{cudaMemPrefetchAsync} followed by \texttt{cudaDeviceSynchronize} ensure that unified memory pages are on the source CPU.
+Then, the \texttt{gpu\_write} (Listing~\ref{lst:gpu-write}) is used to generate coherence requests to move pages to the destination GPU, or \texttt{cudaMemPrefetchAsync} is used to prefetch pages to the destination GPU.
+CUDA events are used to record the elapsed time, and that is used as the benchmark iteration time.
+The benchmark is repeated five times to discover outliers and establish a standard deviation of measurement.
 
+\begin{algorithm}[H]
+	\caption[Measuring CPU-GPU Unified Memory Coherence or Prefetch Bandwidth.]{
+		Measuring CPU-GPU Unified Memory Coherence or Prefetch Bandwidth.
+		\texttt{gpu\_write} is defined in Listing~\ref{lst:gpu-write}.
+		\todo{describe arguments}
+	}
+	\label{alg:um-bw-cpu-gpu}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $bytes$}
+		
+		\State numa\_bind\_node($src$)
+		\State cudaSetDevice($dst$)
+
+		\State $ptr \gets$ \texttt{cudaMallocManaged($bytes$)}
+		\State \texttt{cudaMemset($ptr$, 0, $bytes$)} \Comment force pages to be allocated
+
+		\State $pageSize \gets$ sysconf(\_SC\_PAGESIZE)
+		\State cudaSetDevice($dst$)
+
+		\State cudaEventCreate($start$)
+		\State cudaEventCreate($stop$)		        
+				
+		\For{$state$}
+			\State cudaMemPrefetchAsync($ptr$, $bytes$, cudaCpuDeviceId) \Comment move pages to CPU
+			\State cudaDeviceSynchronize()
+			\State cudaEventRecord($start$)
+			\State cudaMemPrefetchAsync($ptr$, $bytes$, $src$) \Comment if prefetch, or...
+			\State \texttt{gpu\_write<<<$256$,$256$>>>($ptr$, $bytes$, $pageSize$)} \Comment if coherence
+			\State cudaEventRecord($stop$)
+			\State cudaEventSynchronize($stop$)
+			\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
+			\State state.SetIterationTime($\frac{millis}{1000}$)
+		\EndFor
+		\EndFunction			
+	\end{algorithmic}
+\end{algorithm}
+
+Algorithm~\ref{alg:um-coherence-bw-gpu-cpu} describes the approach to measure coherence bandwidth from a GPU to a CPU in the unified memory system.
+First, execution is bound to the destination NUMA node.
+Then, the source CUDA device is set to be active, a $bytes$-sized unified memory allocation is created, and \texttt{cudaMemset} is used to ensure that pages for the allocation are created.
+During the event loop, \texttt{cudaMemPrefetchAsync} followed by \texttt{cudaDeviceSynchronize} ensure that unified memory pages are on the source GPU.
+Then, the \texttt{cpu\_write} (Listing~\ref{lst:gpu-write}) is used to generate coherence requests to move pages to the destination CPU.
+The automatic benchmark timing may be used instead of CUDA events, as the CPU accesses are guaranteed to complete from the perspective of the CPU just like normal memory accesses.
+The benchmark is repeated five times to discover outliers and establish a standard deviation of measurement.
+
+\begin{algorithm}[H]
+	\caption[Measuring GPU-to-CPU unified memory coherence bandwidth.]{
+		Measuring GPU-to-CPU unified memory coherence bandwidth.
+		\texttt{cpu\_write} is defined in Listing~\ref{lst:cpu-write}.
+		\todo{describe arguments}
+	}
+	\label{alg:um-coherence-bw-gpu-cpu}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $bytes$}
+		
+		\State numa\_bind\_node($dst$)
+		\State cudaSetDevice($src$)
+
+		\State $ptr \gets$ \texttt{cudaMallocManaged($bytes$)}
+		\State \texttt{cudaMemset($ptr$, 0, $bytes$)} \Comment force pages to be allocated
+
+		\State $pageSize \gets$ sysconf(\_SC\_PAGESIZE)
+		\State cudaSetDevice($dst$)        
+				
+		\For{$state$}
+			\State state.PauseTiming()
+			\State cudaMemPrefetchAsync($ptr$, $bytes$, $src$)
+			\State cudaDeviceSynchronize()
+			\State state.ResumeTiming()
+			\State cpu\_write($ptr$, $bytes$, $pageSize$)
+		\EndFor
+		\EndFunction			
+	\end{algorithmic}
+\end{algorithm}
+
+Algorithm~\ref{alg:um-prefetch-bw-gpu-cpu} describes the approach to measure coherence bandwidth from a GPU to a CPU in the unified memory system.
+It is the same as Algorithm~\ref{alg:um-coherence-bw-gpu-cpu}, except CUDA events are used to time the asynchronous \texttt{cudaMemPrefetchAsync} workload.
+The benchmark is repeated five times to discover outliers and establish a standard deviation of measurement.
+
+\begin{algorithm}[H]
+	\caption[Measuring GPU-to-CPU unified memory prefetch bandwidth.]{
+		Measuring GPU-to-CPU unified memory prefetch bandwidth.
+		\texttt{cpu\_write} is defined in Listing~\ref{lst:cpu-write}.
+		\todo{describe arguments}
+	}
+	\label{alg:um-prefetch-bw-gpu-cpu}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{Bandwidth}{$dst$, $src$, $bytes$}
+		
+		\State numa\_bind\_node($dst$)
+		\State cudaSetDevice($src$)
+
+		\State $ptr \gets$ \texttt{cudaMallocManaged($bytes$)}
+		\State \texttt{cudaMemset($ptr$, 0, $bytes$)} \Comment force pages to be allocated
+
+		\State $pageSize \gets$ sysconf(\_SC\_PAGESIZE)
+		\State cudaSetDevice($dst$)
+
+		\State cudaEventCreate($start$)
+		\State cudaEventCreate($stop$)		        
+				
+		\For{$state$}
+			\State cudaMemPrefetchAsync($ptr$, $bytes$, $src$)
+			\State cudaDeviceSynchronize()
+			\State cudaEventRecord($start$)
+			\State cudaMemPrefetchAsync($ptr$, $bytes$, cudaCpuDeviceId)
+			\State cudaEventRecord($stop$)
+			\State cudaEventSynchronize($stop$)
+			\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
+			\State state.SetIterationTime($\frac{millis}{1000}$)
+		\EndFor
+		\EndFunction			
+	\end{algorithmic}
+\end{algorithm}
+
+\todo{describe cpu\_write and gpu\_write}.
+
+The \texttt{gpu\_write} workload, shown in Listing~\ref{lst:cpu-write} and \ref{lst:gpu-write}, writes a single value to every $stride$ bytes in $bytes$.
+To minimize the extra work, $stride$ is set to the page size on the target system.
+This causes a single access to each page, and forces the unified memory system to migrate each page to the destination.
 
 Listing~\ref{lst:cpu-write} shows a simple function to write \texttt{sizeof(data\_type)} bytes to every \texttt{stride} byte in a \texttt{count}-byte region starting at \texttt{ptr}.
 OpenMP is used to statically partition the write loop, with each thread taking a contiguous chunk the loop iteration space.
