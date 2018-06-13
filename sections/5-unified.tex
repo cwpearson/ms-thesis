@@ -458,75 +458,49 @@ On AC922 and S822LC, GPU-to-CPU transfers are faster for local transfers and CPU
 \label{sec:um-page-fault}
 
 Unified memory page fault latency is estimated by constructing a linked list in managed memory and traversing it.
-Algorithm~\ref{alg:um-latency} summarizes the measurement routine.
+The list is realized as a unified memory array, where each element of the list (starting with the 0th offset of the array) contains the array offset that is the next element of the list.
+Algorithms~\ref{alg:um-latency-cpu}~and~\ref{alg:um-latency-gpu} summarize the measurement routine for a transfer to a CPU and to a GPU, respectively.
+The main difference between the benchmarks is the timing method in the main benchmark loop.
+For CPU destinations, the default Benchmark timing is used, as the page will be resident on the CPU when the CPU load returns.
+For GPU destinations, CUDA events are used to measure the execution time of the CUDA kernel.
 The stride between linked list elements is a large number, to avoid prefetching effects on page faults.
-The managed memory allocation is prefetched to the source, and a single-threaded traversal function (shown in Listings \ref{lst:gpu-traversal} and \ref{lst:cpu-traversal}) is executed on the destination.
+First, execution is bound to the relevant CPU and the relevant GPU is set as active.
+Then, a unified memory allocation is created and zeroed, to force it to be backed by pages.
+Then, the linked list is initialized in the unified memory allocation.
+In the benchmark loop, a destination-dependent list traversal function (shown in Listings \ref{lst:gpu-traversal} and \ref{lst:cpu-traversal}) is executed on the destination device.
 Each access to the list incurs a page fault.
 The incremental change in function execution time as the number of strides increases is therefore an approximate measure of the page fault latency.
 
-
-\begin{lstlisting}[language=c++, caption=GPU Linked List Traversal Kernel for Algorithm~\ref{alg:um-latency}, label=lst:gpu-traversal]
-__global__ void gpu_traverse(size_t *ptr, const size_t steps)
-{
-  size_t next = 0;
-  for (int i = 0; i < steps; ++i)
-  {
-    next = ptr[next];
-  }
-  ptr[next] = 1;
-}
-\end{lstlisting}
-
-\begin{lstlisting}[language=c++, caption=CPU Linked List Traversal Function for Algorithm~\ref{alg:um-latency}, label=lst:cpu-traversal]
-void cpu_traverse(size_t *ptr, const size_t steps)
-{
-  size_t next = 0;
-  for (size_t i = 0; i < steps; ++i)
-  {
-    next = ptr[next];
-  }
-  ptr[next] = 1;
-}
-\end{lstlisting}
-
 \begin{algorithm}
-	\caption{Page Fault Latency}
-	\label{alg:um-latency}
+	\caption[Unified Memory Page Fault Latency: CPU Destination]{
+		Measuring unified memory page fault latency page fault latency with a CPU destination.
+		\texttt{cpu\_traverse} is defined in Listing~\ref{lst:cpu-traversal}.
+
+	}
+	\label{alg:um-latency-cpu}
 	\begin{algorithmic}[1]
 		\Statex
 		\Function{latency}{$dst$, $src$, $ptr$, $stride$}
 				
-        \If{$src$ is CPU}
-            \State \texttt{bind\_cpu($src$)}
-        \EndIf
-        \If{$dst$ is CPU}
-            \State \texttt{bind\_cpu($dst$)}
-        \EndIf
+		\State numa\_bind\_node($dst$)
+		\State cudaSetDevice($src$)
 
-        \State $stride \gets PAGE\_SIZE \times 2$
-        \State $count \gets sizeof(size\_t) \times (steps + 1) \times stride$
+        \State $stride \gets$ PAGE\_SIZE $\times 2$
+        \State $bytes \gets$ sizeof(size\_t) $\times (steps + 1) \times stride$
+		\State $ptr \gets$ cudaMallocManaged($bytes$))
+		\State cudaMemset($ptr$, 0, $bytes$)
 
-        \State $ptr \gets \texttt{cudaMallocManaged(count))}$
-
-        \For{ $i$ in $steps$}
-            \State ptr[$i$] $\gets$ $(i+1)\times stride$
+        \For{ $i$ in $steps$} \Comment set up stride pattern
+            \State ptr[$i$] $\gets$ $(i+1) \times stride$
         \EndFor
-        \State \texttt{cudaDeviceSynchronize()}
+        \State cudaDeviceSynchronize()
 
-        \State $elapsed \gets \infty$
-        \For{ $i$ in $numIters$}
-            \State $\texttt{cudaMemPrefetchAsync(ptr, count, src))}$
-            \State $\texttt{cudaDeviceSynchronize()}$
-
-            \State $start \gets \texttt{wall\_time()}$
-
-            \If{$dst$ is GPU}
-                \State \texttt{gpu\_traverse<<<1,1>>>($ptr$, $steps$)}
-            \Else
-                \State \texttt{cpu\_traverse($ptr$, $steps$)}
-            \EndIf
-
-            \State $end \gets \texttt{wall\_time()}$
+		\For{ state }
+			\State state.PauseTiming()
+			\State cudaMemPrefetchAsync($ptr$, $bytes$, $src$)
+			\State cudaDeviceSynchronize()
+			\State state.ResumeTiming()
+			\State cpu\_traverse($ptr$, $steps$)
         \EndFor
 
 		\EndFunction
@@ -534,9 +508,93 @@ void cpu_traverse(size_t *ptr, const size_t steps)
 	\end{algorithmic}
 \end{algorithm}
 
+\begin{algorithm}
+	\caption[Unified Memory Page Fault Latency: GPU Destination]{
+		Measuring unified memory page fault latency page fault latency with a GPU destination.
+		\texttt{gpu\_traverse} is defined in Listing~\ref{lst:gpu-traversal}.
+
+	}
+	\label{alg:um-latency-gpu}
+	\begin{algorithmic}[1]
+		\Statex
+		\Function{latency}{$dst$, $src$, $ptr$, $stride$}
+		
+		\If{$src$ is CPU}
+			\State numa\_bind\_node($dst$)
+		\EndIf
+		\State cudaSetDevice($dst$)
+
+        \State $stride \gets$ PAGE\_SIZE $\times 2$
+        \State $bytes \gets$ sizeof(size\_t) $\times (steps + 1) \times stride$
+		\State $ptr \gets$ cudaMallocManaged($bytes$))
+		\State cudaMemset($ptr$, 0, $bytes$)
+
+        \For{ $i$ in $steps$} \Comment set up stride pattern
+            \State ptr[$i$] $\gets$ $(i+1) \times stride$
+        \EndFor
+        \State cudaDeviceSynchronize()
+
+		\State cudaEventCreate($start$)
+		\State cudaEventCreate($stop$)
+
+		\For{ state }
+			\If{$src$ is CPU}
+				\State cudaMemPrefetchAsync($ptr$, $bytes$, cudaCpuDeviceId)
+			\Else
+				\State cudaMemPrefetchAsync($ptr$, $bytes$, $src$) \Comment $ptr$ to $src$ GPU
+				\State cudaSetDevice($src$)
+				\State cudaDeviceSynchronize()
+				\State cudaSetDevice($dst$)
+			\EndIf
+			
+			\State cudaDeviceSynchronize()
+			\State cudaEventRecord($start$)
+			\State gpu\_traverse($ptr$, $steps$)
+			\State cudaEventRecord($stop$)
+			\State cudaEventSynchronize($stop$)
+			\State $millis \gets$ cudaEventElapsedTime($start$, $stop$)
+		\EndFor
+		\State state.SetIterationTime($\frac{millis}{1000}$)
+
+		\EndFunction
+				
+	\end{algorithmic}
+\end{algorithm}
+
+Listings~\ref{lst:gpu-traversal}~and~\ref{lst:cpu-traversal} show functions for traversing the linked list.
+Each function starts at the beginning of the array, and reads the offset of the next element to read from the current offset.
+Finally, a value is written to the final element to introduce a side-effect and prevent the otherwise read-only function from being optimized away.
+If the stride between elements is constructed appropriately, and pages are not present on the executing device, each access will incur a page fault.
+
+\begin{lstlisting}[language=c++, caption=GPU Linked List Traversal Kernel for Algorithm~\ref{alg:um-latency}, label=lst:gpu-traversal]
+	__global__ void gpu_traverse(size_t *ptr, const size_t steps)
+	{
+	  size_t next = 0;
+	  for (int i = 0; i < steps; ++i)
+	  {
+		next = ptr[next];
+	  }
+	  ptr[next] = 1;
+	}
+	\end{lstlisting}
+	
+	\begin{lstlisting}[language=c++, caption=CPU Linked List Traversal Function for Algorithm~\ref{alg:um-latency}, label=lst:cpu-traversal]
+	void cpu_traverse(size_t *ptr, const size_t steps)
+	{
+	  size_t next = 0;
+	  for (size_t i = 0; i < steps; ++i)
+	  {
+		next = ptr[next];
+	  }
+	  ptr[next] = 1;
+	}
+	\end{lstlisting}
+
 Table~\ref{tab:page-fault-latency} summarizes the estimated page fault latencies.
 Figure~\ref{fig:coherence-page-fault-latency} shows the raw traversal times.
 There is no substantial difference in page fault latencies for different CPUs, so values for transfers to CPU0 are shown.
+Each traversal is run at least 200 times, and the average value is reported.
+Standard deviations are computed from five repetitions of the entire benchmark procedure.
 
 All three systems follow the same behavior, with GPU/GPU page fault latencies being higher than CPU/GPU page fault latencies.
 The bottom section of Table~\ref{tab:page-fault-latency} shows that the cost of moving the page is a small portion of the observed transfer time.
