@@ -99,41 +99,46 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
         matches = [b for b in j["benchmarks"] if pattern == None or pattern.search(b["name"])]
         means = [b for b in matches if b["name"].endswith("_mean")]
         stddevs = [b for b in matches if b["name"].endswith("_stddev")]
-        x = np.array([int(b["bytes"]) for b in means])
-        y = np.array([float(b["bytes_per_second"]) for b in means])
-        e = np.array([float(b["bytes_per_second"]) for b in stddevs])
+        x = np.array([float(b["strides"]) for b in means])
+        y = np.array([float(b["real_time"]) for b in means])
+        e = np.array([float(b["real_time"]) for b in stddevs])
+
+        # Rescale
+        x *= float(s_cfg.get("xscale", 1.0))
+        y *= float(s_cfg.get("yscale", 1.0))
+        e *= float(s_cfg.get("yscale", 1.0))
 
         color = s_cfg.get("color", "black")
         style = s_cfg.get("style", "-")
 
-        ax = sns.regplot(ax=ax, x=x_col, y=col, data=df,
-                         ci=68, label=label, color=color, line_kws={"linestyle": style})
+        ## Draw scatter plot of values
+        ax.errorbar(x, y, e, capsize=3, label=label, linestyle='None')
+
+        ## compute a fit line
+        z, cov = np.polyfit(x, y, 1, w=1./e, cov=True)
+        print(z)
+        slope, intercept = z[0], z[1]
+        ax.plot(x, x * slope + intercept, label=label + ": {:.2f}".format(slope) + " us/fault")
+
+        # ax = sns.regplot(ax=ax, x=x_col, y=col, data=df,
+        #                  ci=68, label=label, color=color, line_kws={"linestyle": style})
 
     # Set limits
-    ax.set_ylim([0, 1600])
-    ylabel = plot_cfg.get("yaxis", {}).get("label", "")
+    yaxis_cfg = plot_cfg.get("yaxis", {})
+    if "lim" in yaxis_cfg:
+        lim = yaxis_cfg["lim"]
+        print("setting ylim", lim)
+        ax.set_ylim(lim)
+
+    ylabel = yaxis_cfg.get("label", "")
     print ("set ylabel to:", ylabel)
     ax.set_ylabel(ylabel)
 
-    # update labels
-    h, l = ax.get_legend_handles_labels()
-    for s_cfg in enumerate(series_cfgs):
-        # def get_linregress(series):
-        #     return scipy.stats.linregress(x=ax.get_lines()[series].get_xdata(), y=ax.get_lines()[series].get_ydata())
-        def get_polyfit(series):
-            x = ax.get_lines()[series].get_xdata()
-            y = ax.get_lines()[series].get_ydata()
-            z, cov = np.polyfit(x, y, 1, cov=True)
-            # print np.sqrt(np.diag(cov))
-            return z[0], z[1]
-        # slope, intercept, r_value, p_value, std_err = get_linregress(c)
-        slope, intercept = get_polyfit(c)
-        l[c] = l[c] + ": " + "{:.2f}".format(slope) + " us/fault"
-        print ("set label", c, "to:", l[c])
-    ax.legend(h, l)
-
     title = plot_cfg.get("title", "")
+    print("set title to: ", title)
     ax.set_title(title)
+
+    ax.legend()
 
     return fig
 

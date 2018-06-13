@@ -1,0 +1,20 @@
+generator: regplot
+series:
+  - label: CPU0 to GPU0
+    file: hal000.ncsa.illinois.edu-NUMAUM_Latency_GPUToHost-0-1.json
+    yscale: 1e-3
+  - label: GPU0 to CPU0
+    file: hal000.ncsa.illinois.edu-NUMAUM_Latency_HostToGPU-0-1.json
+    yscale: 1e-3
+  - label: GPU0 to GPU1
+    file: hal000.ncsa.illinois.edu-UM_Latency_GPUToGPU-0-1.json
+    yscale: 1e-3
+yaxis:
+  label: Traversal Time
+  # lim:
+  #   - 0
+  #   - 40_000_000_000
+xaxis:
+  label: \# of Strides
+  scale: log
+title: AC922 Unified Memory Latency
