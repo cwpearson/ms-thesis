@@ -112,7 +112,7 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
         style = s_cfg.get("style", "-")
 
         ## Draw scatter plot of values
-        ax.errorbar(x, y, e, capsize=3, label=label, ecolor=color, linestyle='None')
+        ax.errorbar(x, y, e, capsize=3, ecolor=color, linestyle='None')
 
         ## compute a fit line
         z, cov = np.polyfit(x, y, 1, w=1./e, cov=True)
@@ -123,16 +123,23 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
         # ax = sns.regplot(ax=ax, x=x_col, y=col, data=df,
         #                  ci=68, label=label, color=color, line_kws={"linestyle": style})
 
-    # Set limits
+
     yaxis_cfg = plot_cfg.get("yaxis", {})
+    xaxis_cfg = plot_cfg.get("xaxis", {})
+
+    # Set limits
     if "lim" in yaxis_cfg:
         lim = yaxis_cfg["lim"]
         print("setting ylim", lim)
         ax.set_ylim(lim)
 
+    # Set labels
     ylabel = yaxis_cfg.get("label", "")
     print ("set ylabel to:", ylabel)
     ax.set_ylabel(ylabel)
+    xlabel = xaxis_cfg.get("label", "")
+    print ("set xlabel to:", xlabel)
+    ax.set_xlabel(xlabel)
 
     title = plot_cfg.get("title", "")
     print("set title to: ", title)

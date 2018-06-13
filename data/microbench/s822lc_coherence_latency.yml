@@ -8,16 +8,18 @@ series:
     file: minsky1-NUMAUM_Latency_GPUToHost-0-0.json
     yscale: 1e-3
     color: "0.5"
-  - label: GPU0 to GPU1
+  - label: GPU0 to GPU1 (local)
     file: minsky1-UM_Latency_GPUToGPU-0-1.json
     yscale: 1e-3
     color: "0.7"
+  - label: GPU0 to GPU2 (remote)
+    file: minsky1-UM_Latency_GPUToGPU-0-2.json
+    yscale: 1e-3
 yaxis:
   label: Traversal Time (us)
   lim:
     - 0
     - 1600
 xaxis:
-  label: \# of Strides
-  scale: log
+  label: "# of Strides"
 title: S822LC Unified Memory Latency
