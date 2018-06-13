@@ -112,13 +112,13 @@ def generator_regplot(fig, yaml_dir, plot_cfg):
         style = s_cfg.get("style", "-")
 
         ## Draw scatter plot of values
-        ax.errorbar(x, y, e, capsize=3, label=label, linestyle='None')
+        ax.errorbar(x, y, e, capsize=3, label=label, ecolor=color, linestyle='None')
 
         ## compute a fit line
         z, cov = np.polyfit(x, y, 1, w=1./e, cov=True)
         print(z)
         slope, intercept = z[0], z[1]
-        ax.plot(x, x * slope + intercept, label=label + ": {:.2f}".format(slope) + " us/fault")
+        ax.plot(x, x * slope + intercept, label=label + ": {:.2f}".format(slope) + " us/fault", color=color)
 
         # ax = sns.regplot(ax=ax, x=x_col, y=col, data=df,
         #                  ci=68, label=label, color=color, line_kws={"linestyle": style})
