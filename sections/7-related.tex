@@ -49,7 +49,10 @@ Ben-Nun et. al.~\cite{ben2017groute} examines direct-access transfers between GP
 They show the transfer rate of direct-access transfers between local GPUs, remote GPUs, and CPU/GPU transfers with various access patterns.
 They observe that the performance is highly dependent on the access pattern.
 Like this work, they discover that the transfer rate is highly correlated with the topological proximity of the devices.
-
+Github user \texttt{woodun} has a set of open-source, unpublished microbenchmarks under the name \texttt{9\_Microbenchmarks}~\cite{woodun2018microbenchmarks}.
+These benchmarks largely focus on details of NVIDIA Pascal and Volta memory hierarchy, including cache lines sizes, and costs of various operations, including TLB misses and page faults under different CUDA device configurations and access patterns.
+As of the time of this writing, no results are presented and there is no discussion of the motvation of the benchmarks.
+Some of these workloads seem to attempt to measure some of the same operations in this work, such as page fault latency.
 
 \section{Using Communication Models}
 
