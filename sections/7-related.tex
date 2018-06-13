@@ -38,7 +38,9 @@ It also examines the latency effect of data transfers conflicting with MPI messa
 This contention effect is similar to some future contention characterization this work will be extended to.
 
 Prior work has also specifically examined the communication performance effect of incorrect NUMA pinnings in multi-GPU systems.
-Spafford, Meredith, and Vetter~\cite{spafford2011quantifying} show significant anisotropy and bandwidth degradation in PCIe bandwidth for incorrect NUMA pinnings. \todo{They also discuss some performance effect on applications and performance under contention}.
+Spafford, Meredith, and Vetter~\cite{spafford2011quantifying} show significant anisotropy and bandwidth degradation in PCIe bandwidth for incorrect NUMA pinnings.
+They also discuss how application performance can degrade under PCIe bus contention.
+Expansion of the benchmarks in this work will most likely include bus contention, as multi-GPU applications will likely consists of phases with multi-device communication.
 
 Limited prior work has examined performance of CUDA transfers specifically.
 Landaverde et. al.~\cite{landaverde2014investigation}.
@@ -70,7 +72,10 @@ Groute ~\cite{ben2017groute} propose parallel constructs for asynchronous multi-
 The programming model involves describing the application communication pattern as a graph of communicating links and endpoints.
 Section~\ref{sec:app-model} of this work describes the DVDG, which would be used to construct a similar application model for an exising application.
 
-\todo{Umpire~\cite{beckingsale2018umpire}}.
+Umpire~\cite{beckingsale2018umpire} is a library that facilitates the discovery and provision of memory on next-generation architectures.
+Umpire aims to provide NUMA- and GPU-aware allocators and allocation strategies.
+At present, it seems to largely wrap existing host and device allocators, but also provides three different pool allocation strategies.
+Umpire may eventually function as a foundation for a high-performance memory abstraction for heterogeneous systems.
 
-\todo{https://github.com/woodun/9\_Microbenchmarks}.
-
+CHAI~\cite{llnl2018chai} is an array abstraction for GPU systems that hides the migration of data between memory spaces. 
+\todo{finish this description}
