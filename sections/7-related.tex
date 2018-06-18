@@ -8,7 +8,7 @@ This work relies on and enhances an existing system topology enumeration tool, \
 This work uses \texttt{hwloc} to enumerate topology, but embeds the devices that \texttt{hwloc} discovers in a graph (Section~\ref{sec:hardware-enumeration}), which is a more general model of modern hardware systems.
 
 Amaral et. al.~\cite{amaral2017topology} use a similar hardware graph, but their path costs are defined qualitatively, whereas this work proposes automating a quantitative cost that depends on the communication method used.
-They also describe a topology-aware job placement strategy, but the problem considered is jobs on nodes in a cluster environment instead of computation tasks on GPUs.
+They also describe a topology-aware job placement strategy, but the problem considered is jobs on nodes in a cluster environment instead of computation tasks and data placement on GPUs in a multi-GPU node.
 
 \section{System Characterization}
 
@@ -33,8 +33,8 @@ This work proposes to automate that analysis in Section~\ref{sec:logical-hardwar
 
 Some GPGPU benchmark suites also make an effort to characterize certain aspects of data-transfer performance.
 The Scalable Heterogeneous Computing (SHOC) benchmark suite~\cite{danalis2010scalable} examines host-to-device and device-to-host data transfer on some PCIe-based systems.
-This work examines a much broader set of CUDA communication capabilities.
-It also examines the latency effect of data transfers conflicting with MPI message sending on the PCIe bus.
+This work examines a much broader set of CUDA communication capabilities such as prefetch and coherence transfers in unified-memory systems.
+SHOC also examines the latency effect of data transfers conflicting with MPI message sending on the PCIe bus.
 This contention effect is similar to some future contention characterization this work will be extended to.
 
 Prior work has also specifically examined the communication performance effect of incorrect NUMA pinnings in multi-GPU systems.
