@@ -151,7 +151,7 @@ PCIe components form a tree, rooted at the \textit{root complex}.
 PCIe devices such as GPUs or SSDs are \textit{endpoints}, with a single upstream port and no downstream ports.
 Data is sent point-to-point between participating endpoints and/or the root complex via unique PCIe addresses.
 The topology also may include \textit{switches}, components with a single upstream port and multiple downstream ports.
-Switches do not receive data packes, and are only used to extend the topology.
+Switches do not receive data packets, and are only used to extend the topology.
 Components are connected by PCIe \textit{links}, each of which consists of one to 32 lanes.
 The total bandwidth of the link depends on the PCIe generation and the number of lanes.
 Figure~\ref{fig:pcie-cartoon} shows an example topology.
@@ -556,7 +556,7 @@ The CUDA Profiling Tools Interface~\cite{nvidia2017cupti} (CUPTI) ``provides...d
 Users may inject code into the entry and exit point of every CUDA C Runtime and CUDA Driver API function call.
 Additionally, users may configure and query hardware and software event counters to get insight into the operation of the GPU and CUDA stack.
 The event counters include instruction count, instruction throughput, memory loads/stores, memory throughput, cache hits/misses, branches and custom profile triggers.
-Chapter~\ref{ch:future} describes how CPUTI can be used to record memory allocations, kernel arguments, and timestamps to build a model of the application execution.
+Chapter~\ref{ch:future} describes how CUPTI can be used to record memory allocations, kernel arguments, and timestamps to build a model of the application execution.
 
 \subsection{\texttt{LD\_PRELOAD}}
 \label{sec:ldpreload}
@@ -576,7 +576,7 @@ Benchmark allows repeated runs, and can report individual and aggregated statist
 This work makes uses of repeated runs, and presents results in terms of mean values and standard deviations.
 Benchmark also supports manual or automatic timing.
 An example of the basic layout of an automatic timing benchmark is shown in Listing~\ref{lst:benchmark-automatic}.
-Microbenchmarks using Benchmark are written in C++, and have a setup phase, an interation phase, and a teardown phase.
+Microbenchmarks using Benchmark are written in C++, and have a setup phase, an interaction phase, and a teardown phase.
 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[language=C++, caption=Benchmark with automatic timing., label=lst:benchmark-automatic, numbers=left]
@@ -638,12 +638,12 @@ Instead of the framework timing the loop body in lines 9-14, CUDA events are use
 The iteration time is manually set in line 14.
 
 Although Benchmark also supports multithreaded benchmarking, the microbenchmarks developed for this work do not use it.
-Benchmark does not directly support thread synchronization within each benchmark iteration, which is needed to accurately measure the performance of using mutiple threads to move memory.
+Benchmark does not directly support thread synchronization within each benchmark iteration, which is needed to accurately measure the performance of using multiple threads to move memory.
 
 \section{System Descriptions}
 \label{sec:system-descriptions}
 
-Three high-performance heterogeneous systems are used in this work: an IBM S822LC for High Performance Computing~\cite{caldeira2016s822lc}, an IBM AC922~\cite{caldeira2018ac922}, and an Nivida DGX-1~\cite{nvidia2017dgx1}.
+Three high-performance heterogeneous systems are used in this work: an IBM S822LC for High Performance Computing~\cite{caldeira2016s822lc}, an IBM AC922~\cite{caldeira2018ac922}, and an Nvidia DGX-1~\cite{nvidia2017dgx1}.
 All systems feature multiple GPUs and multiple socketed CPUs.
 Their key differences are in CPU architecture (64-bit little-endian PowerPC for S822LC and AC922, x86-64 for DGX-1), number of GPUs (4 for the IBM machines, 8 for Nvidia), and GPU connection topology (NVLink 1.0 for S822LC, NVLink 2.0 for AC922, and hybrid PCIe 3.0 / NVLink 1.0 for DGX-1).
 
@@ -736,7 +736,7 @@ The two triads are connected at the POWER8 CPUs by an IBM SMP X bus with 38.4 GB
 The IBM AC922 machine features two POWER9 CPUs and four Nvidia V100 GPUs\cite{caldeira2018ac922}.
 Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory. for a total of 160 threads and 1TB of memory.
 Each POWER9 CPU is part of a fully-connected triad of one POWER9 CPU and two V100 GPUs.
-Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirection bandwidth of 150 GB/s.
+Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirectional bandwidth of 150 GB/s.
 The two triads are connected at the POWER9 CPUs by an IBM SMP X bus with 64 GB/s bandwidth.
 Table~\ref{tab:ac922} and Figure~\ref{fig:topo-ac922-simple} summarize the hardware configuration
 Like the S822LC, each triad is a Linux NUMA node.

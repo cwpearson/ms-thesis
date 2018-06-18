@@ -17,7 +17,7 @@ Such contention could occur in bi-directional data transfers, or when multiple d
 Previous sections described the approach and results of measuring the data transfer performance of the logical communication paths.
 Those models took some knowledge of the underlying system configuration as \textit{a priori} knowledge, but in general this process should be automated.
 Application developers who want to understand the performance of the system may not have the architecture background to select appropriate performance models.
-System architects who develop system capabilties may not understand the implications their choices have on performance at the top abstraction layer.
+System architects who develop system capabilities may not understand the implications their choices have on performance at the top abstraction layer.
 This work presents an initial step towards automation with automatic hardware enumeration described in Section~\ref{sec:hardware-enumeration}.
 
 The next step is to systematically instrument all possible links for observation during the execution of applications.
@@ -125,7 +125,7 @@ One challenge of \texttt{apptracer} is handling implicit data movement from thre
 data moved from GPU global memory to arbitrary GPU kernels, implicit data movement between remote mappings, and implicit data movement through the unified memory system.
 On supported systems, GPUs can directly access data that is on the host or other GPUs without making any CUDA runtime calls.
 CUPTI allows the GPU to record detailed profiling information, but this affects program execution time and distorts the timeline.
-A two-pass approach, once to collect accurate timeline information and another to capture more detatiled information may be a solution.
+A two-pass approach, once to collect accurate timeline information and another to capture more detailed information may be a solution.
 
 Another challenge is for \texttt{apptracer} to infer which kernel arguments are pointers to allocations.
 It may be possible for \texttt{apptracer} to examine the intermediate PTX representation of CUDA kernel code embedded in most CUDA binaries, and deduce some information about function signatures.
