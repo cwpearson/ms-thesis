@@ -566,7 +566,7 @@ Each function starts at the beginning of the array, and reads the offset of the 
 Finally, a value is written to the final element to introduce a side-effect and prevent the otherwise read-only function from being optimized away.
 If the stride between elements is constructed appropriately, and pages are not present on the executing device, each access will incur a page fault.
 
-\begin{lstlisting}[language=c++, caption=GPU Linked List Traversal Kernel for Algorithm~\ref{alg:um-latency}, label=lst:gpu-traversal]
+\begin{lstlisting}[language=c++, caption=GPU Linked List Traversal Kernel for Algorithm~\ref{alg:um-latency-gpu}, label=lst:gpu-traversal]
 	__global__ void gpu_traverse(size_t *ptr, const size_t steps)
 	{
 	  size_t next = 0;
@@ -578,7 +578,7 @@ If the stride between elements is constructed appropriately, and pages are not p
 	}
 	\end{lstlisting}
 	
-	\begin{lstlisting}[language=c++, caption=CPU Linked List Traversal Function for Algorithm~\ref{alg:um-latency}, label=lst:cpu-traversal]
+	\begin{lstlisting}[language=c++, caption=CPU Linked List Traversal Function for Algorithm~\ref{alg:um-latency-cpu}, label=lst:cpu-traversal]
 	void cpu_traverse(size_t *ptr, const size_t steps)
 	{
 	  size_t next = 0;
