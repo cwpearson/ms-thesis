@@ -112,13 +112,13 @@ Unfortunately, the DVDG cannot rely on the application to advertise any helpful 
 The proposed system (``apptracer'') leverages two tools available on the Linux platform: the CUDA Profiling Tools Interface (Section~\ref{sec:cupti} (CUPTI) and the Linux \texttt{LD\_PRELOAD} (Section~\ref{sec:ldpreload}) mechanism.
 
 \texttt{apptracer} would use CUPTI to capture most CUDA-related information, and LD\_PRELOAD for everything else.
-CUPTI allows The Tools to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \texttt{apptracer} to collect any performance metrics the GPU exposes.
+CUPTI allows a tool to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \texttt{apptracer} to collect any performance metrics the GPU exposes.
 The callback function records relevant information, including the wall time when the CUDA runtime function is invoked, its arguments, and the device and stream associated with the call.
 In this way, detailed information about data transfers from runtime functions can be reconstructed.
 For example, allocations from \texttt{cudaMalloc} can be associated with pointers passed to \texttt{cudaMemcpy} to discover data transfers from host to device.
 
-\texttt{apptracher} would use \texttt{LD\_PRELOAD} to intercept known API calls made by the application to shared libraries.
-For example, \texttt{LD\_PRELOAD} could be used to observe file access, CUDA libraries such as cuDNN or cuBLAS, network access, and system memory allocations.
+\texttt{apptracer} would use \texttt{LD\_PRELOAD} (Section~\ref{sec:ldpreload}) to intercept known API calls made by the application to shared libraries.
+For example, \texttt{LD\_PRELOAD} could be used to observe file access, calls to CUDA libraries such as cuDNN or cuBLAS, network access, and system memory allocations.
 The various kernel launches and allocations used by cuDNN and cuBLAS are already visible through CUPTI, but the known semantics of the higher-level cuBLAS and cuDNN calls allow for detailed edges to be added.
 
 One challenge of \texttt{apptracer} is handling implicit data movement from three scenarios:
@@ -130,13 +130,13 @@ A two-pass approach, once to collect accurate timeline information and another t
 Another challenge is for \texttt{apptracer} to infer which kernel arguments are pointers to allocations.
 It may be possible for \texttt{apptracer} to examine the intermediate PTX representation of CUDA kernel code embedded in most CUDA binaries, and deduce some information about function signatures.
 
-Once CUDA is observed, the next step would be to extend the graph to some view of activity on the CPU as well.
-This could be acomplished through a variety of techniques.
-The \texttt{LD\_PRELOAD} mechanism could be used to instrument widespread libraries such as BLAS or MPI.
+Once the application's use of CUDA is recorded, the next step would be to extend the graph to some view of activity on the CPU as well.
+This could be accomplished through a variety of techniques.
+The \texttt{LD\_PRELOAD} mechanism could be used to instrument popular libraries such as BLAS or MPI.
 The operating system trace facilities strace~\cite{strace2018} for Linux, DTrace~\cite{dtrace2008} for MacOS, NtTrace~\cite{orr2014nttrace}, or Dr. Memory~\cite{bruening2001design}\cite{drmemory2018} for Windows could be used to track system calls and profile things such as file I/O or network interaction.
 Tracking arbitrary function calls within an unmodified application may not be possible in the case of a binary without debug symbols.
-Dynamic tracing tools like Intel's PIN~\cite{intel2012pin} can insert instrumentation code, but further work would be needed to determine the number of function arguments and their location to recover their values.
-For a cluster environment, it may be possible to generate distributed dependence graphs through each node, and then join them together by linking together information recorded about MPI calls.
+Dynamic tracing tools like Intel's PIN~\cite{intel2012pin} can insert instrumentation code, but further work would be needed to determine the number of function arguments and their locations to recover their values.
+For a cluster environment, it may be possible to generate distributed dependence graphs at each node, and then join them together by linking together information recorded about MPI calls.
 
 \section{Combined Modeling}
 \label{sec:modeling}
