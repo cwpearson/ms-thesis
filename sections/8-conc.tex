@@ -9,7 +9,7 @@ CUDA provides a variety of methods for moving data between system components (Se
 
 The core of this thesis are performance measurements of explicit(Chapter~\ref{ch:explicit}) and unified-memory (Chapter!\ref{ch:unified}) data-movement systems in CUDA.
 These measurements are generated using a new series of microbenchmarks available at \texttt{https://github.com/rai-project/microbench}.
-Generally, these benchmarks reveal that the CUDA method used to move data has a substantial impact on the actual performance available to the application, in some cases up to \todo{choose an example}.
+Generally, these benchmarks reveal that the CUDA method used to move data has a substantial impact on the actual performance available to the application, in some cases up to a $3x$ difference, as in the case of pinned transfers and coherence transfers.
 More specifically, performance is frequently anisotropic and highly correlated with device affinity.
 In the case of unified memory, data prefetching allows higher bandwidth for large transfer sizes, but coherence demands to pages allows higher bandwidth for smaller accesses.
 These results can be used to inform communication and allocation choices during application development, or allow an automated system to make the appropriate data-movement decision to provide the best performance.
