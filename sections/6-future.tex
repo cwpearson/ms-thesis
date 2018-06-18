@@ -14,19 +14,41 @@ Such contention could occur in bi-directional data transfers, or when multiple d
 \section{Mapping Logical Communication to Underlying Links}
 \label{sec:map-underlying}
 
-Previous sections described the approach and results of creating a performance model of the logical communication paths.
+Previous sections described the approach and results of measuring the data transfer performance of the logical communication paths.
 Those models took some knowledge of the underlying system configuration as \textit{a priori} knowledge, but in general this process should be automated.
 Application developers who want to understand the performance of the system may not have the architecture background to select appropriate performance models.
 System architects who develop system capabilties may not understand the implications their choices have on performance at the top abstraction layer.
 This work presents an initial step towards automation with automatic hardware enumeration described in Section~\ref{sec:hardware-enumeration}.
 
-The next step is to systematically instrument all possible links for observation during the logical workloads.
+The next step is to systematically instrument all possible links for observation during the execution of applications.
 If the instrumentation is low-overhead, this could be done jointly with logical performance measurements.
 If not, known, separate workloads could be sent over logical communication paths to observe hardware links.
 For NVLink monitoring, NVML provides the ability to query the link utilization counters~\cite{nvidia2017nvmlreference}.
 For PCIe monitoring, the Performance Counter Monitor~\cite{opcm2018pcm} project provides the ability to query PCIe link counters.
 
 For each enumerated link, the utilized hardware components could be associated and used to select the appropriate performance model.
+Follow-up work investigating the feasibility of using a single parameterized model per combination of logical communication path and hardware link.
+For example, consider a simple model to compute the transfer time $t_{transfer}$ for moving $bytes$ bytes between some CPU and GPU
+
+\[
+    t_{transfer} = c + t_{bytes}
+\]
+
+where $t_{bytes}$ is defined as
+
+\[ \begin{cases} 
+    max(BW_{link}, \frac{bytes}{BW_{L1}}) & 0 \leq bytes < L1_{size} \\
+    max(BW_{link}, \frac{bytes}{BW_{L2}}) & L1_{size} \leq bytes < L2_{size} \\
+    max(BW_{link}, \frac{bytes}{BW_{L3}}) & L2_{size} \leq bytes < L3_{size} \\
+    max(BW_{link}, \frac{bytes}{BW_{mem}}) & L3_{size} \leq bytes  \\
+ \end{cases}
+\]
+
+and $c$, $BW_{link}$, $BW_{L1}$, $BW_{L2}$, $BW_{L3}$, $BW_{mem}$ are some constant overhead, and the bandwidth of the CPU-GPU link, the L1 cache, L2 cache, L3 cache, and main memory.
+
+In this model, the bandwidth is a piecewise function that depends on the transfer size - if a transfer fits within a cache, it happens at the speed of that cache.
+In all cases, the transfer never happens faster than the underlying CPU-GPU link bandwidth.
+The empirical results from the benchmark can be used to determine the constants in this model.
 
 \section{Application Model}
 \label{sec:app-model}
