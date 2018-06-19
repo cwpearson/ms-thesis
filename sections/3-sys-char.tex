@@ -14,7 +14,7 @@ Figure~\ref{fig:minsky-topo-numa} represents the Linux NUMA view of the system.
 As described in Section~\ref{sec:numa}, this view is accessible to the application through the libnuma library.
 Figure~\ref{fig:minsky-topo-cuda} represents the connectivity of the components through the CUDA API.
 Nodes in the graphs represent data storage locations or compute elements, and edges in the graph represent logical communication paths considered in this work.
-Both NUMA and CUDA present a different abstraction, which is again different from the system layout in Section~\ref{sec:s822lc}.
+NUMA and CUDA present different abstractions, which are different from the system layout in Section~\ref{sec:s822lc}.
 In practice, the logical communication paths available to the system is the union of these abstractions (and any other abstraction made available by the system).
 
 \begin{figure}[ht]
@@ -31,16 +31,16 @@ In practice, the logical communication paths available to the system is the unio
         \label{fig:minsky-topo-cuda}
     \end{subfigure}
     \caption[Communication topologies exposed to application]{
-        Communication Topologies exposed to the application.
-        (a) shows the abstraction presented by NUMA.
-        (b) shows the abstraction presented by CUDA.
+        Communication topologies exposed to the application.
+        (a) The abstraction presented by NUMA.
+        (b) The abstraction presented by CUDA.
     }
     \label{fig:minsky-abstraction}
 \end{figure}
 
 Despite many of the logical communication paths using the same physical links, they achieve different performance on those links.
 As demonstrated in Chapters~\ref{ch:explicit}~and~\ref{ch:unified}, some aspects of the empirical performance are determined by properties of the hardware links, while others are not.
-A communication performance model must therefore not only be based off of the empirical performance of the logical links, but also incorporate understanding of the underlying hardware, if the model is to be applicable to more than just the system it was developed on.
+A communication performance model must therefore not only be based on the empirical performance of the logical links, but also incorporate understanding of the underlying hardware, if the model is to be applicable to more than just the system it was developed on.
 
 Ideally, while empirical communication performance is characterized, the mapping to underlying hardware should be automatically established.
 This work takes that mapping as a-priori, but the following section presents initial efforts to automate the process.
@@ -50,18 +50,18 @@ This work takes that mapping as a-priori, but the following section presents ini
 
 This work proposes a two-step approach to establishing a mapping from logical communication paths to underlying hardware.
 \begin{enumerate}
-    \item Generate a graph $G_s$ of the hardware
-    \item Observe hardware utilization while exercising logical communication paths
+    \item Generate a graph $G_s$ of the hardware.
+    \item Observe hardware utilization while exercising logical communication paths.
 \end{enumerate}
 The hardware is represented by a graph $G_s = \{E,V\}$ where $E$ is a set of edges representing communication links, and $V$ is a set of vertices representing communication endpoints, or data routing elements.
 Sections~\ref{sec:system-vertices} and \ref{sec:system-edges} describe the specific system components explored.
 Each vertex in $V$ is a data routing element.
 These vertices are able to receive and re-transmit data on any of their links.
 A PCIe switch is an example of a pure data-routing vertex.
-Optionally, the vertex may serve as a communication endpoint; a source or a sink for data.
+Optionally, the vertex may serve as a communication endpoint: a source or a sink for data.
 Processing elements and data storage elements serve as communication endpoints.
 
-\texttt{hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration.
+\texttt{Hwcomm}~\cite{pearson2018hwcomm} is an open-source tool developed for automated hardware topology enumeration.
 This tool can be executed on a target system to generate $G_s$ for that system.
 Thought \texttt{hwcomm} relies largely on exploring the PCIe device tree, it also uses information provided by the Nvidia Management Library~\cite{nvidia2017nvml} (NVML) to discover NVLink devices, and build a graph of hardware components.
 The first step of generating $G_s$ is to discover the hardware components and connections through a multi-stage process.
@@ -147,4 +147,4 @@ Once the system graph is established, the mapping between logical communication 
 For example, NVML provides access to NVLink performance counters.
 As known quantities of data are moved across the logical connections, the hardware link performance counters can be observed to associate logical transfers with traffic across physical links.
 
-In this work, automatic determination of the mapping is not considered, instead, the mapping for the case study systems is known ahead of time.
+In this work, automatic determination of the mapping is not considered; instead, the mapping for the case study systems is known ahead of time.

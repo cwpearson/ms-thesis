@@ -15,9 +15,9 @@ First, a $bytes$-size unified memory allocation at $ptr$ is associated with the 
 As of the time of this writing, this choice of association should not affect the benchmark, but is enforced for consistency.
 Then, \texttt{memset} is used to force pages backing the allocation to be produced.
 A $start$ and $stop$ event is created on the destination device, where the kernel will be executed for coherence bandwidth measurements.
-During the benchmark loop, $ptr$ is prefetch to the source device.
+During the benchmark loop, $ptr$ is prefetched to the source device.
 Then, for coherence bandwidth, \texttt{gpu\_write} is executed on the destination device, or for prefetch bandwidth, \texttt{cudaMemPrefetchAsync} is used to prefetch $ptr$ to the destination device.
-\texttt{cudaEventSyncrhonize} is used to ensure the coherence or prefetch workload is complete.
+\texttt{CudaEventSyncrhonize} is used to ensure the coherence or prefetch workload is complete.
 The time for the CPU workload or GPU workload and synchronization is recorded as the iteration time.
 The benchmark is repeated five times to discover outliers and establish a standard deviation of measurement.
 
@@ -197,7 +197,7 @@ cpu_write(char *ptr, const size_t count, const size_t stride) {
 
 Listing~\ref{lst:gpu-write} shows CUDA kernel to write \texttt{sizeof(data\_type)} bytes to every \texttt{stride} byte in a \texttt{count}-byte region starting at \texttt{ptr}.
 It assigns consecutive warps in the grid to handle consecutive writes, with a single thread from each warp doing a write.
-If there are not sufficient warps in the grid to cover all writes, the grid loops over the required writes.
+If there are too few warps in the grid to cover all writes, the grid loops over the required writes.
 Since warps execute in lockstep, this ensures the broadest simultaneous demands on the unified memory system without redundant work within a warp.
 
 \begin{minipage}{\textwidth}
@@ -291,15 +291,15 @@ Prefetch is still lower performance than CPU-to-GPU transfers from pinned memory
 Prefetch must still obey consistency and coherency requirements of the unified memory system, which is a cost not present in explicit data transfer.
 
 On the IBM systems, prefetch bandwidth between local devices is higher than between remote devices (Figures~\ref{fig:um-prefetch-s822lc-cpu-gpu} and \ref{fig:um-prefetch-ac922-cpu-gpu}).
-The hardware/software overhead of the unified memory prefetch is low enough to exercise a majority of the availably underlying hardware links, so the more limited performance of the X bus in the remote transfers is likely the cause.
-The situation is reversed on DGX-1 (Figure~\ref{fig:um-prefetch-dgx-cpu-gpu}), where GPU to CPU transfers manage to match the performance of pinned explicit transfers, and CPU to GPU transfers do not.
+The hardware/software overhead of the unified memory prefetch is low enough to exercise a majority of the available underlying hardware links, so the more limited performance of the X bus in the remote transfers is likely the cause.
+The situation is reversed on DGX-1 (Figure~\ref{fig:um-prefetch-dgx-cpu-gpu}), where GPU-to-CPU transfers manage to match the performance of pinned explicit transfers, and CPU-to-GPU transfers do not.
 Overall, the prefetch bandwidth is closely correlated with the underlying hardware link performance, with AC922 providing much more bandwidth than the other two systems.
 
 All three systems share behavior for coherence bandwidth (Figures~\ref{fig:um-coherence-s822lc-cpu-gpu}, \ref{fig:um-coherence-ac922-cpu-gpu}, and \ref{fig:um-coherence-dgx-cpu-gpu}).
-In these measurements, CPU to GPU performance exceeds GPU to CPU performance due to only using a single CPU thread to generate coherence requests.
+In these measurements, CPU-to-GPU performance exceeds GPU-to-CPU performance due to only using a single CPU thread to generate coherence requests.
 On S822LC and AC922, there is a peak in coherence bandwidth at intermediate transfer sizes.
 On DGX-1, coherence requests actually provide higher bandwidth at small transfer sizes.
-This may be due to reduced overhead for small number of coherence requests compare to setting up an bulk prefetch.
+This may be due to reduced overhead for small number of coherence requests compared to setting up a bulk prefetch.
 Investigating the details of unified memory performance for different thread counts is under consideration as future work.
 
 \subsection{Device Affinity and Coherence Bandwidth}
@@ -352,7 +352,7 @@ Investigating the details of unified memory performance for different thread cou
 
 Observed coherence transfer bandwidth is correlated with device affinity; Table~\ref{tab:um-coherence-affinity} summarizes the observed effects.
 The effect for CPU-to-GPU transfers is small but measurable on all three systems, as shown in Figures \ref{fig:um-coherence-s822lc-cpu-gpu},~\ref{fig:um-coherence-ac922-cpu-gpu},~and~\ref{fig:um-coherence-dgx-cpu-gpu}.
-There is also a small, measurable effect for GPU to CPU transfers, though using a single CPU thread may be obfuscating a larger difference.
+There is also a small, measurable effect for GPU-to-CPU transfers, though using a single CPU thread may be obfuscating a larger difference.
 This small effect is probably due to overhead of ensuring coherence, so reduced link bandwidth in remote transfers is not a highly influential effect.
 
 Figure~\ref{fig:um-gpu-gpu} compares GPU/GPU prefetch and coherence bandwidth on S822LC, AC922, and DGX-1.
@@ -381,14 +381,14 @@ The local bandwidth is nearly $100\%$ higher on DGX, and also on AC922 for inter
 Device affinity can affect the observed prefetch bandwidth.
 Table~\ref{tab:um-prefetch-affinity} shows some cases where affinity affects prefetch transfer bandwidth.
 Figures \ref{fig:um-prefetch-s822lc-cpu-gpu}~and~\ref{fig:um-prefetch-ac922-cpu-gpu} show that CPU/GPU prefetch bandwidth is strongly correlated with device affinity on S822LC and AC922.
-The overhead of prefetch transfers is lower than coherence transfers, and the availability of bandwidth on the underlying links has a large impact.
-On DGX-1 (Figure~\ref{fig:um-prefetch-dgx-cpu-gpu}), bandwidth is not at all correlated with device affinity, in fact, for GPU-to-CPU transfers, remote bandwidth is higher than local bandwidth.
+The overhead of prefetch transfers is lower than that of coherence transfers, and the availability of bandwidth on the underlying links has a large impact.
+On DGX-1 (Figure~\ref{fig:um-prefetch-dgx-cpu-gpu}), bandwidth is not at all correlated with device affinity; in fact, for GPU-to-CPU transfers, remote bandwidth is higher than local bandwidth.
 The hardware bandwidth on DGX-1 is much lower, and other implementation details control the performance.
 
-Figures \ref{fig:um-prefetch-s822lc-gpu-gpu}, \ref{fig:um-prefetch-ac922-gpu-gpu}, and \ref{fig:um-prefetch-dgx-gpu-gpu} show that like coherence bandwidth GPU-GPU affinity is strongly correlated with prefetch bandwidth.
+Figures \ref{fig:um-prefetch-s822lc-gpu-gpu}, \ref{fig:um-prefetch-ac922-gpu-gpu}, and \ref{fig:um-prefetch-dgx-gpu-gpu} show that, like coherence bandwidth, GPU-GPU affinity is strongly correlated with prefetch bandwidth.
 On all systems, local GPUs can prefetch data much faster than remote GPUs.
 On S822LC, local GPUs enjoy $130\%$ of the transfer bandwidth of their remote companions.
-On DGX-1, it is $170\%$, and on AC922, that number balloons to $230\%$.
+On DGX-1, that number is $170\%$, and on AC922, it balloons to $230\%$.
 Generally, local GPU-GPU transfers are able to saturate around $90$\% of the theoretical underlying link bandwidth, just like pinned transfers.
 
 \begin{table}[ht]
@@ -411,7 +411,7 @@ Generally, local GPU-GPU transfers are able to saturate around $90$\% of the the
 Table~\ref{tab:um-coherence-anisotropy} describes instances of observed anisotropy in coherence bandwidth.
 All CPU/GPU coherence transfers show anisotropy due to the single CPU thread vs. multiple GPU threads making accesses.
 On all systems, GPU-to-CPU transfers can be around twice the performance for small transfers, but for larger sizes the bandwidth saturates at the rate a single CPU thread can generate requests.
-On S822LC, Figure~\ref{fig:um-coherence-dgx-gpu-gpu} there is ansiotropy present in remote GPU-to-GPU transfers.
+On S822LC, Figure~\ref{fig:um-coherence-dgx-gpu-gpu}, there is anisotropy present in remote GPU-to-GPU transfers.
 Similar GPU-GPU bandwidth anisotropy was not observed in any other cases.
 
 \begin{table}[ht]
@@ -465,7 +465,7 @@ Unified memory page fault latency is estimated by constructing a linked list in 
 The list is realized as a unified memory array, where each element of the list (starting with the 0th offset of the array) contains the array offset that is the next element of the list.
 Algorithms~\ref{alg:um-latency-cpu}~and~\ref{alg:um-latency-gpu} summarize the measurement routine for a transfer to a CPU and to a GPU, respectively.
 The main difference between the benchmarks is the timing method in the main benchmark loop.
-For CPU destinations, the default Benchmark timing is used, as the page will be resident on the CPU when the CPU load returns.
+For CPU destinations, the automatic Google Benchmark timing is used, as the page will be resident on the CPU when the CPU load returns.
 For GPU destinations, CUDA events are used to measure the execution time of the CUDA kernel.
 The stride between linked list elements is a large number, to avoid prefetching effects on page faults.
 First, execution is bound to the relevant CPU and the relevant GPU is set as active.
@@ -616,8 +616,7 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
         Measured page-fault latencies on S822LC, AC922, and DGX-1.
         Above the double-line are empirically-measured values.
         Below the double-line are computed values, for the system page size and system configuration.
-        The value is computed by taking the link bandwidth and dividing it by the page size.
-        e.g., NVLink for S822LC refers to two-lane NVLink 1.0.
+        The value is computed by taking the link bandwidth and dividing it by the page size; e.g., NVLink for S822LC refers to two-lane NVLink 1.0.
     }
 	\label{tab:page-fault-latency}
 	\begin{tabular}{cccc}
@@ -657,7 +656,7 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
 	\caption[Page fault latencies for S822LC, AC922, and DGX-1]{
         Linked-list traversal time vs. number of strides for S822LC, AC922, and DGX-1.
         For each system, CPU-to-GPU, GPU-to-CPU, and remote/local GPU-to-GPU times are shown.
-        Each stride incurs a page fault, so the slope of these lines estimate the page fault cost.
+        Each stride incurs a page fault, so the slopes of these lines estimate the page fault cost.
 		Whiskers at each point are the standard deviation over five benchmark repetitions.
     }
 	\label{fig:coherence-page-fault-latency}
@@ -668,5 +667,5 @@ On S822LC and AC922, the CPU/GPU page fault latency is nearly identical in both 
 The unified memory system comes at a significant performance penalty compared to explicit memory management, and suffers from similar topological performance effects.
 Unsurprisingly, performance is strongly correlated with device affinity, particularly for prefetch bandwidth.
 Performance anisotropy is observed in nearly all prefetch benchmarks and many coherence benchmarks.
-Achievable coherence performance ranges from around $30\%$-$90\%$ of the best possible explicit performance, with more degredation on higher-performance links.
+Achievable coherence performance ranges from around $30\%$-$90\%$ of the best possible explicit performance, with more degradation on higher-performance links.
 With the additional programmer effort of including prefetching hints, performance nearly equal to the explicit data transfer can be achieved.

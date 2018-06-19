@@ -2,14 +2,14 @@
 \label{ch:conclusion}
 
 This thesis examines the data-movement performance available to applications running on multi-GPU non-uniform memory access (NUMA) systems through a comprehensive series of microbenchmarks.
-Three different systems are used as case studies: an IBM S822LC with two POWER8 CPUs and four P100 GPUs (Section~\ref{sec:s822lc}), an IBM AC922 with two POWER9 CPUs, four V100 GPUs, and NVLink 2.0 (Section~\ref{sec:ac922}), and an NVIDIA DGX-1 with two Intel (Section~\ref{sec:dgx1}), eight P100 GPUs, and hybrid PCIe and NVLink 1.0.
+Three different systems are used as case studies: an IBM S822LC with two POWER8 CPUs and four P100 GPUs (Section~\ref{sec:s822lc}), an IBM AC922 with two POWER9 CPUs, four V100 GPUs, and NVLink 2.0 (Section~\ref{sec:ac922}), and an Nvidia DGX-1 with two Intel (Section~\ref{sec:dgx1}), eight P100 GPUs, and hybrid PCIe and NVLink 1.0.
 These three systems cover the common component for high-performance multi-GPU NUMA systems, with multiple CPUs, NVLink and PCIe 3.0 x16, and Pascal- or Volta-architecture GPUs.
 The performance of the underlying hardware (Section~\ref{sec:interconnects}) in these systems is made available to applications through software abstractions (Section~\ref{sec:sys-abstraction}) like CUDA and numactl.
 CUDA provides a variety of methods for moving data between system components (Section~\ref{sec:cuda}), where different choices have different performance effects due to different uses of the underlying hardware.
 
-The core of this thesis are performance measurements of explicit(Chapter~\ref{ch:explicit}) and unified-memory (Chapter!\ref{ch:unified}) data-movement systems in CUDA.
+The core of this thesis consists of performance measurements of explicit (Chapter~\ref{ch:explicit}) and unified-memory (Chapter~\ref{ch:unified}) data-movement systems in CUDA.
 These measurements are generated using a new series of microbenchmarks available at \texttt{https://github.com/rai-project/microbench}.
-Generally, these benchmarks reveal that the CUDA method used to move data has a substantial impact on the actual performance available to the application, in some cases up to a $3x$ difference, as in the case of pinned transfers and coherence transfers.
+Generally, these benchmarks reveal that the CUDA method used to move data has a substantial impact on the actual performance available to the application, in some cases up to a 3x difference, as in the case of pinned transfers and coherence transfers.
 When the data transfer method is simpler (pinned or prefetch transfers), performance is highly correlated with device affinity, but typically presents less anisotropic behavior.
 This is because the underlying hardware link performance limits the overall throughput.
 For more complicated transfer methods such as coherence, pageable transfers, or non-peer GPU-GPU transfers, performance tends to be more anisotropic but less correlated with device affinity.
@@ -21,6 +21,6 @@ This tool is meant to serve as a foundational component of future systems resear
 Any system that needs to make communication or scheduling performance decisions will need information about the underlying hardware that can be provided by this tool.
 The system abstraction available through CUDA, the performance measurements, and the underlying hardware topology together provide the raw information for a detailed system model.
 
-To complete the model, it will be necessary to automatically correlation communication abstractions to the underlying hardware (Section:~\ref{sec:map-underlying}).
+To complete the model, it will be necessary to automatically correlate communication abstractions to the underlying hardware (Section~\ref{sec:map-underlying}).
 This thesis also describes a corresponding application model (Section~\ref{sec:app-model}) that can be coupled with the system model.
 Together these models should provide enough information to create an automatically-tuned high-performance heterogeneous memory management capability for multi-GPU NUMA systems.

@@ -518,8 +518,8 @@ An event is a special kind of operation that is performed in a CUDA stream.
 CUDA events allow the CUDA runtime to set and query noteworthy milestones in the sequence of stream operations without stalling the stream.
 These events may be used as a lightweight method for measuring how much time CUDA operations take without also measuring the time taken to synchronize the stream.
 Events are created with \texttt{cudaEventCreate()}, destroyed with \texttt{cudaEventDestroy()}, and inserted into a stream with \texttt{cudaEventRecord()}.
-\texttt{cudaEventSynchronize()} blocks the calling thread until a particular event has been completed in the stream.
-\texttt{cudaEventElapsedTime()} returns the number of milliseconds that have elapsed between two completed events.
+\texttt{CudaEventSynchronize()} blocks the calling thread until a particular event has been completed in the stream.
+\texttt{CudaEventElapsedTime()} returns the number of milliseconds that have elapsed between two completed events.
 Listing~\ref{lst:cuda-events} shows an example of measuring time of hypothetical CUDA operation \texttt{cudaSomeAsyncOperation()} taking place in the \texttt{stream} stream.
 
 \begin{minipage}{\linewidth}
@@ -552,7 +552,7 @@ Line $16$ blocks until the events have finished, and then line $17$ produces the
 \label{sec:cupti}
 
 The CUDA Profiling Tools Interface~\cite{nvidia2017cupti} (CUPTI) ``provides...detailed information about how applications are using the GPU in a system.''
-Users may inject code into the entry and exit point of every CUDA C Runtime and CUDA Driver API function call.
+Users may inject code into the entry and exit point of every CUDA C runtime and CUDA driver API function call.
 Additionally, users may configure and query hardware and software event counters to get insight into the operation of the GPU and CUDA stack.
 The event counters include instruction count, instruction throughput, memory loads/stores, memory throughput, cache hits/misses, branches and custom profile triggers.
 Chapter~\ref{ch:future} describes how CUPTI can be used to record memory allocations, kernel arguments, and timestamps to build a model of the application execution.
@@ -593,7 +593,7 @@ BENCHMARK(BM_Foo);
 \end{minipage}
 
 Lines $2$-$9$ define a Benchmark function, which is registered to be run in line $10$.
-The loop body in lines $4$ through $7$ are executed and timed automatically by the framework, and the average time is recorded.
+The loop body in lines $4$ through $7$ is executed and timed automatically by the framework, and the average time is recorded.
 Any part of the loop body that should not be timed can be wrapped in \texttt{state.PauseTiming()} and \texttt{state.ResumeTiming()}.
 This allows for per-iteration setup code to not be timed.
 The number of loop iterations is automatically controlled by the benchmark suite based on the number of arguments and desired run time.
@@ -602,7 +602,7 @@ The mean time is reported as a result of the benchmark.
 This process is then repeated multiple times to determine a standard deviation of the measurement.
 
 Some of the microbenchmarks in this work make use of CUDA events to accurately measure the time taken by various CUDA operations.
-Benchmark supports this by allowing each microbenchmark to record and report their own iteration time.
+Benchmark supports this by allowing each microbenchmark to record and report its own iteration time.
 For example, consider Listing~\ref{lst:benchmark-manual}.
 
 Benchmark provides a \texttt{DoNotOptimize(<expr>)} function, which forces the result of \texttt{<expr>} to be placed in a register.
@@ -652,7 +652,7 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
 \begin{table}[ht]
     \centering
     \caption[Nvidia DGX-1 architecture summary]{
-		Nvidia DGX-1 Architecture Summary.
+		Nvidia DGX-1 architecture summary.
 	}
     \label{tab:dgx1}
     \begin{tabular}{cc}
@@ -671,7 +671,7 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/dgx1-hardware.pdf}
     \caption[Nvidia DGX-1 architecture schematic]{
-		Nvidia DGX-1 Architecture Schematic.
+		Nvidia DGX-1 architecture schematic.
 		Interconnect legends are subtitled with theoretical maximum transfer rates.
 		Each of the four NVLink lanes on a GPU is used to connect it to one other GPU.
 		CPUs are connected to GPUs by PCIe 3.0 x16 interconnects.
@@ -679,8 +679,8 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
     \label{fig:topo-dgx-simple}
 \end{figure}
 
-Table~\ref{tab:dgx1} and Figure \ref{fig:topo-dgx-simple} summarizes the Nvidia DGX-1 system architecture.
-The Nvidia DGX-1 machine consists of two symmetric sections\cite{nvidia2017dgx1}.
+Table~\ref{tab:dgx1} and Figure \ref{fig:topo-dgx-simple} summarize the Nvidia DGX-1 system architecture.
+The Nvidia DGX-1 machine consists of two symmetric sections \cite{nvidia2017dgx1}.
 Each section consists of one 20-core Intel Xeon E5-2698v4 CPUs with 2-way SMT.
 Each CPU is connected to 256GB of DDR4 RAM, and each section makes up a Linux NUMA node.
 Each section has 4 Nvidia Tesla P100 GPUs coupled by single NVLinks.
@@ -712,16 +712,16 @@ Every GPU is directly connected to all local GPUs in its cluster, as well as one
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/minsky-hardware.pdf}
     \caption[IBM S822LC architecture schematic]{
-		IBM S822LC Architecture Schematic.
+		IBM S822LC architecture schematic.
 		Interconnect legends are subtitled with theoretical maximum transfer rates.
 		The four NVLink lanes on a GPU are bonded into two two-lane pairs to connect it to the neighboring CPU and GPU.
 	}
     \label{fig:topo-minsky-simple}
 \end{figure}
 
-Table~\ref{tab:minsky} and Figure~\ref{fig:topo-minsky-simple} summarizes the hardware configuration.
-The IBM S822LC machine features two POWER8 CPUs and four Nvidia P100 GPUs\cite{caldeira2016s822lc}.
-Each POWER8 CPU has 10 cores, with 8-way simultaneous multithreading, and is attached to 256GB of DDR4 memory. for a total of 160 threads and 512 GB of memory.
+Table~\ref{tab:minsky} and Figure~\ref{fig:topo-minsky-simple} summarize the hardware configuration.
+The IBM S822LC machine features two POWER8 CPUs and four Nvidia P100 GPUs~\cite{caldeira2016s822lc}.
+Each POWER8 CPU has 10 cores, with 8-way simultaneous multithreading, and is attached to 256GB of DDR4 memory for a total of 160 threads and 512 GB of memory.
 Each POWER8 CPU and associated memory make up a Linux NUMA node.
 Each POWER8 CPU is part of a fully-connected triad of one POWER8 CPU and two P100 GPUs.
 Each device in the triad is connected by a gang of two NVLink 1.0 lanes for a total bidirectional bandwidth of 80 GB/s.
@@ -731,11 +731,11 @@ The two triads are connected at the POWER8 CPUs by an IBM SMP X bus with 38.4 GB
 \label{sec:ac922}
 
 The IBM AC922 machine features two POWER9 CPUs and four Nvidia V100 GPUs\cite{caldeira2018ac922}.
-Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory. for a total of 160 threads and 1TB of memory.
+Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory for a total of 160 threads and 1TB of memory.
 Each POWER9 CPU is part of a fully-connected triad of one POWER9 CPU and two V100 GPUs.
 Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirectional bandwidth of 150 GB/s.
 The two triads are connected at the POWER9 CPUs by an IBM SMP X bus with 64 GB/s bandwidth.
-Table~\ref{tab:ac922} and Figure~\ref{fig:topo-ac922-simple} summarize the hardware configuration
+Table~\ref{tab:ac922} and Figure~\ref{fig:topo-ac922-simple} summarize the hardware configuration.
 Like the S822LC, each triad is a Linux NUMA node.
 
 \begin{table}[ht]

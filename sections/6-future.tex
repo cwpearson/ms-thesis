@@ -6,7 +6,7 @@
 The microbenchmarks presented in Chapters~\ref{ch:explicit}~and~\ref{ch:unified} cover CUDA transfers with the unified memory system and \texttt{cudaMemcpy}.
 There are two additional CUDA communication capabilities that are not measured in this thesis: direct peer access and system atomics.
 Expanding the benchmarks to measure those methods would provide a more complete view of CUDA communication performance.
-THe benchmarks could also be expanded to examine interaction between CUDA and other system components.
+The benchmarks could also be expanded to examine interaction between CUDA and other system components.
 One such opportunity is the GPUDirect capability, where supported non-GPU devices can communicate with CUDA GPUs through DMA.
 Another opportunity is to investigate the effect of contention on the communication performance.
 Such contention could occur in bi-directional data transfers, or when multiple devices are simultaneously communicating.
@@ -28,14 +28,11 @@ For PCIe monitoring, the Performance Counter Monitor~\cite{opcm2018pcm} project 
 
 For each enumerated link, the utilized hardware components could be associated and used to select the appropriate performance model.
 Follow-up work investigating the feasibility of using a single parameterized model per combination of logical communication path and hardware link.
-For example, consider a simple model to compute the transfer time $t_{transfer}$ for moving $bytes$ bytes between some CPU and GPU
-
+For example, consider a simple model to compute the transfer time $t_{transfer}$ for moving $bytes$ bytes between some CPU and GPU:
 \[
     t_{transfer} = c + t_{bytes}
 \]
-
 where $t_{bytes}$ is defined as
-
 \[ \begin{cases} 
     max(BW_{link}, \frac{bytes}{BW_{L1}}) & 0 \leq bytes < L1_{size} \\
     max(BW_{link}, \frac{bytes}{BW_{L2}}) & L1_{size} \leq bytes < L2_{size} \\
@@ -43,8 +40,7 @@ where $t_{bytes}$ is defined as
     max(BW_{link}, \frac{bytes}{BW_{mem}}) & L3_{size} \leq bytes  \\
  \end{cases}
 \]
-
-and $c$, $BW_{link}$, $BW_{L1}$, $BW_{L2}$, $BW_{L3}$, $BW_{mem}$ are some constant overhead, and the bandwidth of the CPU-GPU link, the L1 cache, L2 cache, L3 cache, and main memory.
+$c$, is some constant overhead, and $BW_{link}$, $BW_{L1}$, $BW_{L2}$, $BW_{L3}$, and $BW_{mem}$ are the bandwidth of the CPU-GPU link, the L1 cache, L2 cache, L3 cache, and main memory.
 
 In this model, the bandwidth is a piecewise function that depends on the transfer size - if a transfer fits within a cache, it happens at the speed of that cache.
 In all cases, the transfer never happens faster than the underlying CPU-GPU link bandwidth.
@@ -55,26 +51,25 @@ The empirical results from the benchmark can be used to determine the constants 
 
 After a model of system communication performance is established, the next step is to establish an understanding of how applications use the logical communication paths.
 This would encapsulate information about how an application produces, moves, and consumes data.
-The application can be modeled as a dynamic value dependence graph (DVDG) $G_a = \{E_a,V_a\}$ where $E_a$ is a set edges representing data transfer, and $V_a$ is a set of vertices representing data values.
+The application can be modeled as a dynamic value dependence graph (DVDG) $G_a = \{E_a,V_a\}$, where $E_a$ is a set of edges representing data transfer, and $V_a$ is a set of vertices representing data values.
 Each value represents a contiguous region of memory that the program interacts with.
 Each edge is either an explicit memory copy or a CUDA kernel launch.
 The edges can be tagged with observed timestamps to facilitate program performance analysis.
 
-Table~\ref{tab:dvdg} shows an example code and corresponding DVDG.
+Figure~\ref{fig:dvdg} shows an example code and corresponding DVDG.
 Each value, represented by square boxes, is tagged with the position of the value, and size of the value.
 For simplicity's sake, it is also tagged with the line of code that produced it.
 Each rounded-box edge label corresponds to the \texttt{cudaMemcpy} or kernel execution.
 In practice, each node and edge would have much more detailed information.
 
-\begin{table}[ht]
+\begin{figure}[ht]
 	\centering
     \caption[Dynamic value dependence graph]{
         Example of the dynamic value dependence graph for a simple vector add.
         Allocations in the code are commented with a hypothetical position of the allocation.
         Square blocks represent values, and rounded boxes represent node labels.
     }
-    \label{tab:dvdg}
-    \begin{tabular}{c}
+    \label{fig:dvdg}
         \begin{minipage}{\textwidth}
             \begin{lstlisting}
  1. float *a_h, *b_h, *s_h, *a_d, *b_d, *s_d;
@@ -97,8 +92,7 @@ In practice, each node and edge would have much more detailed information.
 
         \end{minipage}
 
-	\end{tabular}
-\end{table}
+\end{figure}
 
 Though it is generally possible to generate these dependence graphs by hand, it is not feasible for complicated applications.
 Furthermore, as applications are updated, new models would have to be manually generated.
@@ -107,17 +101,17 @@ The proposed method described in this section would automate that process.
 \section{Constructing the Dynamic Value Dependence Graph for Unmodified Applications}
 
 Ideally, the DVDG would be generated from an unmodified application execution.
-This ensures that the tool is as accessible to users as possible, and that it can work on closed-source applications
+This ensures that the tool is as accessible to users as possible, and that it can work on closed-source applications.
 Unfortunately, the DVDG cannot rely on the application to advertise any helpful information about its behavior, and any relevant application state must be observed through its interaction with the operating system.
 The proposed system (``apptracer'') leverages two tools available on the Linux platform: the CUDA Profiling Tools Interface (Section~\ref{sec:cupti} (CUPTI) and the Linux \texttt{LD\_PRELOAD} (Section~\ref{sec:ldpreload}) mechanism.
 
-\texttt{apptracer} would use CUPTI to capture most CUDA-related information, and LD\_PRELOAD for everything else.
+\texttt{Apptracer} would use CUPTI to capture most CUDA-related information, and LD\_PRELOAD for everything else.
 CUPTI allows a tool to provide a callback function that is invoked at every CUDA runtime or driver call, and also allows \texttt{apptracer} to collect any performance metrics the GPU exposes.
 The callback function records relevant information, including the wall time when the CUDA runtime function is invoked, its arguments, and the device and stream associated with the call.
 In this way, detailed information about data transfers from runtime functions can be reconstructed.
 For example, allocations from \texttt{cudaMalloc} can be associated with pointers passed to \texttt{cudaMemcpy} to discover data transfers from host to device.
 
-\texttt{apptracer} would use \texttt{LD\_PRELOAD} (Section~\ref{sec:ldpreload}) to intercept known API calls made by the application to shared libraries.
+\texttt{Apptracer} would use \texttt{LD\_PRELOAD} (Section~\ref{sec:ldpreload}) to intercept known API calls made by the application to shared libraries.
 For example, \texttt{LD\_PRELOAD} could be used to observe file access, calls to CUDA libraries such as cuDNN or cuBLAS, network access, and system memory allocations.
 The various kernel launches and allocations used by cuDNN and cuBLAS are already visible through CUPTI, but the known semantics of the higher-level cuBLAS and cuDNN calls allow for detailed edges to be added.
 
@@ -125,7 +119,7 @@ One challenge of \texttt{apptracer} is handling implicit data movement from thre
 data moved from GPU global memory to arbitrary GPU kernels, implicit data movement between remote mappings, and implicit data movement through the unified memory system.
 On supported systems, GPUs can directly access data that is on the host or other GPUs without making any CUDA runtime calls.
 CUPTI allows the GPU to record detailed profiling information, but this affects program execution time and distorts the timeline.
-A two-pass approach, once to collect accurate timeline information and another to capture more detailed information may be a solution.
+A two-pass approach, once to collect accurate timeline information and another to capture more detailed information, may be a solution.
 
 Another challenge is for \texttt{apptracer} to infer which kernel arguments are pointers to allocations.
 It may be possible for \texttt{apptracer} to examine the intermediate PTX representation of CUDA kernel code embedded in most CUDA binaries, and deduce some information about function signatures.
@@ -141,7 +135,7 @@ For a cluster environment, it may be possible to generate distributed dependence
 \section{Combined Modeling}
 \label{sec:modeling}
 
-Finally, once system performance modeling is established, and application demands are recorded, joint performance modeling is possible, to tackle questions like
+Finally, once system performance modeling is established and application demands are recorded, joint performance modeling is possible to tackle questions like
 \begin{itemize}
     \item For a particular DVDG, what performance could we expect on a particular system?
     \item For a particular DVDG and a particular budget, what system configuration would perform best?
