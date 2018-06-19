@@ -44,7 +44,7 @@ Expansion of the benchmarks in this work will most likely include bus contention
 
 Limited prior work has examined performance of CUDA transfers specifically.
 Landaverde et. al.~\cite{landaverde2014investigation}.
-Li et. al~\cite{li2015evaluation} evaluate the unified memory system on several platforms, including a multi-CPU PCIe platform, and show around a 10\% performance penalty on some applications for Unified Memory.
+Li et. al~\cite{li2015evaluation} evaluate the unified memory system on several platforms, including a multi-CPU PCIe platform, and show around a 10\% performance penalty on some applications for unified memory.
 They do not do any microbenchmarking, but observe that the unified memory system in CUDA 6.0 produced redundant transfers that were avoiding in the explicitly-managed code.
 MGBench, a multi-GPU communication benchmark~\cite{bennun2016mgbench}, contains multi-GU microbenchmarks including scatter, direct access, and ring broadcast messages.
 Ben-Nun et. al.~\cite{ben2017groute} examines direct-access transfers between GPUs.

@@ -5,19 +5,18 @@ This work examines the relationship between system and application performance i
 To that end, 
 Section~\ref{sec:sys-abstraction}            describes the relationship between software abstractions and the underlying system hardware,
 Section~\ref{sec:gpu-sys-arch}               discusses how Nvidia graphics processing units (GPUs) fit into the computing system architecture,
-Section~\ref{sec:interconnects}              describe the PCIe and NVLink interconnect systems used to couple GPUs to each other and the rest of the system,
+Section~\ref{sec:interconnects}              describes the PCIe and NVLink interconnect systems used to couple GPUs to each other and the rest of the system,
 Section~\ref{sec:cuda}                       details communication-related components and APIs of CUDA, the Nvidia GPU programming system,
 Sections~\ref{sec:numa} and~\ref{sec:openmp} describe the Linux non-uniform memory access (NUMA) and OpenMP multiprocessing systems,
 Section~\ref{sec:profiling}                  describes the Linux and CUDA components used in the proposed application profiler,
 and Section~\ref{sec:system-descriptions}    documents the heterogeneous systems used as case studies in this work.
-
 
 \section{System Communication Abstraction}
 \label{sec:sys-abstraction}
 
 Application access to computing systems is made through a stack of abstractions.
 This work considers applications that interface with the system through CUDA, the Linux NUMA abstraction, and OpenMP.
-Those API calls are implemented in various libraries, such as \texttt{libcudart.so} on linux systems.
+Those API calls are implemented in various libraries, such as \texttt{libcudart.so} on Linux systems.
 In turn, those libraries make use of system calls provided by the operating system.
 The operating system interfaces with various drivers, including the Nvidia GPU drivers and the interconnect drivers, to make use of the underlying hardware.
 Figure~\ref{fig:app-abstraction} shows a schematic of this stack.
@@ -25,7 +24,7 @@ Figure~\ref{fig:app-abstraction} shows a schematic of this stack.
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\textwidth]{figures/generated/app-abstraction.pdf}
-    \caption[System Abstraction]{
+    \caption[System abstraction]{
 		The application interacts with the underlying hardware through libraries, the operating system, and drivers.
 	}
     \label{fig:app-abstraction}
@@ -35,7 +34,7 @@ Through these layers of abstraction, the underlying communication capabilities a
 For example, PCIe interconnects transfer data with packets, but the CUDA API does not expose the ability to create custom packets to send to the GPU.
 Furthermore, the performance of the hardware is modified.
 For example, when CUDA unified memory is used, some of the link bandwidth may be consumed by control signals that help ensure data coherence.
-Chapters \ref{ch:explicit} and \ref{ch:unified} and~ show how different uses of the CUDA API can achieve different performance on the same physical hardware.
+Chapters \ref{ch:explicit} and \ref{ch:unified} show how different uses of the CUDA API can achieve different performance on the same physical hardware.
 
 \section{GPUs and System Architecture}
 \label{sec:gpu-sys-arch}
@@ -73,7 +72,7 @@ Finally, though not covered in this work, the GPU compute cores have dramaticall
         \caption{}
         \label{fig:p9-volta-bw}
     \end{subfigure}
-	\caption[Example System Interconnect Bandwidths]{
+	\caption[Example system interconnect bandwidths]{
 		Representative interconnect bandwidths between CPU and system memory, GPU and GPU memory, and CPU to GPU.
 		(a) shows a c.2011 x86 system with an AMD Operton 6200 CPU~\cite{amd2012opteron6200} system, PCIe 2.0 x16, and Nvidia K20 GPU.
 		(b) shows a c.2017 x86 system with an Intel Xeon Platinum 8180M~\cite{intel20188180m} CPU, PCIe 3.0 x16, and an Nvidia P100 GPU.
@@ -104,7 +103,7 @@ Section~\ref{sec:cuda-peer} describes how these topologies affect parts of the C
 
 \begin{table}[ht]
 	\centering
-	\caption[Interconnect Performance Summary]{
+	\caption[Interconnect performance summary]{
 		Theoretical performance for common interconnect configurations.
 		Only NVLink configurations used in the case studies are shown below.
 		PCIe 3.0 x16 is included for reference, as most PCIe 3.0-attached GPUs use 16 lanes.
@@ -134,8 +133,8 @@ Section~\ref{sec:cuda-peer} describes how these topologies affect parts of the C
 		\label{fig:nvlink-cartoon}
     \end{subfigure}
     \caption[Example PCIe and NVLink interconnect topologies]{
-		(a): an example PCIe topology, showing the root complex at the root of the tree, with endpoints and switches connected by links.
-		(b): an example NVLink topology, with each device supporting four NVLinks, and using two to connect to each of its neighbor devices.
+		(a) An example PCIe topology, showing the root complex at the root of the tree, with endpoints and switches connected by links.
+		(b) An example NVLink topology, with each device supporting four NVLinks, and using two to connect to each of its neighbor devices.
 	}
     \label{fig:interconnect-cartoon}
 \end{figure}
@@ -165,7 +164,7 @@ With a 128b/130b encoding, this gives PCIe 3.0 x16 a 15.8 GB/s unidirectional ba
 
 \begin{table}[ht]
 	\centering
-	\caption[PCIe Lane Transfer Rates]{}
+	\caption[PCIe lane transfer rates]{PCIe lane transfer rates}
 	\label{tab:pcie-lane-rates}
 	\begin{tabular}{cccc}
 		\hline
@@ -179,25 +178,25 @@ With a 128b/130b encoding, this gives PCIe 3.0 x16 a 15.8 GB/s unidirectional ba
 \subsection{NVLink}
 
 NVLink is a communication protocol developed by Nvidia.
-Current NVLink implementations use a proprietary High-Speed Signaling interconnect called NVHS \cite{harris2016insidepascal}.
+Current NVLink implementations use the proprietary high-speed signaling interconnect NVHS \cite{harris2016insidepascal}.
 Like PCIe, each NVLink connects two devices.
 Unlike PCIe, there is no concept of upstream or downstream ports, and devices may have multiple ports.
 Multiple links may connect devices, in which case the links are combined to contribute to the available bandwidth between devices.
 Figure~\ref{fig:nvlink-cartoon} shows an example topology.
-The NVLink 1.0 systems in this work allow each device to have four NVLink lane connections, with each lane running at 20 GB/s~\cite{nvidia2017dgx1}~\cite{nvidia2016p100}.
+The NVLink 1.0 systems in this work allow each device to have four NVLink lane connections, with each lane running at 20 GB/s~\cite{nvidia2017dgx1},~\cite{nvidia2016p100}.
 The NVLink 2.0 systems in this work allow each device to have six NVLink lanes at 25 GB/s each~\cite{nvidia2017v100}.
 
 Physically, each bidirectional lane has 32 wires, divided evenly into two unidirectional sublinks of eight differential pairs~\cite{harris2016insidepascal}.
 Each pair operates at 20 Gb/s for NVLink 1.0 and 25 Gb/s for NVLink 2.0.
 This means a 2-lane NVLink 1.0 has 64 wires.
-The improved bandwidth of 2-lane NVLink 1.0 vs PCIe 3.0 is directly attributable to the signaling rate on the wires.
+The improved bandwidth of 2-lane NVLink 1.0 vs. PCIe 3.0 is directly attributable to the signaling rate on the wires.
 
 \section{CUDA}
 \label{sec:cuda}
 
 Nvidia's CUDA (Compute Unified Device Architecture) is a programming system for enabling general-purpose computation on Nvidia GPUs (graphics processing units).
 CUDA is a set of C extensions and libraries for interfacing with GPUs.
-Nvidia provides a compiler, \texttt{nvcc} for generating CUDA-enabled binaries.
+Nvidia provides a compiler, \texttt{nvcc}, for generating CUDA-enabled binaries.
 
 CUDA provides a set of runtime and driver APIs for the developer to manage the allocation and movement of data between the host and device memory.
 From its inception, CUDA provided comprehensive APIs for developers to mitigate application performance shortfalls stemming from the relatively limited performance of host-device communication links.
@@ -211,23 +210,23 @@ This section references both these version systems when discussing CUDA features
 
 This work focuses on the performance of explicit CUDA memory management and the CUDA unified memory system.
 There is a third set of transfer capabilities that fall under the umbrella of remote-mapping or ``zero-copy'' memory.
-These techniques are subsumed by Unified Memory, though making use of them typically requires hints to the CUDA system.
-Once the flexibility of the Unified memory system improves, it will be important to revisit the performance implications zero-copy memory.
+These techniques are subsumed by unified ,emory, though making use of them typically requires hints to the CUDA system.
+Once the flexibility of the unified memory system improves, it will be important to revisit the performance implications of zero-copy memory.
 
 \subsection{Basic CUDA Memory and System Memory}
 \label{sec:basic-cuda}
 
-Prior to the introduction of Unified Virtual Addressing (see Section~\ref{sec:uva}), the CUDA memory space was composed of multiple address spaces: one for the host, and one for each GPU~\cite{schroeder2011peer}.
+Prior to the introduction of unified virtual addressing (see Section~\ref{sec:uva}), the CUDA memory space was composed of multiple address spaces: one for the host, and one for each GPU~\cite{schroeder2011peer}.
 Data was explicitly allocated in those address spaces through \texttt{cudaMalloc}.
 Standard C/C++ memory allocation techniques (\texttt{malloc}/\texttt{new}, \texttt{free}/\texttt{new}) are used for managing memory on the host.
 \texttt{cudaMemcpy} is used to move data between address spaces, whether the host and device or between devices.
 Since each device has a separate address space, the programmer explicitly instructs \texttt{cudaMemcpy} how to move data with \texttt{cudaMemcpyHostToDevice}, \texttt{cudaMemcpyDeviceToHost}, or \texttt{cudaMemcpyDeviceToDevice}.
-Basic CUDA memory management runtime calls described in Table~\ref{tab:cuda-basic-apis}.
+Basic CUDA memory management runtime calls are described in Table~\ref{tab:cuda-basic-apis}.
 
 \begin{table}[ht]
 	\centering
-	\caption[Basic Memory-management APIs]{
-		Basic CUDA Memory-Management APIs and C/C++ APIs
+	\caption[Basic memory-management APIs]{
+		Basic CUDA and C/C++ memory-management APIs.
 	}
 	\label{tab:cuda-basic-apis}
 	\begin{tabular}{cc}
@@ -244,24 +243,24 @@ Basic CUDA memory management runtime calls described in Table~\ref{tab:cuda-basi
 	\end{tabular}
 \end{table}
 
-\texttt{cudaMemcpy} is only partially asynchronous with respect to the host(\cite{nvidia2014cuda60runtime}, ch. 1).
+\texttt{CudaMemcpy} is only partially asynchronous with respect to the host (\cite{nvidia2014cuda60runtime}, ch. 1).
 It will return once the pageable source allocation is safe to modify, but possibly before the data has finished moving to the device.
-This impacts the design of the performance characterization routines in Chapter~\ref{ch:explicit}
-\texttt{cudaMemcpyPeer} initiates a DMA copy from one GPU to another, without involving the host.
+This impacts the design of the performance characterization routines in Chapter~\ref{ch:explicit}.
+\texttt{CudaMemcpyPeer} initiates a DMA copy from one GPU to another, without involving the host.
 This can improve the bandwidth of the transfer between supported devices.
 The impact of this peer access is also described in Chapters~\ref{ch:explicit} and~\ref{ch:unified}.
 
 This API definition imposes the following basic structure on all CUDA programs, which remains essentially unchanged through CUDA 9.1.
 \begin{enumerate}
-	\item allocate memory on the host with \texttt{new}/\texttt{malloc}.
-	\item initialize memory on the host
-	\item allocate memory on the device with \texttt{cudaMalloc}
-	\item copy initialized data from the host to the device with 
-	\newline \texttt{cudaMemcpy(..., cudaMemcpyHostToDevice)}
-	\item launch CUDA kernels
-	\item copy results back to the host with 
-	\newline \texttt{cudaMemcpy(..., cudaMemcpyDeviceToHost)}
-	\item free CUDA allocations with \texttt{cudaFree}
+	\item Allocate memory on the host with \texttt{new}/\texttt{malloc}.
+	\item Initialize memory on the host.
+	\item Allocate memory on the device with \texttt{cudaMalloc}.
+	\item Copy initialized data from the host to the device with 
+	\newline \texttt{cudaMemcpy(..., cudaMemcpyHostToDevice)}.
+	\item Launch CUDA kernels.
+	\item Copy results back to the host with \texttt{cudaMemcpy(...,} 
+	\newline \texttt{cudaMemcpyDeviceToHost)}.
+	\item Free CUDA allocations with \texttt{cudaFree}.
 \end{enumerate}
 
 Unified virtual addressing (Section~\ref{sec:uva}) and unified memory (Section ~\ref{sec:unified-cc3}) allow the data transfer steps to happen implicitly on supported systems.
@@ -270,7 +269,7 @@ Unified virtual addressing (Section~\ref{sec:uva}) and unified memory (Section ~
 \label{sec:pinned-memory}
 
 The GPU uses direct memory access (DMA) to copy data to and from the host.
-When \texttt{cudaMemcpy} is invoked, the CPU instructs the GPU to copy a region of host memory to the device memory (or vis-versa), without the CPU being involved.
+When \texttt{cudaMemcpy} is invoked, the CPU instructs the GPU to copy a region of host memory to the device memory (or vise-versa), without the CPU being involved.
 The host must guarantee that the memory to be accessed by the GPU will not be paged-out during the copy.
 First, \texttt{cudaMemcpy} copies the data from the application address space to a piece of page-locked memory in the system memory managed by the CUDA driver, and then \texttt{cudaMemcpy} instructs the GPU to initiate the DMA from that page-locked region to the GPU memory.
 
@@ -281,8 +280,8 @@ Overuse of page-locked memory on the host will degrade overall application perfo
 
 \begin{table}[ht]
 	\centering
-	\caption[CUDA Pinned Memory-Management APIs]{
-		CUDA Pinned Memory-Management APIs
+	\caption[CUDA pinned memory-management APIs]{
+		CUDA pinned memory-management APIs.
 	}
 	\label{tab:cuda-pinned-apis}
 	\begin{tabularx}{\textwidth}{M{1.5in} Y M{0.9in}}
@@ -296,9 +295,9 @@ Overuse of page-locked memory on the host will degrade overall application perfo
 \end{table}
 
 \begin{sloppypar}
-\texttt{cudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable} and \texttt{cudaHostAllocWriteCombined} flags.
+\texttt{CudaHostAlloc} allows even more options, including the \texttt{cudaHostAllocPortable} and \texttt{cudaHostAllocWriteCombined} flags.
 %3.2.4.2
-\texttt{cudaHostAllocWriteCombined} causes a pinned allocation to be write-combined.
+\texttt{CudaHostAllocWriteCombined} causes a pinned allocation to be write-combined.
 Writes to write-combined memory may be delayed and combined in a buffer to reduce the number of memory accesses.
 Additionally, the host may not cache this data in L1 or L2 cache, freeing up those resources for other applications.
 This may prevent unnecessary cache invalidations from occurring during the DMA.
@@ -312,7 +311,7 @@ This became the default with the introduction of unified virtual addressing.
 \subsection{Unified Virtual Addressing}
 \label{sec:uva}
 
-Unified Virtual Addressing was introduced with compute capability 2.0 GPUs and CUDA 4.0 on 64-bit systems.
+Unified virtual addressing was introduced with compute capability 2.0 GPUs and CUDA 4.0 on 64-bit systems.
 The host memory and the memory of each GPU are mapped into disjoint subsections of a single unified address space.
 
 This enhancement simplifies several of the already-introduced CUDA memory management commands~(\cite{nvidia2011cudac40}, 3.2.7).
@@ -321,7 +320,7 @@ By examining the address of the pointers passed to \texttt{cudaMemcpy}, CUDA det
 This simplifies the programmer's use of \texttt{cudaMemcpy}, as \texttt{cudaMemcpyDefault} may be used everywhere.
 There is also no need to call \texttt{cudaHostGetDevicePointer} for mapped allocations.
 Furthermore, all mapped allocations are automatically accessible by all GPUs in the system, not restricted to the GPU that was active at the time of the allocation.
-\texttt{cudaMemcpyPeer} is no longer needed for device-to-device memory copies; \texttt{cudaMemcpy} may be used instead.
+\texttt{CudaMemcpyPeer} is no longer needed for device-to-device memory copies; \texttt{cudaMemcpy} may be used instead.
 
 \subsection{Peer Access and UVA}
 \label{sec:cuda-peer}
@@ -329,15 +328,15 @@ Furthermore, all mapped allocations are automatically accessible by all GPUs in 
 
 
 Peer access was introduced with CUDA 4.0.
-\texttt{cudaDeviceEnablePeerAccess()} allows CC 2.0+ devices to address memory in another device's address space~(\cite{nvidia2011cudac40}, 3.2.6.4).
+\texttt{CudaDeviceEnablePeerAccess()} allows CC 2.0+ devices to address memory in another device's address space~(\cite{nvidia2011cudac40}, 3.2.6.4).
 For example, if GPU1 loads through a pointer to data on GPU0, the data will be directly fetched from GPU0 memory, at the cost of one PCIe transaction and one global memory load~\cite{schroeder2011peer}, and be cached in the L2 of GPU0.
-Direct peer access requires compute capability 2.0, CUDA 4.0,Fermi+, and 64-bit system.
+Direct peer access requires compute capability 2.0, CUDA 4.0, Fermi+, and 64-bit system.
 The availability of peer access may rely on a combination of interconnect topology and system hardware, summarized in Table~\ref{tab:cuda-peer-topology}.
 When peer access is disabled, data transfers first pass through the host instead of allowing direct DMA between devices.
 
 \begin{table}[ht]
 	\centering
-	\caption[System support for GPU-GPU Peer Access]{
+	\caption[System support for GPU-GPU peer access]{
 		GPU-to-GPU connection, and whether peer access is supported for the systems considered in this work.
 	}
 	\label{tab:cuda-peer-topology}
@@ -358,15 +357,15 @@ When peer access is disabled, data transfers first pass through the host instead
 \label{sec:unified-cc3}
 
 The CUDA unified memory system was introduced with CUDA 6.0 and requires a GPU with SM architecture of 3.0 or higher~\cite{nvidia2014cuda60}.
-CUDA Unified Memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
+CUDA unified memory~\cite{harris2013cudaunifiedmemory} provides a single pool of memory that is accessible from the CPU and GPU by a single pointer.
 CUDA automatically migrates data between the physically distinct CPU and GPU memory as needed, allowing GPU kernels to access the memory as if it were in the global memory, and CPU functions to access the memory as if it were in the system memory.
 Like mapped memory, this simplifies programming by removing the need for separate host and device allocations and explicit data transfers.
-A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
+A summary of unified memory APIs is shown in Table~\ref{tab:cuda-um-apis}.
 
 \begin{table}[ht]
 	\centering
-	\caption[CUDA Unified Memory-Management APIs]{
-		CUDA Unified Memory-Management APIs.
+	\caption[CUDA unified memory-management APIs]{
+		CUDA unified memory-management APIs.
 		Initial CUDA 6.0 APIs and additional CUDA 8.0 APIs are shown.
 	}
 	\label{tab:cuda-um-apis}
@@ -386,12 +385,12 @@ A summary of unified memory APIs are shown in Table~\ref{tab:cuda-um-apis}
 The underlying data is only present in one location on the system, and in principle, unified memory allocations are automatically migrated towards their most recent use.
 When a kernel is launched, all pages attached to that kernel's stream are bulk migrated to the destination GPU.
 When the host program touches a page, that page is migrated back to the system memory.
-In Multi-GPU systems, data does not migrate between GPUs - all other GPUs receive peer mappings to the data, which is accessed over the PCIe bus (\cite{nvidia2014cuda60}, J.1.3).
+In multi-GPU systems, data does not migrate between GPUs - all other GPUs receive peer mappings to the data, which is accessed over the PCIe bus (\cite{nvidia2014cuda60}, J.1.3).
 
-Unified memory maintains coherence (i.e., all GPUs the CPU have the same view of unified memory values) by disallowing concurrent accesses to managed data, including concurrent access to distinct managed allocations (\cite{nvidia2014cuda60}, J.2.2.1).
+Unified memory maintains coherence (i.e., all GPUs and the CPU have the same view of unified memory values) by disallowing concurrent accesses to managed data, including concurrent access to distinct managed allocations (\cite{nvidia2014cuda60}, J.2.2.1).
 The CPU may access managed allocations after GPU execution has completed, where ``GPU execution'' refers to activity in a particular stream for stream-attached memory, or whole-GPU otherwise.
 For stream-attached memory, completion of GPU execution can be guaranteed by any stream-synchronizing call.
-For whole-GPU memory, completion is guaranteed by stream synchronization when only one stream is executing on the GPU\footnote{e.g., \texttt{cudaStreamSynchronize()}}, or by any call that is fully synchronous with respect to the host\footnote{e.g., \texttt{cudaDeviceSynchronize()}}.
+For whole-GPU memory, completion is guaranteed by stream synchronization when only one stream is executing on the GPU,\footnote{e.g., \texttt{cudaStreamSynchronize()}} or by any call that is fully synchronous with respect to the host.\footnote{e.g., \texttt{cudaDeviceSynchronize()}}
 The GPU is considered to be active even if it is not accessing managed data.
 Concurrent inter-GPU accesses are allowed, as are concurrently-executing kernels on a single GPU (\cite{nvidia2014cuda60}, J.2.2.2).
 
@@ -401,7 +400,7 @@ Concurrent inter-GPU accesses are allowed, as are concurrently-executing kernels
 With CUDA 8 and for GPUs with CC 6.0+, GPU page faulting provides a more fine-grained data transfer mechanism~\cite{nvidia2017cuda80}.
 Instead of moving all managed allocations to the GPU prior to a kernel launch, the GPU will fault if it accesses a page that is not in its memory.
 The page is either migrated to the GPU to serve that access, or the page is mapped into the GPU address space to be accessed over the host-device interconnect.
-Unlike Unified Memory with CC 3.0, pages can migrate between GPUs on peer accesses (\cite{nvidia2017cuda80}, J.1.4).
+Unlike unified memory with CC 3.0, pages can migrate between GPUs on peer accesses (\cite{nvidia2017cuda80}, J.1.4).
 The GPU page faulting mechanism lifts all restrictions on simultaneous access to data (\cite{nvidia2017cuda80}, J.2.2.1).
 However, intensive interleaving of CPU and GPU accesses to a page can cause excessive migrations and result in severe performance degradation.
 
@@ -409,17 +408,17 @@ CC 6.0+ also brings 49-bit virtual addressing to cover the 48-bit virtual addres
 This allows CUDA to support managed allocations larger than the GPU memory.
 The total amount of managed allocations still cannot be larger than the system memory (\cite{nvidia2017cuda80}, J.1.3).
 
-\texttt{cudaMemPrefetchAsync()} hints to the unified memory system that a particular device will soon be accessing a unified memory allocation.
+\texttt{CudaMemPrefetchAsync()} hints to the unified memory system that a particular device will soon be accessing a unified memory allocation.
 This may cause the system to migrate the specific region of memory over to the referenced device.
 This hint is used in Chapter~\ref{ch:explicit} in some of the unified memory characterizations.
 
-\texttt{cudaMemAdvise()} hints to the unified memory system how a particular region of memory can be used.
-\texttt{cudaMemAdviseSetReadMostly} causes the hinted device to establish a read-only copy of a page, instead of taking complete ownership of a page on access.
+\texttt{CudaMemAdvise()} hints to the unified memory system how a particular region of memory can be used.
+\texttt{CudaMemAdviseSetReadMostly} causes the hinted device to establish a read-only copy of a page, instead of taking complete ownership of a page on access.
 Any writes to that page become expensive, as all read-only copies must be invalidated.
 This cost is not evaluated in this work.
-\texttt{cudaMemAdviseSetPreferredLocation} hints to the driver that data migration of the page away from the device should be avoided.
+\texttt{CudaMemAdviseSetPreferredLocation} hints to the driver that data migration of the page away from the device should be avoided.
 This may cause the system to establish a remote mapping for the data, instead of migrating the page.
-\texttt{cudaMemAdviseSetAccessedBy} hints to the driver that the device will access the memory region.
+\texttt{CudaMemAdviseSetAccessedBy} hints to the driver that the device will access the memory region.
 It causes the page to be mapped in the device page table for as long as possible, to prevent page faults on access.
 
 \subsection {Unified Memory with CC 7.0+ (Volta+) }
@@ -427,13 +426,13 @@ Though not examined in this work, Volta GPUs contain the necessary hardware for 
 When support is added in the Nvidia driver, access counters will be used to trigger page migrations of hot pages, instead of on each access.
 The system will also detect thrashing, and temporarily prevent page faults to allow faster progress on each device.
 On POWER9 systems, the CPU and GPU have access to each other's page translation hardware, allowing memory accesses on the CPU to be served from the GPU and cached on the CPU.
-Furthermore, the CPU can execute atomic operations on locations in GPU memory without a page migration~\cite{sakharnykh2017unified}).
+Furthermore, the CPU can execute atomic operations on locations in GPU memory without a page migration~\cite{sakharnykh2017unified}.
 
 \section{Linux Non-Uniform Memory Access}
 \label{sec:numa}
 
 Linux includes a system for exposing non-uniform memory access architectures (NUMA) to applications.
-In NUMA systems, memory is divided into multiple \textit{nodes}\cite{numa2012}.
+In NUMA systems, memory is divided into multiple \textit{nodes}~\cite{numa2012}.
 Processors and devices have the same access characteristics when accessing memory in a particular node.
 Nodes have \textit{affinity} to processors and devices, indicating the processors and devices which can access that node with the best performance.
 
@@ -448,16 +447,16 @@ Chapters~\ref{ch:explicit} and ~\ref{ch:unified} show these effects in more deta
 \begin{figure}[H]
     \centering
 	\includegraphics[width=0.5\textwidth]{figures/generated/ac922_numa-bw.pdf}
-    \caption[Example of NUMA Bandwidth Effects on AC922]{Example NUMA Bandwidth Effects on AC922}
+    \caption[Example of NUMA bandwidth effects on AC922]{Example of NUMA bandwidth effects on AC922}
     \label{fig:numa-bw-example}
 \end{figure}
 
-Applications can leverage the numactl\cite{wickman2015numactl} library to affect their own NUMA execution policy.
+Applications can leverage the numactl~\cite{wickman2015numactl} library to affect their own NUMA execution policy.
 This policy controls on which CPUs processes may execute, and on which NUMA nodes memory is allocated.
-numactl is used in this work to ensure that data is allocated and programs execute on specific CPUs as needed to exercise different underlying hardware links.
+Numactl is used in this work to ensure that data is allocated and programs execute on specific CPUs as needed to exercise different underlying hardware links.
 Listing~\ref{lst:numa-bind-node} shows a C++ function that takes the operating system NUMA node ID as an integer argument and binds the executing thread and its allocations to that node.
 Lines 6 and 7 allocate a \texttt{bitmask}, and set the bit corresponding to the NUMA node.
-\texttt{numa\_bind()} in line 8 forces execution and allocations to occur on the nodes in the nodemask.
+\texttt{Numa\_bind()} in line 8 forces execution and allocations to occur on the nodes in the nodemask.
 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[language=C++, caption=Binding to NUMA nodes., label=lst:numa-bind-node, numbers=left]
@@ -477,7 +476,7 @@ numa_bind_node(const int node) {
 \end{lstlisting}
 \end{minipage}
 
-The benchmarks in this paper also initialize numactl with calls to \texttt{numa\_set\_strict(1)} and \texttt{ numa\_set\_bind\_policy(1) }, which ensure that NUMA will cause the program to exit on an error, and that if the memory cannot be allocated on the requested NUMA node, the allocation will fail instead of falling back to a different node.
+The benchmarks in this paper also initialize numactl with calls to \texttt{numa\_set\_strict(1)} and \texttt{ numa\_set\_bind\_policy(1)}, which ensure that NUMA will cause the program to exit on an error, and that if the memory cannot be allocated on the requested NUMA node, the allocation will fail instead of falling back to a different node.
 
 \section{OpenMP}
 \label{sec:openmp}
@@ -652,7 +651,7 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
 
 \begin{table}[ht]
     \centering
-    \caption[Nvidia DGX-1 Architecture Summary]{
+    \caption[Nvidia DGX-1 architecture summary]{
 		Nvidia DGX-1 Architecture Summary.
 	}
     \label{tab:dgx1}
@@ -671,7 +670,7 @@ Their key differences are in CPU architecture (64-bit little-endian PowerPC for 
 \begin{figure}[ht]
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/dgx1-hardware.pdf}
-    \caption[Nvidia DGX-1 Architecture Schematic]{
+    \caption[Nvidia DGX-1 architecture schematic]{
 		Nvidia DGX-1 Architecture Schematic.
 		Interconnect legends are subtitled with theoretical maximum transfer rates.
 		Each of the four NVLink lanes on a GPU is used to connect it to one other GPU.
@@ -695,7 +694,7 @@ Every GPU is directly connected to all local GPUs in its cluster, as well as one
 
 \begin{table}[ht]
     \centering
-    \caption[IBM S822LC Architecture Summary]{IBM S822LC Architecture Summary.}
+    \caption[IBM S822LC architecture summary]{IBM S822LC architecture summary.}
     \label{tab:minsky}
     \begin{tabular}{cc}
     \hline
@@ -712,7 +711,7 @@ Every GPU is directly connected to all local GPUs in its cluster, as well as one
 \begin{figure}[ht]
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/minsky-hardware.pdf}
-    \caption[IBM S822LC Architecture Schematic]{
+    \caption[IBM S822LC architecture schematic]{
 		IBM S822LC Architecture Schematic.
 		Interconnect legends are subtitled with theoretical maximum transfer rates.
 		The four NVLink lanes on a GPU are bonded into two two-lane pairs to connect it to the neighboring CPU and GPU.
@@ -728,8 +727,6 @@ Each POWER8 CPU is part of a fully-connected triad of one POWER8 CPU and two P10
 Each device in the triad is connected by a gang of two NVLink 1.0 lanes for a total bidirectional bandwidth of 80 GB/s.
 The two triads are connected at the POWER8 CPUs by an IBM SMP X bus with 38.4 GB/s of bidirectional bandwidth.
 
-
-
 \subsection{IBM AC922}
 \label{sec:ac922}
 
@@ -743,7 +740,7 @@ Like the S822LC, each triad is a Linux NUMA node.
 
 \begin{table}[ht]
     \centering
-    \caption[IBM AC922 Architecture Summary]{IBM AC922 Architecture Schematic}
+    \caption[IBM AC922 architecture summary]{IBM AC922 architecture summary}
     \label{tab:ac922}
     \begin{tabular}{cc}
     \hline
@@ -760,8 +757,8 @@ Like the S822LC, each triad is a Linux NUMA node.
 \begin{figure}
     \centering
 	\includegraphics[width=0.8\textwidth]{figures/generated/hal-hardware.pdf}
-    \caption[IBM AC922 Architecture Schematic]{
-		IBM AC922 Architecture Schematic.
+    \caption[IBM AC922 architecture schematic]{
+		IBM AC922 architecture schematic.
 		Interconnect legends are subtitled with theoretical maximum transfer rates.
 		The six NVLink lanes on a GPU are bonded into two three-lane pairs to connect it to the neighboring CPU and GPU.
 	}
