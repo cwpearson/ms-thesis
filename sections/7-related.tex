@@ -3,11 +3,10 @@
 
 \section{System Topology Enumeration / Hardware Models}
 
-This work relies on and enhances an existing system topology enumeration tool, \texttt{hwloc}~\cite{broquedis2010hwloc}.
-\texttt{hwloc} is designed around the expectation that current and next-generation systems are hierarchical.
+This work relies on and enhances an existing system topology enumeration tool \texttt{hwloc}~\cite{broquedis2010hwloc}, which is designed around the expectation that current and next-generation systems are hierarchical.
 This work uses \texttt{hwloc} to enumerate topology, but embeds the devices that \texttt{hwloc} discovers in a graph (Section~\ref{sec:hardware-enumeration}), which is a more general model of modern hardware systems.
 
-Amaral et. al.~\cite{amaral2017topology} use a similar hardware graph, but their path costs are defined qualitatively, whereas this work proposes automating a quantitative cost that depends on the communication method used.
+Amaral et al.~\cite{amaral2017topology} use a similar hardware graph, but their path costs are defined qualitatively, whereas this work proposes automating a quantitative cost that depends on the communication method used.
 They also describe a topology-aware job placement strategy, but the problem considered is jobs on nodes in a cluster environment instead of computation tasks and data placement on GPUs in a multi-GPU node.
 
 \section{System Characterization}
@@ -21,10 +20,10 @@ It is designed to discover hardware parameters, such as L2 cache size.
 Among other things, it extends LMBench's memory bandwidth microbenchmark to include multithreaded transfers.
 Servet~\cite{gonzalez2010servet} goes a step further and includes a benchmark to determine communication costs between pairs of cores in the context of MPI.
 It also attempts to analyze the results to establish which cores are equivalent from a communication perspective to simplify the benchmarking process.
-BlackjackBench~\cite{danalis2012blackjackbench} benchmark suite designed to measure the observable performance parameters of a system as opposed to hardware paramters.
+BlackjackBench~\cite{danalis2012blackjackbench} benchmark suite designed to measure the observable performance parameters of a system as opposed to hardware parameters.
 This work also takes the view that observable system parameters are what matters to application performance.
 It focuses on memory hierarchy performance, but also includes a workload to measure communication bandwidth between pairs of CPU cores.
-Liu et. al.~\cite{liu2004microbenchmark} take a microbenchmarking approach to evaluating high-speed cluster interconnects, including latency, uni- and bi-directional bandwidth, and host latency.
+Liu et al.~\cite{liu2004microbenchmark} take a microbenchmarking approach to evaluating high-speed cluster interconnects, including latency, uni- and bi-directional bandwidth, and host latency.
 This work takes a similar approach or subsumes the communication microbenchmarking of this previous work, but extends it to many kinds of CUDA communication.
 
 This work also proposes correlating microbenchmark performance directly with underlying hardware.
@@ -40,19 +39,20 @@ This contention effect is similar to some future contention characterization thi
 Prior work has also specifically examined the communication performance effect of incorrect NUMA pinnings in multi-GPU systems.
 Spafford, Meredith, and Vetter~\cite{spafford2011quantifying} show significant anisotropy and bandwidth degradation in PCIe bandwidth for incorrect NUMA pinnings.
 They also discuss how application performance can degrade under PCIe bus contention.
-Expansion of the benchmarks in this work will most likely include bus contention, as multi-GPU applications will likely consists of phases with multi-device communication.
+Expansion of the benchmarks in this work will most likely include bus contention, as multi-GPU applications will likely consist of phases with multi-device communication.
 
 Limited prior work has examined performance of CUDA transfers specifically.
-Landaverde et. al.~\cite{landaverde2014investigation}.
-Li et. al~\cite{li2015evaluation} evaluate the unified memory system on several platforms, including a multi-CPU PCIe platform, and show around a 10\% performance penalty on some applications for Unified Memory.
+Landaverde et al.~\cite{landaverde2014investigation} develop a set of microbenchmarks to measure performance of unified memory accesses for particular access patterns.
+Their work focuses on the performance effect of unified memory on particular computation patterns, while this work isolates  NUMA effects and data transfer performance alone.
+Li et al~\cite{li2015evaluation} evaluate the unified memory system on several platforms, including a multi-CPU PCIe platform, and show around a 10\% performance penalty on some applications for unified memory.
 They do not do any microbenchmarking, but observe that the unified memory system in CUDA 6.0 produced redundant transfers that were avoiding in the explicitly-managed code.
 MGBench, a multi-GPU communication benchmark~\cite{bennun2016mgbench}, contains multi-GU microbenchmarks including scatter, direct access, and ring broadcast messages.
-Ben-Nun et. al.~\cite{ben2017groute} examines direct-access transfers between GPUs.
+Ben-Nun et al.~\cite{ben2017groute} examine direct-access transfers between GPUs.
 They show the transfer rate of direct-access transfers between local GPUs, remote GPUs, and CPU/GPU transfers with various access patterns.
 They observe that the performance is highly dependent on the access pattern.
 Like this work, they discover that the transfer rate is highly correlated with the topological proximity of the devices.
 Github user \texttt{woodun} has a set of open-source, unpublished microbenchmarks under the name \texttt{9\_Microbenchmarks}~\cite{woodun2018microbenchmarks}.
-These benchmarks largely focus on details of NVIDIA Pascal and Volta memory hierarchy, including cache lines sizes, and costs of various operations, including TLB misses and page faults under different CUDA device configurations and access patterns.
+These benchmarks largely focus on details of Nvidia Pascal and Volta memory hierarchy, including cache lines sizes, and costs of various operations, including TLB misses and page faults under different CUDA device configurations and access patterns.
 As of the time of this writing, no results are presented and there is no discussion of the motivation of the benchmarks.
 Some of these workloads seem to attempt to measure some of the same operations in this work, such as page fault latency.
 
@@ -60,15 +60,15 @@ Some of these workloads seem to attempt to measure some of the same operations i
 
 Related works make use of the communication costs to make scheduling decisions.
 MPIPP~\cite{chen2006mpipp} uses communication parameters in its process placement routine, but it gets them from the technical specification of the machine instead of measuring it.
-Mercier~\cite{mercier2009towards} also uses communication parameters in its placement policy.
-It determines the topology of the machine from the specification, and estimates the communication costs from that topology.
+Mercier and Clet-Ortega~\cite{mercier2009towards} also use communication parameters in their placement policy.
+They determines the topology of the machine from the specification and estimates the communication costs from that topology.
 
 \section{NUMA / Multi-GPU APIs}
 
 Prior work has made an effort to create NUMA-aware APIs, a possible future direction of this work.
-Ben-Nun et. al.~\cite{ben2015memory} describes a multi-GPU partitioning framework for distributing parallel workloads on multi-GPU nodes according to their access patterns.
+Ben-Nun et al.~\cite{ben2015memory} describe a multi-GPU partitioning framework for distributing parallel workloads on multi-GPU nodes according to their access patterns.
 It provides a set of host and device APIs that describe containers and allow the framework to analyze kernels to determine access patters, to decide how to schedule underlying operations onto multiple GPUs.
-Groute ~\cite{ben2017groute} propose parallel constructs for asynchronous multi-GPU programming.
+Groute ~\cite{ben2017groute} make use of parallel constructs for asynchronous multi-GPU programming.
 The programming model involves describing the application communication pattern as a graph of communicating links and endpoints.
 Section~\ref{sec:app-model} of this work describes the DVDG, which would be used to construct a similar application model for an existing application.
 
