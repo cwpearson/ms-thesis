@@ -305,7 +305,7 @@ Furthermore, coherency is not enforced, so data is not snooped on the PCIe bus, 
 Due to the possible lack of caching, this type of allocation makes sense for data that is not frequently read by the CPU, for example, data written once by the CPU before being sent to a GPU.
 \end{sloppypar}
 
-\texttt{cudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
+\texttt{CudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
 This became the default with the introduction of unified virtual addressing.
 
 \subsection{Unified Virtual Addressing}
@@ -546,7 +546,7 @@ cudaEventElapsedTime(&millis, start, stop);
 
 Lines $7$ and $8$ create the events that will wrap the operation to be timed.
 Lines $11$ and $13$ insert the \texttt{start} and \texttt{stop} events around the operation to be timed.
-Line $16$ blocks until the events have finished, and then line $17$ produces the number of milliseconds elapsed between the \texttt{start} and \texttt{stop} events.
+Line $16$ blocks until the events have finished, then line $17$ produces the milliseconds elapsed between the \texttt{start} and \texttt{stop} events.
 
 \subsection{CUDA Profiling Tools Interface}
 \label{sec:cupti}
@@ -758,7 +758,7 @@ The two triads are connected at the POWER8 CPUs by an IBM SMP X bus with 38.4 GB
     \label{fig:topo-ac922-simple}
 \end{figure}
 
-The IBM AC922 machine features two POWER9 CPUs and four Nvidia V100 GPUs\cite{caldeira2018ac922}.
+The IBM AC922 machine features two POWER9 CPUs and four Nvidia V100 GPUs~\cite{caldeira2018ac922}.
 Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory for a total of 160 threads and 1TB of memory.
 Each POWER9 CPU is part of a fully-connected triad of one POWER9 CPU and two V100 GPUs.
 Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirectional bandwidth of 150 GB/s.
