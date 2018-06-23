@@ -572,7 +572,8 @@ If the stride between elements is constructed appropriately, and pages are not p
 
 \begin{minipage}{\textwidth}
 \begin{lstlisting}[language=c++, caption=GPU linked list traversal kernel for Algorithm~\ref{alg:um-latency-gpu}., label=lst:gpu-traversal]
-	__global__ void gpu_traverse(size_t *ptr, const size_t steps)
+	__global__ void gpu_traverse(size_t *ptr,
+	                             const size_t steps)
 	{
 	  size_t next = 0;
 	  for (int i = 0; i < steps; ++i)

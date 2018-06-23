@@ -8,6 +8,10 @@
 
 * [Latest `master`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_master.pdf)
 * [Latest `develop`](https://storage.googleapis.com/cwpearson-ms-thesis/ecethesis_develop.pdf)
+* [v1.1.2](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v1.1.1.pdf) Fix reference numbering, appendix, more format check
+* [v1.1.1](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v1.1.1.pdf) Fix a page number in list of tables
+* [v1.1.0](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v1.1.0.pdf) Post ece format check
+* [v1.0.0](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v1.0.0.pdf) Sent to ece thesis check
 * [v0.11](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.11.pdf) Sent to IBM on 6/15/2018. Microbench Data
 * [v0.10](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.10.pdf) Sent to Wen-Mei on 5/13/2018. Fixes to ch2,3,4
 * [v0.9](https://storage.cloud.google.com/cwpearson-ms-thesis/ecethesis_v0.9.pdf) Sent to Wen-Mei on 5/9/2018. Moved plots in Ch4, Ch5, called out some plot features.

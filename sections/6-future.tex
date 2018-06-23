@@ -40,7 +40,7 @@ where $t_{bytes}$ is defined as
     max(BW_{link}, \frac{bytes}{BW_{mem}}) & L3_{size} \leq bytes  \\
  \end{cases}
 \]
-$c$, is some constant overhead, and $BW_{link}$, $BW_{L1}$, $BW_{L2}$, $BW_{L3}$, and $BW_{mem}$ are the bandwidth of the CPU-GPU link, the L1 cache, L2 cache, L3 cache, and main memory.
+$c$ is some constant overhead, and $BW_{link}$, $BW_{L1}$, $BW_{L2}$, $BW_{L3}$, and $BW_{mem}$ are the bandwidths of the CPU-GPU link, L1 cache, L2 cache, L3 cache, and main memory.
 
 In this model, the bandwidth is a piecewise function that depends on the transfer size - if a transfer fits within a cache, it happens at the speed of that cache.
 In all cases, the transfer never happens faster than the underlying CPU-GPU link bandwidth.
@@ -64,12 +64,6 @@ In practice, each node and edge would have much more detailed information.
 
 \begin{figure}[ht]
 	\centering
-    \caption[Dynamic value dependence graph]{
-        Example of the dynamic value dependence graph for a simple vector add.
-        Allocations in the code are commented with a hypothetical position of the allocation.
-        Square blocks represent values, and rounded boxes represent node labels.
-    }
-    \label{fig:dvdg}
         \begin{minipage}{\textwidth}
             \begin{lstlisting}
  1. float *a_h, *b_h, *s_h, *a_d, *b_d, *s_d;
@@ -91,7 +85,12 @@ In practice, each node and edge would have much more detailed information.
             \includegraphics[width=0.5\textwidth]{figures/generated/dvdg.pdf}
 
         \end{minipage}
-
+        \caption[Dynamic value dependence graph]{
+            Example of the dynamic value dependence graph for a simple vector add.
+            Allocations in the code are commented with a hypothetical position of the allocation.
+            Square blocks represent values, and rounded boxes represent node labels.
+        }
+        \label{fig:dvdg}
 \end{figure}
 
 Though it is generally possible to generate these dependence graphs by hand, it is not feasible for complicated applications.

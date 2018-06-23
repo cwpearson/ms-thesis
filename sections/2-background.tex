@@ -305,7 +305,7 @@ Furthermore, coherency is not enforced, so data is not snooped on the PCIe bus, 
 Due to the possible lack of caching, this type of allocation makes sense for data that is not frequently read by the CPU, for example, data written once by the CPU before being sent to a GPU.
 \end{sloppypar}
 
-\texttt{cudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
+\texttt{CudaHostAllocPortable} allows all CUDA contexts to treat the memory as pinned, not just the context that performed the allocation.
 This became the default with the introduction of unified virtual addressing.
 
 \subsection{Unified Virtual Addressing}
@@ -546,7 +546,7 @@ cudaEventElapsedTime(&millis, start, stop);
 
 Lines $7$ and $8$ create the events that will wrap the operation to be timed.
 Lines $11$ and $13$ insert the \texttt{start} and \texttt{stop} events around the operation to be timed.
-Line $16$ blocks until the events have finished, and then line $17$ produces the number of milliseconds elapsed between the \texttt{start} and \texttt{stop} events.
+Line $16$ blocks until the events have finished, then line $17$ produces the milliseconds elapsed between the \texttt{start} and \texttt{stop} events.
 
 \subsection{CUDA Profiling Tools Interface}
 \label{sec:cupti}
@@ -709,13 +709,13 @@ Every GPU is directly connected to all local GPUs in its cluster, as well as one
 \end{table}
 
 \begin{figure}[ht]
-    \centering
-	\includegraphics[width=0.8\textwidth]{figures/generated/minsky-hardware.pdf}
-    \caption[IBM S822LC architecture schematic]{
+	\caption[IBM S822LC architecture schematic]{
 		IBM S822LC architecture schematic.
 		Interconnect legends are subtitled with theoretical maximum transfer rates.
 		The four NVLink lanes on a GPU are bonded into two two-lane pairs to connect it to the neighboring CPU and GPU.
 	}
+    \centering
+	\includegraphics[width=0.8\textwidth]{figures/generated/minsky-hardware.pdf}
     \label{fig:topo-minsky-simple}
 \end{figure}
 
@@ -730,17 +730,9 @@ The two triads are connected at the POWER8 CPUs by an IBM SMP X bus with 38.4 GB
 \subsection{IBM AC922}
 \label{sec:ac922}
 
-The IBM AC922 machine features two POWER9 CPUs and four Nvidia V100 GPUs\cite{caldeira2018ac922}.
-Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory for a total of 160 threads and 1TB of memory.
-Each POWER9 CPU is part of a fully-connected triad of one POWER9 CPU and two V100 GPUs.
-Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirectional bandwidth of 150 GB/s.
-The two triads are connected at the POWER9 CPUs by an IBM SMP X bus with 64 GB/s bandwidth.
-Table~\ref{tab:ac922} and Figure~\ref{fig:topo-ac922-simple} summarize the hardware configuration.
-Like the S822LC, each triad is a Linux NUMA node.
-
 \begin{table}[ht]
+	\caption[IBM AC922 architecture summary]{IBM AC922 architecture summary}
     \centering
-    \caption[IBM AC922 architecture summary]{IBM AC922 architecture summary}
     \label{tab:ac922}
     \begin{tabular}{cc}
     \hline
@@ -751,16 +743,25 @@ Like the S822LC, each triad is a Linux NUMA node.
 	\textbf{CPU/GPU Interconnect}  & NVLink 2.0 (3 lanes)                             \\ \hline
 	\textbf{CUDA}                  & 9.2.85, driver 396.15                            \\ \hline
 	\textbf{Kernel}                & 4.14.0-49                                        \\ \hline
-    \end{tabular}
+	\end{tabular}
+
 \end{table}
 
 \begin{figure}
-    \centering
-	\includegraphics[width=0.8\textwidth]{figures/generated/hal-hardware.pdf}
-    \caption[IBM AC922 architecture schematic]{
+	\caption[IBM AC922 architecture schematic]{
 		IBM AC922 architecture schematic.
 		Interconnect legends are subtitled with theoretical maximum transfer rates.
 		The six NVLink lanes on a GPU are bonded into two three-lane pairs to connect it to the neighboring CPU and GPU.
 	}
+    \centering
+	\includegraphics[width=0.8\textwidth]{figures/generated/hal-hardware.pdf}
     \label{fig:topo-ac922-simple}
 \end{figure}
+
+The IBM AC922 machine features two POWER9 CPUs and four Nvidia V100 GPUs~\cite{caldeira2018ac922}.
+Each POWER9 CPU has 20 cores, with 4-way simultaneous multithreading, and is attached to 512GB of DDR4 memory for a total of 160 threads and 1TB of memory.
+Each POWER9 CPU is part of a fully-connected triad of one POWER9 CPU and two V100 GPUs.
+Each device in the triad is connected by three bonded NVLink 2.0 lanes for bidirectional bandwidth of 150 GB/s.
+The two triads are connected at the POWER9 CPUs by an IBM SMP X bus with 64 GB/s bandwidth.
+Table~\ref{tab:ac922} and Figure~\ref{fig:topo-ac922-simple} summarize the hardware configuration.
+Like the S822LC, each triad is a Linux NUMA node.
