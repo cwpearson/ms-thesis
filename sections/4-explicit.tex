@@ -23,12 +23,7 @@ Then, \texttt{cudaMemcpy} is invoked to transfer data between those allocations.
 CUDA events are used to measure the time of the memory copy.
 
 \begin{algorithm}
-	\label{alg:explicit-cpu-cpu}
-	\caption[Measure \texttt{cudaMemcpy} CPU-CPU bandwidth]{
-		Algorithm to measure \texttt{cudaMemcpy} CPU-CPU Bandwidth.
-		AllocPinned and AllocPageable are defined in Algorithm~\ref{alg:host-allocators}.
-		\texttt{numa\_bind\_node} is defined in Listing~\ref{lst:numa-bind-node}.
-	}
+
 	
 	\begin{algorithmic}[1]
         \Statex
@@ -62,6 +57,12 @@ CUDA events are used to measure the time of the memory copy.
 		\EndFunction
 
 	\end{algorithmic}
+	\caption[Measure \texttt{cudaMemcpy} CPU-CPU bandwidth]{
+		Algorithm to measure \texttt{cudaMemcpy} CPU-CPU Bandwidth.
+		AllocPinned and AllocPageable are defined in Algorithm~\ref{alg:host-allocators}.
+		\texttt{numa\_bind\_node} is defined in Listing~\ref{lst:numa-bind-node}.
+	}
+	\label{alg:explicit-cpu-cpu}
 \end{algorithm}
 
 Algorithm~\ref{alg:host-allocators} shows different kinds of host allocation strategies used in microbenchmarks that need CUDA host allocations on particular NUMA nodes.
@@ -130,8 +131,8 @@ On DGX-1, inter-CPU transfers are actually faster than intra-CPU transfers for i
 		CPU-to-CPU transfer bandwidth vs. transfer size.
 		Each transfer is measured using Algorithm~\ref{alg:explicit-cpu-cpu}.
 		Whiskers at each point show the standard deviation measured over 5 repetitions.
-	}
-	\label{fig:explicit-cpu-cpu}
+		}
+		\label{fig:explicit-cpu-cpu}
 \end{figure}
 
 \section{CPU / GPU Transfers}
